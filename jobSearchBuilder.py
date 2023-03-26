@@ -1,43 +1,82 @@
 import requests
 import os, sys
 from dotenv import load_dotenv, find_dotenv
-
+import json
+from src.job import Job
 load_dotenv(find_dotenv())
 
 class JobBuilder:
     def __init__(self, api_key=None):
-        # LinkedIn API credentials
+        # Rapid API credentials
+        print("creating job builder obj")
         self.api_key = None or os.getenv("X-RapidAPI-Key")
-        self.url = "https://linkedin-jobs-search.p.rapidapi.com/"
+        self.url_rapidapi = "https://linkedin-jobs-search.p.rapidapi.com/"
+        self.url_direct = "https://www.linkedin.com/jobs/search/"
+        #"https://www.linkedin.com/jobs/search/"
+        #?keywords=Engineer&location=europe&
+        #geoId=&trk=public_jobs_jobs-search-bar_search-submit&
+        #position=1&pageNum=0"
         
-    def build_jobs(self, search_terms, location, page=1):
-        headers = {
+    def build_jobs(self, search_terms:str, location:str, page=1)-> list:
+        headers_rapidapi = {
             "content-type": "application/json",
             "X-RapidAPI-Key": self.api_key,
             "X-RapidAPI-Host": "linkedin-jobs-search.p.rapidapi.com"
         }
-        payload = {
+        payload_rapidApi = {
             "search_terms": search_terms,
             "location": location,
             "page": str(page)
         }
-        response = requests.request("POST", self.url, json=payload, headers=headers)
-        
+        #### headers/payload direct
+        # Set headers for API requests
+        headers_direct = {
+            'Authorization': f'Bearer {os.getenv("ACCESS_TOKEN")}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+        payload_direct = {
+            "keywords": search_terms,
+            "location": location,
+            "pageNum": str(page)
+        }
+        print(f"token {headers_direct['Authorization']}")
+        response = requests.request("POST", self.url_direct, json=payload_direct, headers=headers_direct)
+        print(f"server responded: {response}")
         job_objects = []
         if response.status_code == 200:
-            jobs_data = response.json()
-            for job_data in jobs_data:
-                job_url = job_data['job_url']
-                linkedin_job_url_cleaned = job_data['linkedin_job_url_cleaned']
-                company_name = job_data['company_name']
-                company_url = job_data['company_url']
-                linkedin_company_url_cleaned = job_data['linkedin_company_url_cleaned']
-                job_title = job_data['job_title']
-                job_location = job_data['job_location']
-                posted_date = job_data['posted_date']
-                normalized_company_name = job_data['normalized_company_name']
-
+            print("getting jobs from server ..")
+            # Extract the response content in JSON format
+            jobs = response.json()
+            for i, job in enumerate(jobs):
+                job_url = job['job_url']
+                linkedin_job_url_cleaned = job['linkedin_job_url_cleaned']
+                company_name = job['company_name']
+                company_url = job['company_url']
+                linkedin_company_url_cleaned = job['linkedin_company_url_cleaned']
+                job_title = job['job_title']
+                job_location = job['job_location']
+                posted_date = job['posted_date']
+                normalized_company_name = job['normalized_company_name']
+                job_id = i + 1  # add an ID to the job
+                j = Job(job_id=job_id, **job)
+                print(f"Job id: {j.job_id}")
+                print(f"Job URL: {j.job_url}")
+                print(f"Cleaned LinkedIn Job URL: {j.linkedin_job_url_cleaned}")
+                print(f"Company Name: {j.company_name}")
+                print(f"Company URL: {j.company_url}")
+                print(f"Cleaned LinkedIn Company URL: {j.linkedin_company_url_cleaned}")
+                print(f"Job Title: {j.job_title}")
+                print(f"Job Location: {j.job_location}")
+                print(f"Posted Date: {j.posted_date}")
+                print(f"Normalized Company Name: {j.normalized_company_name}")
+                print("\n")
+                job_objects.append(j)
+        return job_objects
      
 
 if __name__ == '__main__':
-    JobBuilder()
+   jobObj= JobBuilder()
+   jobs = jobObj.build_jobs("ingenieur", "tunisia") # return job object list
+   print(jobs)
+   

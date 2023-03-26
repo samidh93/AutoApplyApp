@@ -9,9 +9,8 @@ client_id = os.getenv("CLIENT_ID")
 client_secret = os.getenv("CLIENT_SECRET")
 access_token = os.getenv("ACCESS_TOKEN")
 
-print(f"token {access_token}")
 # LinkedIn API endpoints
-jobs_search_url = 'https://api.linkedin.com/v2/search/jobs'
+jobs_search_url = 'https://api.linkedin.com/v2/job-search'
 apply_job_url = 'https://api.linkedin.com/v2/normalization/unified-jobs/apply'
 
 # Set headers for API requests

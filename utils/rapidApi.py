@@ -2,7 +2,7 @@ import requests
 import os, sys
 from dotenv import load_dotenv, find_dotenv
 import json
-from src.job import Job
+from job import Job
 load_dotenv(find_dotenv())
 
 class JobBuilder:
@@ -11,11 +11,6 @@ class JobBuilder:
         print("creating job builder obj")
         self.api_key = None or os.getenv("X-RapidAPI-Key")
         self.url_rapidapi = "https://linkedin-jobs-search.p.rapidapi.com/"
-        self.url_direct = "https://www.linkedin.com/jobs/search/"
-        #"https://www.linkedin.com/jobs/search/"
-        #?keywords=Engineer&location=europe&
-        #geoId=&trk=public_jobs_jobs-search-bar_search-submit&
-        #position=1&pageNum=0"
         
     def build_jobs(self, search_terms:str, location:str, page=1)-> list:
         headers_rapidapi = {
@@ -28,20 +23,8 @@ class JobBuilder:
             "location": location,
             "page": str(page)
         }
-        #### headers/payload direct
-        # Set headers for API requests
-        headers_direct = {
-            'Authorization': f'Bearer {os.getenv("ACCESS_TOKEN")}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-        }
-        payload_direct = {
-            "keywords": search_terms,
-            "location": location,
-            "pageNum": str(page)
-        }
-        print(f"token {headers_direct['Authorization']}")
-        response = requests.request("POST", self.url_direct, json=payload_direct, headers=headers_direct)
+
+        response = requests.request("POST", self.url_rapidapi, json=payload_rapidApi, headers=headers_rapidapi)
         print(f"server responded: {response}")
         job_objects = []
         if response.status_code == 200:

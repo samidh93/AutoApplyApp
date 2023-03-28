@@ -1,44 +1,54 @@
-import requests
-from bs4 import BeautifulSoup
-from lxml import html
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from base64 import urlsafe_b64encode
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.image import MIMEImage
+from email import encoders
 
-url = 'https://www.linkedin.com/jobs/search/'
-params = {
-    'keywords': 'software Engineer',
-    'location': 'germany',
-    'position': 1, # 25 per page
-    'pageNum': 1 # we increment this for next page
-}
+# Replace with the path to your service account key file
+KEY_FILE_LOCATION = 'key.json'
 
-response = requests.get(url, params=params)
-html_source = response.content
-# Create a BeautifulSoup object to parse the HTML source code
-soup = BeautifulSoup(html_source, "html.parser")
-# Find the element
-no_jobs = soup.find(class_="results-context-header__job-count")
+# Replace with your service account email address
+SERVICE_ACCOUNT_EMAIL = 'autoapplyapp@autoapplyapp-381922.iam.gserviceaccount.com'
 
-# Check if the element was found
-if no_jobs:
-    # Print the contents of the no_jobs
-    print("total job found: "+str(no_jobs.contents))
-else:
-    print("no_jobs not found")
-# Find the element with the id 'results-list__title'
-element = soup.select_one('#main-content > section.two-pane-serp-page__results-list > ul')
+# Replace with the email address of the recipient
+TO = 'sami.dhiab.x@gmail.com'
 
-# Find all <li> elements
-li_elements = element.find_all('li')
-links = []
-for li in li_elements:
-    if li.find("a") and "href" in li.a.attrs:
-        href = li.a["href"]
-        print("link to job: "+str(href)+ "\n")
-        links.append(href)
+# Authenticate and build the service object
+credentials = service_account.Credentials.from_service_account_file(
+    KEY_FILE_LOCATION,
+    scopes=['https://www.googleapis.com/auth/gmail.send'])
+delegated_credentials = credentials#.with_subject('samihomiebro@gmail.com')
+service = build('gmail', 'v1', credentials=delegated_credentials)
 
-print(len(links))
+# Create a message object
+msg = MIMEMultipart()
 
-for link in links:
-    print("link to job: "+link)
-    response = requests.get(link)
+# Add the recipient's email address
+msg['to'] = TO
 
+# Add the subject of the email
+msg['subject'] = 'Test Email'
 
+# Add the body of the email
+body = 'This is a test email sent using the Gmail API.'
+msg.attach(MIMEText(body))
+
+# Add an image attachment (optional)
+with open('data/jobs.PNG', 'rb') as f:
+    img_data = f.read()
+image = MIMEImage(img_data, name='image.jpg')
+msg.attach(image)
+
+# Convert the message to a raw string
+raw_msg = urlsafe_b64encode(msg.as_bytes()).decode()
+
+# Send the email
+try:
+    message = service.users().messages().send(userId='me', body={'raw': raw_msg}).execute()
+    print(F'The email was sent to {TO} with Id: {message["id"]}')
+except HttpError as error:
+    print(F'An error occurred: {error}')
+    message = None

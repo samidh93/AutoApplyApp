@@ -52,8 +52,8 @@ def build_message(destination, obj, body, attachments=[]):
         message['subject'] = obj
         message.attach(MIMEText(body))
         for filename in attachments:
-            #add_attachment(message, filename)
-            pass
+            add_attachment(message, filename)
+            
     return {'raw': urlsafe_b64encode(message.as_bytes()).decode()}
 
 def send_message(service, destination, obj, body, attachments=[]):
@@ -66,4 +66,4 @@ def send_message(service, destination, obj, body, attachments=[]):
 if __name__ == "__main__":
 
     service = gmail_authenticate()
-    send_message(service, "sami.dhiab.x@gmail.com", "test mail with attach", "hello from python gmail apis", "data/jobs.PNG")
+    send_message(service, "dhiebzayneb89@gmail.com", "test auto email with attachement", "open the email and documents", ["data/cover_sami_dhiab.pdf", "data/Resume-Sami-Dhiab.pdf", "data/jobs.PNG"])

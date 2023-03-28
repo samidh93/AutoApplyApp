@@ -78,4 +78,4 @@ class Gmail:
 
 if __name__ == '__main__':
     gmail = Gmail('secrets/credentials.json')
-    gmail.send_email_with_attachments('samihomiebro@gmail.com', 'applying for job posting nr 112', 'i would like to send this app', ['data/resume.pdf', 'data/jobs.png'])
+    gmail.send_email_with_attachments('dhiebzayneb89@gmail.com', 'job application for project manager position in Paris, France', 'ai generated email content based on resume', ['data/resume.pdf', 'data/jobs.png'])

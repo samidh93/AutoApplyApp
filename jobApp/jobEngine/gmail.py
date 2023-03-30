@@ -12,9 +12,9 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 class Gmail:
-    def __init__(self, credentials_path):
+    def __init__(self, credentials_path, token_path):
         self.cwd = os.getcwd()
-        self.token_path  = str
+        self.token_path = os.path.join(self.cwd, token_path)
         self.credentials_path = os.path.join(self.cwd, credentials_path)
         # Construct the path to the token.json file relative to the current working directory
         # Check if the file exists
@@ -57,8 +57,8 @@ class Gmail:
             print(f'An error occurred: {error}')
             message = None
 
-    def _authenticate(self, token_file="secrets/token.json"):
-        self.token_path = os.path.join(self.cwd, token_file)
+    def _authenticate(self):
+        
         SCOPES = ['https://mail.google.com/']
         creds = None
         if os.path.exists(self.token_path):
@@ -77,5 +77,5 @@ class Gmail:
         return creds
 
 if __name__ == '__main__':
-    gmail = Gmail('secrets/credentials.json')
-    gmail.send_email_with_attachments('dhiebzayneb89@gmail.com', 'job application for project manager position in Paris, France', 'ai generated email content based on resume', ['data/resume.pdf', 'data/jobs.png'])
+    gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
+    gmail.send_email_with_attachments('dhiebzayneb89@gmail.com', 'job application for project manager position in Paris, France', 'ai generated email content based on resume', ['jobApp/data/resume.pdf', 'jobApp/data/jobs.png'])

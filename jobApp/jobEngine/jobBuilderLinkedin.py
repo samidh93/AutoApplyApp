@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 import json
 from lxml import html
 from job import Job
-from jobParser import JobParser
+from jobParserLinkedin import JobParser
 load_dotenv(find_dotenv())
 
 

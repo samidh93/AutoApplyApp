@@ -24,7 +24,8 @@ class ChatGPT:
     def ask(self, question):
         message_history = [{"role": "user", "content": f"{question}"}]
         completion = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo", messages=message_history)
+            model="gpt-3.5-turbo", 
+            messages=message_history)
         reply_content = completion.choices[0].message.content
         message_history.append(
             {"role": "assistant", "content": f"{reply_content}"})

@@ -23,14 +23,22 @@ class Skills:
         self.softwares = softwares
 
 class CandidateProfile:
-    def __init__(self, resume_path):
+
+    def __init__(self, resume_path, firstname=None, lastname=None, address=None, email=None, phone_number=None, linkedin=None):
         self.resume = Resume(resume_path)
         self.resume_text = self.resume.extract_text()
         self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")
         self.experience_list = []
         self.education_list = []
         self.skills_list = []
-
+        self.firstname = firstname
+        self.lastname = lastname
+        self.address = address
+        self.email = email
+        self.phone_number = phone_number
+        self.linkedin = linkedin
+    def extract_resume_plain_text(self):
+        return self.resume_text
     def extract_candidate_data_from_resume(self): #all in one call, maybe difficult to get
         request = "given the following resume, extract candidate information data and return only these data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required. ignore unrelevant data\n \
         under education, extract data and return only these data as json like ['university': 'xxx', 'degree': 'xxx' and 'duration': 'xxx' or 'graduation_date': 'xxx'] no header education is required. ignore unrelevant data, max result are 3\n \

@@ -11,7 +11,7 @@ class ApplicationBuilder:
     def apply(self, job:Job):
         print(f"sending email application for {job.job_title} at {job.company_name} in {job.job_location}")
         gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
-        gmail.send_email_with_attachments('dhiebzayneb89@gmail.com', f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationEmail(job), [self.candidate.resume.file_path])
+        gmail.send_email_with_attachments('dhiebzayneb89@gmail.com','sami.dhiab.x@gmail.com',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationEmail(job), [self.candidate.resume.file_path])
 
     def generateApplicationEmail(self, job:Job):
         candidate_resume= self.candidate.extract_resume_plain_text()

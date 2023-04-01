@@ -26,10 +26,11 @@ class Gmail:
         self.creds = self._authenticate()
         self.service = build('gmail', 'v1', credentials=self.creds)
 
-    def send_email_with_attachments(self, to, subject, body, attachment_paths):
+    def send_email_with_attachments(self, from_, to, subject, body, attachment_paths):
 
         # Create the message body
         msg = MIMEMultipart()
+        msg['from']= from_
         msg['to'] = to
         msg['subject'] = subject
 
@@ -78,4 +79,4 @@ class Gmail:
 
 if __name__ == '__main__':
     gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
-    gmail.send_email_with_attachments('dhiebzayneb89@gmail.com', 'job application for project manager position in Paris, France', 'ai generated email content based on resume', ['jobApp/data/resume.pdf', 'jobApp/data/jobs.png'])
+    gmail.send_email_with_attachments('dhiebzayneb89@gmail.com','sami.dhiab.x@gmail.com',  'job application for project manager position in Paris, France', 'ai generated email content based on resume', ['jobApp/data/resume.pdf', 'jobApp/data/jobs.png'])

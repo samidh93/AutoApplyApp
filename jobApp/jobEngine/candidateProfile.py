@@ -37,6 +37,7 @@ class CandidateProfile:
         self.email = email
         self.phone_number = phone_number
         self.linkedin = linkedin
+        
     def extract_resume_plain_text(self):
         return self.resume_text
     def extract_candidate_data_from_resume(self): #all in one call, maybe difficult to get

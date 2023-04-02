@@ -14,7 +14,7 @@ class JobBuilder:
         self.links = links
         self.jobObjLists = []
 
-    def createJobObjectList(self) -> list:
+    def createJobObjectList(self) -> list[Job]:
 
         for i, link in enumerate(self.links):
             response = requests.get(self.links[i])

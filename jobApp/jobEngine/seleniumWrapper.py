@@ -24,7 +24,7 @@ class WebScraper:
         s = Service(self.chromedriver)
         self.driver = webdriver.Chrome(service=s, options=self.option)
 
-    def login_user(self, url="https://www.linkedin.com/login", username_xpath='//*[@id="username"]', password_xpath='//*[@id="password"]', user_credentials="jobApp/secrets/linkedin.json", quit_after=True):
+    def login_user(self, url="https://www.linkedin.com/login", username_xpath='//*[@id="username"]', password_xpath='//*[@id="password"]', user_credentials="jobApp/secrets/linkedin.json", quit_after=False):
         self.driver.get(url)
         # Load the JSON file containing the API token
         self.cwd = os.getcwd()
@@ -41,14 +41,21 @@ class WebScraper:
         input_password = self.driver.find_element(By.XPATH, password_xpath)
         input_password.send_keys(cred["password"])
         input_password.send_keys(Keys.RETURN)
-        self._save_cookies()
+        self.driver.implicitly_wait(10)
+        #self._save_cookies()
+
         if quit_after:
             self.driver.quit()
 
-    def get_redirected_page_url(self, url, by, element):
+    def get_official_job_page_url(self, url, by, applyTag, easyApplyTag ):
         self.driver.get(url)
-        self._load_cookies()
-        button = self.driver.find_element(by, element)
+        self.driver.implicitly_wait(10)
+        #self._load_cookies()
+        try:
+            button = self.driver.find_element(by, applyTag)
+        except:
+            print("button apply not found, try locate easy apply button")
+            button = self.driver.find_element(by, easyApplyTag)
         button.click()
         self.driver.switch_to.window(self.driver.window_handles[1])
         # get the URL of the newly opened page
@@ -58,13 +65,13 @@ class WebScraper:
         # close the new tab and switch back to the original tab
         self.driver.close()
         self.driver.switch_to.window(self.driver.window_handles[0])
-        self.driver.quit()
+        #self.driver.quit()
         return new_url
-
+    
     def _save_cookies(self, cookies_file='jobApp/secrets/cookies.json'):
         # Save the cookies to a file
         cookies = self.driver.get_cookies()
-        print(cookies)
+        #print(cookies)
         self.saved_cookies = cookies_file
         # save the cookies to a JSON file
         with open(self.saved_cookies, 'w') as f:
@@ -82,10 +89,19 @@ class WebScraper:
 
 
 if __name__ == '__main__':
-
+    from formFinder import FormLocator
+    from emailPageFinder import EmailExtractor
+    from jobBuilderLinkedin import JobBuilder, JobParser
+    jobParserObj = JobParser(job_title="recruiting", location="France")
+    jobs = jobParserObj.generateLinksPerPage(1)
+    jobber = JobBuilder(jobs)
+    joboffers = jobber.createJobObjectList()
     scraper = WebScraper()
-    # scraper.login_user()
-    redirect_url = scraper.get_redirected_page_url(
-        'https://www.linkedin.com/jobs/view/3521134178', 
-        By.XPATH ,"//span[text()='Apply']")
-    print(redirect_url)
+    scraper.login_user()
+    for j in joboffers:
+        redirect_url = scraper.get_official_job_page_url(
+            j.job_url, 
+            By.XPATH ,"//span[text()='Apply']", "//span[text()='Easy Apply']")
+        print(redirect_url)
+        print(EmailExtractor(redirect_url).extract_emails())
+        FormLocator(redirect_url).locate_form()

@@ -42,20 +42,20 @@ class WebScraper:
         input_password.send_keys(cred["password"])
         input_password.send_keys(Keys.RETURN)
         self.driver.implicitly_wait(10)
-        #self._save_cookies()
+        # self._save_cookies()
 
         if quit_after:
             self.driver.quit()
 
-    def get_official_job_page_url(self, url, by, applyTag, easyApplyTag ):
+    def get_official_job_page_url(self, url, by, applyTag, by_, easyApplyTag):
         self.driver.get(url)
         self.driver.implicitly_wait(10)
-        #self._load_cookies()
+        # self._load_cookies()
         try:
             button = self.driver.find_element(by, applyTag)
         except:
-            print("button apply not found, try locate easy apply button")
-            button = self.driver.find_element(by, easyApplyTag)
+            print("button apply not found")
+            return self._easy_apply(by_, easyApplyTag)
         button.click()
         self.driver.switch_to.window(self.driver.window_handles[1])
         # get the URL of the newly opened page
@@ -65,13 +65,29 @@ class WebScraper:
         # close the new tab and switch back to the original tab
         self.driver.close()
         self.driver.switch_to.window(self.driver.window_handles[0])
-        #self.driver.quit()
+        # self.driver.quit()
         return new_url
-    
+
+    def _easy_apply(self, by_what, tag):
+        print("try locate easy apply button")
+        in_apply = self.driver.find_element(by_what,tag) #'//span[@class="artdeco-button__text" and text()="Easy Apply"]'
+        in_apply.click()
+        self.driver.implicitly_wait(30)
+        print("easy apply found, filling form")
+        self.driver.switch_to.window(self.driver.window_handles[1])
+        # get the URL of the newly opened page
+        new_url = self.driver.current_url
+        # do something with the URL
+        print(f"easy apply: {new_url}")
+        # close the new tab and switch back to the original tab
+        self.driver.close()
+        self.driver.switch_to.window(self.driver.window_handles[0])
+        # self.driver.quit()
+        return new_url
     def _save_cookies(self, cookies_file='jobApp/secrets/cookies.json'):
         # Save the cookies to a file
         cookies = self.driver.get_cookies()
-        #print(cookies)
+        # print(cookies)
         self.saved_cookies = cookies_file
         # save the cookies to a JSON file
         with open(self.saved_cookies, 'w') as f:
@@ -100,8 +116,8 @@ if __name__ == '__main__':
     scraper.login_user()
     for j in joboffers:
         redirect_url = scraper.get_official_job_page_url(
-            j.job_url, 
-            By.XPATH ,"//span[text()='Apply']", "//span[text()='Easy Apply']")
-        print(redirect_url)
-        print(EmailExtractor(redirect_url).extract_emails())
-        FormLocator(redirect_url).locate_form()
+            j.job_url,
+            By.XPATH, "//span[text()='Apply']", By.XPATH, '//span[@class="artdeco-button__text" and text()="Easy Apply"]')
+        #print(redirect_url)
+        #print(EmailExtractor(redirect_url).extract_emails())
+        #FormLocator(redirect_url).locate_form()

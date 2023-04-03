@@ -14,7 +14,8 @@ class EmailExtractor:
         if response.status_code == 200:
             return response.content.decode('utf-8')
         else:
-            raise Exception(f"Failed to retrieve HTML for URL {url}")
+            print(f"Failed to retrieve HTML for URL {url}")
+            return ""
             
         
     # Define a function to search for email addresses within the HTML

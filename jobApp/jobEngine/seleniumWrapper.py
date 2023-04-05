@@ -16,10 +16,13 @@ import pickle
 
 
 class WebScraper:
-    def __init__(self, chromeriver_path="../chromedriver", browser_bin_location='C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe'):
+    def __init__(self, chromeriver_path="../chromedriver112.exe", browser_bin_location='C:\\Program Files\\BraveSoftware\\Brave-Browser\\Application\\brave.exe', headless=False):
 
         self.chromedriver = chromeriver_path
         self.option = webdriver.ChromeOptions()
+        if headless:
+            self.option.add_argument("--headless=new")
+
         self.option.binary_location = browser_bin_location
         s = Service(self.chromedriver)
         self.driver = webdriver.Chrome(service=s, options=self.option)
@@ -149,7 +152,9 @@ class WebScraper:
             self.driver.add_cookie(cookie)
         # Refresh the page to apply the cookie
         self.driver.refresh()
-
+    def execute_script(self, url,  script):
+        self.driver.get(url)
+        return self.driver.execute_script(script)
 
 if __name__ == '__main__':
     from formFinder import FormLocator

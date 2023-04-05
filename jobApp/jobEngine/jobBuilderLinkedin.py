@@ -5,7 +5,8 @@ from dotenv import load_dotenv, find_dotenv
 import json
 from lxml import html
 from job import Job
-from jobParserLinkedin import JobParser,  BeautifulSoup
+from jobParserLinkedin import JobParser
+from seleniumWrapper import WebScraper
 load_dotenv(find_dotenv())
 
 
@@ -22,7 +23,7 @@ class JobBuilder:
                 # Create an HTML tree from the response text
                 tree = html.fromstring(response.text)
                 job_id = i + 1  # add an ID to the job
-                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree) )
+                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(self.links[i]) )
                 print(f"Job id: {j.job_id}")
                 print(f"Job URL: {j.job_url}")
                 print(f"Company Name: {j.company_name}")
@@ -68,17 +69,19 @@ class JobBuilder:
             posted_date = source_html.xpath('//span[@class="posted-time-ago__text topcard__flavor--metadata"]/text()')[0].strip()
         except IndexError:
             print("Index out of range: No posted date found")
-            posted_date = "na"
-            
+            posted_date = "na"       
         return posted_date
-    def getJobDescriptionFromHtml(self, source_html)->str:
+    
+    def getJobDescriptionFromHtml(self, url)->str:
         # Find the HTML element with the id 'job-details' and tag 'h2
-        try:
-            job_details = source_html.xpath('//span[@class="jobs-description__containerjobs-description__container--condensed"]/text()')[0].strip()
-        except IndexError:
-            print("Index out of range: No job descriptor found")
-            job_details = "na"
-        return job_details  
+        scraper = WebScraper(headless=True)
+        return scraper.execute_script(url,  "return document.querySelector('#job-details span');")
+        #try:
+        #    job_details = source_html.xpath('//span[@class="jobs-description__containerjobs-description__container--condensed"]/text()')[0].strip()
+        #except IndexError:
+        #    print("Index out of range: No job descriptor found")
+        #    job_details = "na"
+        #return job_details  
     
 
 if __name__ == '__main__':

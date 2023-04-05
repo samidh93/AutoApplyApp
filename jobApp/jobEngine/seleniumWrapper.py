@@ -155,7 +155,7 @@ if __name__ == '__main__':
     from formFinder import FormLocator
     from emailPageFinder import EmailExtractor
     from jobBuilderLinkedin import JobBuilder, JobParser
-    jobParserObj = JobParser(job_title="software engineer", location="France")
+    jobParserObj = JobParser(job_title="software engineer", location="Germany")
     jobs = jobParserObj.generateLinksPerPage(1)
     jobber = JobBuilder(jobs)
     joboffers = jobber.createJobObjectList()

@@ -14,6 +14,9 @@ class ResumeBuilder:
         new_resume = chatai.ask(query)
         return new_resume
 
+    def createCustomResumePdf(self):
+        """ create an ai customized resume and save it as pdf. use the resume parser import"""
+        pass
 
 if __name__ == '__main__':
     CvCustom = ResumeBuilder(

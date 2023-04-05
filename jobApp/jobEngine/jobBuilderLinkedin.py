@@ -5,7 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 import json
 from lxml import html
 from job import Job
-from jobParserLinkedin import JobParser
+from jobParserLinkedin import JobParser,  BeautifulSoup
 load_dotenv(find_dotenv())
 
 
@@ -22,13 +22,14 @@ class JobBuilder:
                 # Create an HTML tree from the response text
                 tree = html.fromstring(response.text)
                 job_id = i + 1  # add an ID to the job
-                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree) )
+                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree) )
                 print(f"Job id: {j.job_id}")
                 print(f"Job URL: {j.job_url}")
                 print(f"Company Name: {j.company_name}")
                 print(f"Job Title: {j.job_title}")
                 print(f"Job Location: {j.job_location}")
                 print(f"Posted Date: {j.posted_date}")
+                print(f"Job Description: {j.job_description}")
                 print("\n")
                 self.jobObjLists.append(j)
 
@@ -70,13 +71,20 @@ class JobBuilder:
             posted_date = "na"
             
         return posted_date
-
+    def getJobDescriptionFromHtml(self, source_html)->str:
+        # Find the HTML element with the id 'job-details' and tag 'h2
+        try:
+            job_details = source_html.xpath('//span[@class="jobs-description__containerjobs-description__container--condensed"]/text()')[0].strip()
+        except IndexError:
+            print("Index out of range: No job descriptor found")
+            job_details = "na"
+        return job_details  
     
 
 if __name__ == '__main__':
     # TODO: add json parser
     jobParserObj= JobParser(job_title="recruiting", location="France")
-    jobs = jobParserObj.generateLinksPerPage()
+    jobs = jobParserObj.generateLinksPerPage(1)
     print(len(jobs))
     jobber = JobBuilder(jobs)
     jobber.createJobObjectList()

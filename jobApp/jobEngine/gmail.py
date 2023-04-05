@@ -33,7 +33,8 @@ class Gmail:
         msg['from']= from_
         msg['to'] = to
         msg['subject'] = subject
-
+        if self._verify_email(msg['to']) is not True:
+            return False
         # Add some text to the email
         msg.attach(MIMEText(body))
 
@@ -57,6 +58,19 @@ class Gmail:
         except HttpError as error:
             print(f'An error occurred: {error}')
             message = None
+
+    def _verify_email(self, email)-> bool:
+        print(f"verify if email {email} exists")
+        result = self.service.users().messages().list(userId='me', q=email).execute()
+        # Check if any emails were found
+        messages = result.get('messages', [])
+        if not messages:
+            print("email not valid")
+            return False
+        # Return the ID of the first email found
+        print("email valid")
+        print(f"id: messages[0]['id']")
+        return True
 
     def _authenticate(self):
         

@@ -70,20 +70,67 @@ class WebScraper:
 
     def _easy_apply(self, by_what, tag):
         print("try locate easy apply button")
-        in_apply = self.driver.find_element(by_what,tag) #'//span[@class="artdeco-button__text" and text()="Easy Apply"]'
-        in_apply.click()
-        self.driver.implicitly_wait(30)
+        easyApply = self.driver.find_element(by_what,tag) #'//span[@class="artdeco-button__text" and text()="Easy Apply"]'
+        easyApply.click()
         print("easy apply found, filling form")
-        self.driver.switch_to.window(self.driver.window_handles[1])
-        # get the URL of the newly opened page
-        new_url = self.driver.current_url
-        # do something with the URL
-        print(f"easy apply: {new_url}")
-        # close the new tab and switch back to the original tab
-        self.driver.close()
-        self.driver.switch_to.window(self.driver.window_handles[0])
-        # self.driver.quit()
-        return new_url
+        self.fill_easyApply("xxx", "yyy", "017666", "5", "jobApp/data/zayneb_dhieb_resume_english.pdf")
+  
+
+    def fill_easyApply(self,first, last, phone_number, years_experience, resume_path):
+        # template:
+        # 1: phone input
+        ## 2: next click
+        ### 3: cv upload
+        #### 4: next click
+        ##### 5: experience
+        ###### 6: review click
+        ####### 7: submit
+        # 1: phone input
+        try:
+            phone_field = self.driver.find_element(By.CLASS_NAME,"artdeco-text-input--input")
+            phone_field.send_keys(phone_number)
+        except:
+            print(" no phone field")
+        ## 2: next click
+        try:
+            next = self.driver.find_element(By.CLASS_NAME,"//span[contains(text(),'Next')]")
+            next.send_keys(Keys.RETURN)
+        except:
+            print(" no next field")
+        ### 3: cv upload
+        try:
+            # Find the span tag with the text "Upload resume"
+            upload_button = self.driver.find_element(By.XPATH, "//span[contains(text(),'Upload resume')]")
+            # Click the upload button
+            upload_button.click()
+        except:
+            print("no resume upload")
+        #### 4: next click
+        try:
+            next = self.driver.find_element(By.CLASS_NAME,"//span[contains(text(),'Next')]")
+            next.send_keys(Keys.RETURN)
+        except:
+            print(" no next field")
+        ##### 5: experience
+        try:
+            phone_field = self.driver.find_element(By.CLASS_NAME,"artdeco-text-input--input")
+            phone_field.send_keys(years_experience)
+        except:
+            print(" no experience field")
+        ###### 6: review click
+        try:
+            Review = self.driver.find_element(By.CLASS_NAME,"//span[contains(text(),'Review')]")
+            Review.send_keys(Keys.RETURN)
+        except:
+            print(" no Review field")
+        ####### 7: submit
+        try:
+            Submit = self.driver.find_element(By.CLASS_NAME,"//span[contains(text(),'Submit application')]")
+            Submit.send_keys(Keys.RETURN)
+        except:
+            print(" no Submit field")
+
+
     def _save_cookies(self, cookies_file='jobApp/secrets/cookies.json'):
         # Save the cookies to a file
         cookies = self.driver.get_cookies()
@@ -108,7 +155,7 @@ if __name__ == '__main__':
     from formFinder import FormLocator
     from emailPageFinder import EmailExtractor
     from jobBuilderLinkedin import JobBuilder, JobParser
-    jobParserObj = JobParser(job_title="recruiting", location="France")
+    jobParserObj = JobParser(job_title="software engineer", location="France")
     jobs = jobParserObj.generateLinksPerPage(1)
     jobber = JobBuilder(jobs)
     joboffers = jobber.createJobObjectList()

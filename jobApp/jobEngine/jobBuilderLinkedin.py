@@ -30,14 +30,14 @@ class JobBuilder:
                 tree = html.fromstring(response.text)
                 job_id = i + 1  # add an ID to the job
                 j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(
-                    tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree, self.links[i]))
+                    tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree))
                 print(f"Job id: {j.job_id}")
                 print(f"Job URL: {j.job_url}")
                 print(f"Company Name: {j.company_name}")
                 print(f"Job Title: {j.job_title}")
                 print(f"Job Location: {j.job_location}")
                 print(f"Posted Date: {j.posted_date}")
-                print(f"Job Description: {j.job_description}")
+                print(f"Job Description: {j.job_description[0:100]}")
                 print("\n")
                 self.jobObjLists.append(j)
 
@@ -85,7 +85,7 @@ class JobBuilder:
 
         return posted_date
 
-    def getJobDescriptionFromHtml(self, source_html, url) -> str:
+    def getJobDescriptionFromHtml(self, source_html) -> str:
 
         # Find the element using its class attribute
         try:
@@ -102,6 +102,5 @@ if __name__ == '__main__':
     # TODO: add json parser
     jobParserObj = JobParser(job_title="recruiting", location="France")
     jobs = jobParserObj.generateLinksPerPage(1)
-    print(len(jobs))
     jobber = JobBuilder(jobs)
     jobber.createJobObjectList()

@@ -5,6 +5,7 @@ from dotenv import load_dotenv, find_dotenv
 import json
 from lxml import html
 from job import Job
+from bs4 import BeautifulSoup
 from jobParserLinkedin import JobParser
 from seleniumWrapper import WebScraper
 
@@ -28,7 +29,8 @@ class JobBuilder:
                 # Create an HTML tree from the response text
                 tree = html.fromstring(response.text)
                 job_id = i + 1  # add an ID to the job
-                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(self.links[i])) 
+                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(
+                    tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree, self.links[i]))
                 print(f"Job id: {j.job_id}")
                 print(f"Job URL: {j.job_url}")
                 print(f"Company Name: {j.company_name}")
@@ -40,69 +42,65 @@ class JobBuilder:
                 self.jobObjLists.append(j)
 
         return self.jobObjLists
-    
-    def getJobTitlefromHtml(self,source_html)->str:
+
+    def getJobTitlefromHtml(self, source_html) -> str:
         # Find the element using its class attribute
         try:
-            job_title = source_html.xpath('//h1[@class="top-card-layout__title font-sans text-lg papabear:text-xl font-bold leading-open text-color-text mb-0 topcard__title"]')[0].text.strip()
+            job_title = source_html.xpath(
+                '//h1[@class="top-card-layout__title font-sans text-lg papabear:text-xl font-bold leading-open text-color-text mb-0 topcard__title"]')[0].text.strip()
         except IndexError:
             print("Index out of range: No job title found")
             job_title = "na"
-            
+
         return job_title
-    def getCompanyNamefromHtml(self,source_html)->str:
+
+    def getCompanyNamefromHtml(self, source_html) -> str:
         try:
-            company_name = source_html.xpath('//a[@class="topcard__org-name-link topcard__flavor--black-link"]')[0].text.strip()
+            company_name = source_html.xpath(
+                '//a[@class="topcard__org-name-link topcard__flavor--black-link"]')[0].text.strip()
         except IndexError:
             print("Index out of range: No company name found")
             company_name = "na"
-            
+
         return company_name
 
-    def getLocationfromHtml(self,source_html)->str:
+    def getLocationfromHtml(self, source_html) -> str:
         try:
-            location = source_html.xpath('//span[@class="topcard__flavor topcard__flavor--bullet"]/text()')[0].strip()
+            location = source_html.xpath(
+                '//span[@class="topcard__flavor topcard__flavor--bullet"]/text()')[0].strip()
         except IndexError:
             print("Index out of range: No location found")
             location = "na"
-            
+
         return location
 
-    def getPostedDatefromHtml(self,source_html)->str:
+    def getPostedDatefromHtml(self, source_html) -> str:
         # Find the element using its class attribute
         try:
-            posted_date = source_html.xpath('//span[@class="jobs-unified-top-card__posted-date"]/text()')[0].strip()
+            posted_date = source_html.xpath(
+                '//*[@id="main-content"]/section[1]/div/section[2]/div/div[1]/div/h4/div[2]/span[1]/text()')[0].strip()
         except IndexError:
             print("Index out of range: No posted date found")
-            posted_date = "na"       
-        return posted_date
-    
-    def getJobDescriptionFromHtml(self, url)->str:
+            posted_date = "na"
 
-        # Find the HTML element with the id 'job-details' and tag 'h2
-        #scraper = WebScraper(headless=True)
-        ##print(f"run js on : {url}")
-        ##return scraper.execute_script(url, "document.querySelector('#job-details span').innerText;")
-        #driver = scraper.driver
-        #driver.get(url)
-#
-        #try:
-        #    job_details_span = driver.find_element_by_xpath('//*[@id="job-details"]/span')
-        #    job_details = job_details_span.get_attribute('innerText')
-        #    print(job_details)
-        #except:
-        #    print("Job details not found")
-        ##try:
-        #    job_details = source_html.xpath('//span[@class="jobs-description__containerjobs-description__container--condensed"]/text()')[0].strip()
-        #except IndexError:
-        #    print("Index out of range: No job descriptor found")
-        #    job_details = "na"
-        #return job_details  
-    
+        return posted_date
+
+    def getJobDescriptionFromHtml(self, source_html, url) -> str:
+
+        # Find the element using its class attribute
+        try:
+            desc = source_html.xpath('//*[@id="main-content"]/section[1]/div/div/section[1]/div/div/section/div')[0]
+            text = desc.text_content()
+        except IndexError:
+            print("Index out of range: No posted date found")
+            text = "na"
+
+        return text
+
 
 if __name__ == '__main__':
     # TODO: add json parser
-    jobParserObj= JobParser(job_title="recruiting", location="France")
+    jobParserObj = JobParser(job_title="recruiting", location="France")
     jobs = jobParserObj.generateLinksPerPage(1)
     print(len(jobs))
     jobber = JobBuilder(jobs)

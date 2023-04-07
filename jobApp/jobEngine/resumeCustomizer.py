@@ -12,8 +12,8 @@ class ResumeBuilder:
     def generateCustomResumeAi(self, job:Job) ->str:
         self.job_description = job.job_description
         self.chatgpt = ChatGPT("jobApp/secrets/openai.json")
-        query = f"rewrite my resume by adding the required skills from the following job desciption to become suitable candidate for the job. \
-        Here is my resume: {self.old_resume_content}. Here is the job description: {self.job_description}."
+        query = f"rewrite my resume by adding the required skills from the following job desciption. do not change the resume format and template.\n \
+        Here is my resume: {self.old_resume_content}.\n Here is the job description: {self.job_description}."
         new_resume = self.chatgpt.ask(query)
         print(new_resume)
         return new_resume

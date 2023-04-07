@@ -7,6 +7,11 @@ from lxml import html
 from job import Job
 from jobParserLinkedin import JobParser
 from seleniumWrapper import WebScraper
+
+import asyncio
+from pyppeteer import launch
+
+
 load_dotenv(find_dotenv())
 
 
@@ -23,7 +28,7 @@ class JobBuilder:
                 # Create an HTML tree from the response text
                 tree = html.fromstring(response.text)
                 job_id = i + 1  # add an ID to the job
-                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(self.links[i]) )
+                j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(self.links[i])) 
                 print(f"Job id: {j.job_id}")
                 print(f"Job URL: {j.job_url}")
                 print(f"Company Name: {j.company_name}")
@@ -66,17 +71,28 @@ class JobBuilder:
     def getPostedDatefromHtml(self,source_html)->str:
         # Find the element using its class attribute
         try:
-            posted_date = source_html.xpath('//span[@class="posted-time-ago__text topcard__flavor--metadata"]/text()')[0].strip()
+            posted_date = source_html.xpath('//span[@class="jobs-unified-top-card__posted-date"]/text()')[0].strip()
         except IndexError:
             print("Index out of range: No posted date found")
             posted_date = "na"       
         return posted_date
     
     def getJobDescriptionFromHtml(self, url)->str:
+
         # Find the HTML element with the id 'job-details' and tag 'h2
-        scraper = WebScraper(headless=True)
-        return scraper.execute_script(url,  "return document.querySelector('#job-details span');")
+        #scraper = WebScraper(headless=True)
+        ##print(f"run js on : {url}")
+        ##return scraper.execute_script(url, "document.querySelector('#job-details span').innerText;")
+        #driver = scraper.driver
+        #driver.get(url)
+#
         #try:
+        #    job_details_span = driver.find_element_by_xpath('//*[@id="job-details"]/span')
+        #    job_details = job_details_span.get_attribute('innerText')
+        #    print(job_details)
+        #except:
+        #    print("Job details not found")
+        ##try:
         #    job_details = source_html.xpath('//span[@class="jobs-description__containerjobs-description__container--condensed"]/text()')[0].strip()
         #except IndexError:
         #    print("Index out of range: No job descriptor found")

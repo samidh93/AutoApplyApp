@@ -6,3 +6,7 @@ token.pickle
 token.json
 secrets/
 data/
+
+jobApp/secrets/
+jobApp/data/
+jobApp/jsApp/node_modules/

@@ -1,14 +1,17 @@
 import requests
 from bs4 import BeautifulSoup
 from seleniumWrapper import WebScraper
+import json
 class JobParser:
-    def __init__(self, base_url='https://www.linkedin.com/jobs/search/', job_title=str, location=str, page_num=1):
-        self.base_url = base_url 
-        self.page_num = page_num
-        self.job_title= job_title
-        self.location = location
-        self.page_num = page_num
-        self.job_pos = 1
+    def __init__(self, linkedin_data):
+        """Parameter initialization"""
+        with open(linkedin_data) as config_file:
+            data = json.load(config_file)
+        self.base_url = data["urls"]['search_job_url']
+        self.page_num = data["params"]['pageNum']
+        self.job_title= data["login"]['keywords']
+        self.location = data["login"]['location']
+        self.job_pos = data["params"]['start']
         self.filter_easy_apply = False
         self.params = {
             'keywords': self.job_title,
@@ -18,7 +21,7 @@ class JobParser:
         }
         self.jobList = []
 
-    def setEasyApplyFilter(self, easy_apply_filter):
+    def setEasyApplyFilter(self, easy_apply_filter=False):
         print("Warning: This statement has not effect if no user is logged in !\n \
                easy apply filter is only visible for logged user:\n \
               use linkedin api or selenium to scrape links as authenticated user  ")
@@ -53,7 +56,7 @@ class JobParser:
         for li in li_elements:
             if li.find("a") and "href" in li.a.attrs:
                 href = li.a["href"]
-                #print("link to job: "+str(href)+ "\n")
+                print("link to job: "+str(href)+ "\n")
                 links.append(href)
         print(len(links))
         self.jobList+= links
@@ -65,15 +68,18 @@ class JobParser:
         return self.jobList
     
     def _use_selenium_to_get_easy_apply_jobs(self):
-        scraper = WebScraper(headless=True)
-        scraper.login_user()
-        return scraper.getEasyApplyJobLinks(self.base_url, self.params)
+        scraper = WebScraper('jobApp/secrets/linkedin.json', headless=False)
+        scraper.bot.login_linkedin()
+        scraper.bot.getEasyApplyJobSearchUrlResults(jobParserObj.base_url, jobParserObj.params)
+        linksToApply = scraper.bot.getJobOffersListEasyApply()
+
+        return linksToApply
 
 if __name__ == '__main__':
    # TODO: add json parser
-   jobParserObj= JobParser(job_title="recruiting", location="France")
-   jobParserObj.setEasyApplyFilter(True)
+   jobParserObj= JobParser('jobApp/secrets/linkedin.json')
+   #jobParserObj.setEasyApplyFilter(True)
    jobs = jobParserObj.generateLinksPerPage(1)
-   print(jobs)
-   print(len(jobs))
+   #print(jobs)
+   #print(len(jobs))
 

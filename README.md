@@ -31,9 +31,9 @@ An email Service such GMAIL need some configuration to work with the application
 ## Job search and sorting 
 the script takes two arguments: job title and location and return a list of links, then create list of job objects containing attrib (job id, job url, job title, company, location and posted date)
 
-![jobs searched on linkedin and sorted into job objects to use for next stage](data/scraper.PNG)
+![jobs searched on linkedin and sorted into job objects to use for next stage](jobApp/data/scraper.PNG)
 
 the results are displayed  below:
-![jobs searched on linkedin and sorted into job objects to use for next stage](data/jobs.PNG)
+![jobs searched on linkedin and sorted into job objects to use for next stage](jobApp/data/jobs.PNG)
 
 ## 

@@ -17,12 +17,12 @@ from selenium.webdriver.chrome.service import Service
 
 class EasyApplyLinkedin:
 
-    def __init__(self, linkedin_data, headless=False, detached=False, server_port=None):
+    def __init__(self, linkedin_data, headless=False, detached=False):
         """Parameter initialization"""
         with open(linkedin_data) as config_file:
             data = json.load(config_file)
-        self.email = data["login"]['email'][0]
-        self.password = data["login"]['password'][0]
+        self.email = data["login"]['email'][1]
+        self.password = data["login"]['password'][1]
         self.keywords = data["login"]['keywords']
         self.location = data["login"]['location']
         self.chromedriver = data["login"]['driver_path']
@@ -31,9 +31,7 @@ class EasyApplyLinkedin:
             self.option.add_argument("--headless=new")
         if detached:
             self.option.add_argument("--detached")
-        if server_port:
-            print(f"server port : {server_port}")
-            self.option.add_experimental_option('debuggerAddress', f'localhost:{server_port}')
+
         self.option.binary_location = data["login"]["browser_bin_location"]
         s = Service(self.chromedriver)
         self.driver = webdriver.Chrome(service=s, options=self.option)

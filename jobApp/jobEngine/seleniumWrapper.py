@@ -1,5 +1,5 @@
 
-from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
+from linkedinEasyApplyLegacyCode import EasyApplyLinkedin, webdriver
 import json
 from urllib.parse import urlparse
 
@@ -19,9 +19,11 @@ class WebScraper:
 
     def createLoginSession(self, writeSessionToFile=True, sessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:
         """ create a session only for login and start detached"""
-        self.loginSession = EasyApplyLinkedin(self.linked_data, self.headless, self.detached)
+        self.loginSession = EasyApplyLinkedin(self.linked_data, self.headless)
+        self.loginSession.login_linkedin()
         self.loginSessionId = self.loginSession.driver.session_id
         self.loginCmdExecutorUrl = self.loginSession.driver.command_executor._url
+        self.loginSession.driver.command_executor.keep_alive  = True
         self.server_port = self.getPortFromUrl(self.loginCmdExecutorUrl)
         new_data = {
             "session": {
@@ -37,30 +39,49 @@ class WebScraper:
 
     def createJobSearchSession(self, attachToLoginSessionFromFile=True, SessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:
         """ create a session only for job search and attach to the login session"""
-        
         if attachToLoginSessionFromFile:
+            print("using json file variables")
             with open(SessionFile, "r") as f:
                 data = json.load(f)
-        self.server_port = self.getPortFromUrl( data["session"]["cmdExecutor"])
-        self.searchSession = EasyApplyLinkedin(self.linked_data, self.headless, server_port=self.server_port)
-        self.searchSession.close_session()
-        self.searchSession.driver.session_id  = data["session"]["id"]
-        self.searchSession.driver.session_id  = data["session"]["cmdExecutor"]
+            self.server_port = self.getPortFromUrl( data["session"]["cmdExecutor"])
+            temp = data["session"]["id"]
+            print(f"json session id {temp}")
+            print(f"json server port : {self.server_port}")
+            # Create a new Chrome driver and attach it to the existing session
+            self.searchSession = EasyApplyLinkedin(self.linked_data, self.headless)
+            #self.searchSession.option.add_argument(f"--remote-debugging-port={self.server_port}")
+            ##self.searchSession.option.add_experimental_option(f"debuggerAddress", "127.0.0.1:{self.server_port}")
+            #self.searchSession.driver = webdriver.Remote(data["session"]["cmdExecutor"], options=self.searchSession.option)
+            self.searchSession.close_session()
+            self.searchSession.driver.session_id  = data["session"]["id"]
+            self.searchSession.driver.command_executor._url  = data["session"]["cmdExecutor"]
+        else:
+            print("using class members variables not json file..")
+            self.searchSession = EasyApplyLinkedin(self.linked_data, self.headless)
+            self.searchSession.close_session()
+            self.searchSession.driver.session_id =  self.loginSession.driver.session_id 
+            self.searchSession.driver.command_executor._url = self.loginSession.driver.command_executor._url 
         return self.searchSession
     
     def getPortFromUrl(self, url)-> int : 
-        return urlparse(self.loginCmdExecutorUrl).port
+        print(f"parsing url {url} for port ")
+        return urlparse(url).port
 
 if __name__ == '__main__':
     from formFinder import FormLocator
     from emailPageFinder import EmailExtractor
     from jobBuilderLinkedin import JobBuilder, JobParser
     jobParserObj = JobParser('jobApp/secrets/linkedin.json')
+    jobParserObj.setEasyApplyFilter(True)
+    bot = WebScraper('jobApp/secrets/linkedin.json', headless=False)
+    loginBot = bot.createLoginSession()
+
     scraper = WebScraper('jobApp/secrets/linkedin.json', headless=False)
-    scraper.bot.login_linkedin()
-    scraper.bot.getEasyApplyJobSearchUrlResults(
+    searchBot = scraper.createJobSearchSession(attachToLoginSessionFromFile=True)
+    searchBot.getEasyApplyJobSearchUrlResults(
         jobParserObj.base_url, jobParserObj.params)
-    linksToApply = scraper.bot.getJobOffersListEasyApply()
+    linksToApply  = searchBot.getJobOffersListEasyApply()
+
     # generate all types of job application ( direct and easy apply )
     # jobs = jobParserObj.generateLinksPerPage(1)
     jobber = JobBuilder(links=linksToApply)

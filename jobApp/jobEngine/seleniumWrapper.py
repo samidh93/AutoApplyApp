@@ -34,7 +34,9 @@ class WebScraper:
         if writeSessionToFile:
             with open(sessionFile, "w") as f:
                  json.dump(new_data, f)
-
+        
+        # Keep the old session alive
+        input("------------------------------   Press Enter to quit  ------------------------------")
         return self.loginSession
 
     def createJobSearchSession(self, attachToLoginSessionFromFile=True, SessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:
@@ -49,12 +51,13 @@ class WebScraper:
             print(f"json server port : {self.server_port}")
             # Create a new Chrome driver and attach it to the existing session
             self.searchSession = EasyApplyLinkedin(self.linked_data, self.headless)
-            #self.searchSession.option.add_argument(f"--remote-debugging-port={self.server_port}")
-            ##self.searchSession.option.add_experimental_option(f"debuggerAddress", "127.0.0.1:{self.server_port}")
-            #self.searchSession.driver = webdriver.Remote(data["session"]["cmdExecutor"], options=self.searchSession.option)
             self.searchSession.close_session()
             self.searchSession.driver.session_id  = data["session"]["id"]
             self.searchSession.driver.command_executor._url  = data["session"]["cmdExecutor"]
+            # Open a new window and switch to it
+            self.searchSession.driver.execute_script("window.open('','_blank');")
+            
+            self.searchSession.driver.switch_to.window(self.searchSession.driver.window_handles[1])
         else:
             print("using class members variables not json file..")
             self.searchSession = EasyApplyLinkedin(self.linked_data, self.headless)

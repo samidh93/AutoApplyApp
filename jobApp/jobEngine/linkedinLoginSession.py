@@ -7,5 +7,5 @@ from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
 
 
 if __name__ == "__main__":
-    loginbot = WebScraper('jobApp/secrets/linkedin.json', headless=False, detached=True)
+    loginbot = WebScraper('jobApp/secrets/linkedin.json', headless=False)
     bot = loginbot.createLoginSession()

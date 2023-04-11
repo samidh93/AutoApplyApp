@@ -29,7 +29,7 @@ class emailCompanyGenerator:
         emails = json.loads(reply)
         return emails
 
-    def generate_emails(self):
+    def generate_emails(self)->list:
         com = "com"
         if self.location in self.french_cities[0]:
             fr = "fr"

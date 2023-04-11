@@ -33,6 +33,7 @@ class Gmail:
         msg['from']= from_
         msg['to'] = to
         msg['subject'] = subject
+        # integrate email verification into sending
         if self._verify_email(msg['to']) is not True:
             return False
         # Add some text to the email

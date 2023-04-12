@@ -34,7 +34,6 @@ class JobBuilder:
     def createJobObjectList(self) -> list[Job]:
         max_retry = 5
         for i, link in enumerate(self.links[0]):
-            print(len(self.links[0]))
             # we try 5 times if server retrun code 429 (too many requests in period of time)
             for _ in range(max_retry):
                 response = requests.get(link)
@@ -56,14 +55,15 @@ class JobBuilder:
                     print(f"job official url: {j.job_official_url}")
                     print("\n")
                     self.jobObjLists.append(j)
-                    #break  # no need for retry
+                    break  # no need for retry
                 else:
                     print(
                         f"error response from link {response.status_code} , retry")
                     time.sleep(5)  # we slow down requests for 5 seconds
                     continue  # we continue with next retry
 
-            return self.jobObjLists
+        
+        return self.jobObjLists
 
     def getJobTitlefromHtml(self, source_html) -> str:
         # Find the element using its class attribute

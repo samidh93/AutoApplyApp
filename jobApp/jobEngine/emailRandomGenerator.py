@@ -30,6 +30,7 @@ class emailCompanyGenerator:
         return emails
 
     def generate_emails(self)->list:
+        email_list = []
         com = "com"
         if self.location in self.french_cities[0]:
             fr = "fr"
@@ -72,7 +73,7 @@ class emailCompanyGenerator:
         else:
             email_domains = ["recruiting", "careers", "jobs", "hr", "talentacquisition",
                              "staffing", "workwithus", "joinourteam", "employment", "opportunities"]
-        email_list += [
+            email_list += [
                 f"{domain}@{self.company}.{com}" for domain in email_domains]
 
         return email_list

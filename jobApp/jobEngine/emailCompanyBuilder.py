@@ -14,15 +14,17 @@ class EmailCompanyBuilder:
         self.emails = []
 
     def buildEmailList(self) -> list:
+
         for job in self.jobs:
+            print("-------------------------------------------------------------------------")
             try:
                 print("try finding emails from the job url by portal link")
                 extracted = EmailExtractor(job.job_url).extract_emails()
-                if extracted is not []:
+                if len(extracted)>0:
                     job.setCompanyEmail(extracted)
                     self.emails.extend(extracted)
                     print(f"company {job.company_name} email {extracted} found")
-                    break
+                    continue
                 else:
                     raise ValueError("The emails list is empty")
             except ValueError as e:
@@ -33,11 +35,11 @@ class EmailCompanyBuilder:
             try:
                 print("try finding emails from the job url by official link")
                 extracted = EmailExtractor(job.job_official_url).extract_emails()
-                if extracted is not []:
+                if len(extracted)>0:
                     job.setCompanyEmail(extracted)
                     self.emails.extend(extracted)
                     print(f"company {job.company_name} email {extracted} found")
-                    break
+                    continue
                 else:
                     raise ValueError("The emails list is empty")
             except ValueError as e:
@@ -48,7 +50,7 @@ class EmailCompanyBuilder:
             try:
                 print("try generating emails with AI")
                 generated = emailCompanyGenerator(job.company_name, job.job_location).generate_emails()
-                if generated is not []:
+                if len(generated)>0:
                     job.setCompanyEmail(generated)
                     self.emails.extend(generated)
                     print(f"company {job.company_name} in {job.job_location} emails {generated} generated")
@@ -57,6 +59,7 @@ class EmailCompanyBuilder:
             except ValueError as e:
                 print(e)  
                 print("generation with ai failed, aborting job..")
+            print("-------------------------------------------------------------------------")
 
 if __name__ == '__main__':
     # TODO: add json parser
@@ -68,5 +71,6 @@ if __name__ == '__main__':
     jobber.storeAsCsv('jobApp/data/jobsOffSite.csv')
     emailBuilder = EmailCompanyBuilder(jobObjList)    
     emailBuilder.buildEmailList()
+    
 
 

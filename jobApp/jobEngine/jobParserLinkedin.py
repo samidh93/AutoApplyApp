@@ -103,10 +103,11 @@ class JobParser:
         # find the element with the 'id' attribute value of 'applyUrl'
         apply_url_element = soupObjRef.find(id='applyUrl')
         # find the comment node inside the 'applyUrl' element
-        comment_node = apply_url_element.find(string=lambda string: isinstance(string, Comment))
+        comment_node = (apply_url_element.find(string=lambda string: isinstance(string, Comment)))
+        official_link = comment_node.replace('"', '')
         # print the text content of the comment node
-        print(f"official job link: {comment_node}\n")
-        self.officialJobLinks.append(comment_node)
+        print(f"official job link: {official_link}\n")
+        self.officialJobLinks.append(official_link)
         
     def generateLinksPerPage(self, max_pages = 5)-> list: #125 jobs
         for _ in range(max_pages):
@@ -133,4 +134,3 @@ if __name__ == '__main__':
    jobParserObj= JobParser('jobApp/secrets/linkedin.json')
    jobParserObj.setEasyApplyFilter(False)
    jobsLinks = jobParserObj.generateLinksPerPage(1)
-    

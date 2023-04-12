@@ -1,7 +1,8 @@
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Comment
 from seleniumWrapper import WebScraper
 import json
+
 class JobParser:
     def __init__(self, linkedin_data):
         """Parameter initialization"""
@@ -23,6 +24,7 @@ class JobParser:
         self.jobList = []
         self.easyApplyList = []
         self.offsiteApplyList = []
+        self.officialJobLinks = []
 
     def setEasyApplyFilter(self, easy_apply_filter=False):
         print("Warning: easy apply filter is only visible for logged user ")
@@ -65,11 +67,11 @@ class JobParser:
         print(f"total links found {len(links)}")
         self.jobList+= links
         if self.filter_easy_apply:
-            print(f"total links easy apply found {len(self.easyApplyList)}")   
-            return  self.easyApplyList
+            print(f"total links easy apply found {len(self.easyApplyList)}")  
+            return  [self.easyApplyList, "na"]
         else:
             print(f"total links offsite apply found {len(self.offsiteApplyList)}") 
-            return self.offsiteApplyList
+            return [self.offsiteApplyList, self.officialJobLinks ]
     
     def filterJobList(self, job_href, onsite=False, offsite=False )-> list:
         
@@ -80,8 +82,9 @@ class JobParser:
             if offsite:
                 button = soup.find('button', {'data-tracking-control-name': 'public_jobs_apply-link-offsite_sign-up-modal'})
                 if button is not None:
-                    print("offsite apply \n")
+                    print("offsite apply ")
                     self.offsiteApplyList.append(job_href)
+                    self.getOfficialJobLink(soupObjRef=soup)
                     return self.offsiteApplyList
                 else:
                     print("button offsite not found \n")  
@@ -94,14 +97,24 @@ class JobParser:
                     return self.easyApplyList
                 else:
                     print("button onsite not found \n")  
-    
+
+    def getOfficialJobLink(self, soupObjRef:BeautifulSoup):
+        #soup = BeautifulSoup(html_doc, "html.parser")
+        # find the element with the 'id' attribute value of 'applyUrl'
+        apply_url_element = soupObjRef.find(id='applyUrl')
+        # find the comment node inside the 'applyUrl' element
+        comment_node = apply_url_element.find(string=lambda string: isinstance(string, Comment))
+        # print the text content of the comment node
+        print(f"official job link: {comment_node}\n")
+        self.officialJobLinks.append(comment_node)
+        
     def generateLinksPerPage(self, max_pages = 5)-> list: #125 jobs
         for _ in range(max_pages):
             self.generateLinks()
         if self.filter_easy_apply:
-            return self.easyApplyList
+            return [self.easyApplyList, "na"]
         else:
-            return self.offsiteApplyList       
+            return [self.offsiteApplyList, self.officialJobLinks ]  
     
     def _use_selenium_to_get_easy_apply_jobs(self):
         scraper = WebScraper('jobApp/secrets/linkedin.json', headless=False)
@@ -120,3 +133,4 @@ if __name__ == '__main__':
    jobParserObj= JobParser('jobApp/secrets/linkedin.json')
    jobParserObj.setEasyApplyFilter(False)
    jobsLinks = jobParserObj.generateLinksPerPage(1)
+    

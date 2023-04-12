@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from jobParserLinkedin import JobParser
 from seleniumWrapper import WebScraper
 import time
+from abc import ABC, abstractmethod
 
 
 import csv
@@ -24,7 +25,7 @@ load_dotenv(find_dotenv())
 
 class JobBuilder:
 
-
+    # TODO Add new classes: EasyApplyJobBuilder, OffsiteJobBuilder
     def __init__(self, links: list, application_type: str):
         self.links = links
         self.jobObjLists = []
@@ -32,16 +33,17 @@ class JobBuilder:
 
     def createJobObjectList(self) -> list[Job]:
         max_retry = 5
-        for i, link in enumerate(self.links):
+        for i, link in enumerate(self.links[0]):
+            print(len(self.links[0]))
             # we try 5 times if server retrun code 429 (too many requests in period of time)
             for _ in range(max_retry):
-                response = requests.get(self.links[i])
+                response = requests.get(link)
                 if response.status_code == 200:
                     # Create an HTML tree from the response text
                     tree = html.fromstring(response.text)
                     job_id = i + 1  # add an ID to the job
                     j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(
-                        tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree), False)
+                        tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree), False, job_official_url=self.links[1][i])
                     print(f"Job id: {j.job_id}")
                     print(f"Job URL: {j.job_url}")
                     print(f"Company Name: {j.company_name}")
@@ -50,16 +52,18 @@ class JobBuilder:
                     print(f"Posted Date: {j.posted_date}")
                     print(f"Job Description: {j.job_description[0:100]}")
                     print(f"Applied: {j.applied}")
-                    print(f"Job Description: {j.application_type}")
+                    print(f"application type: {j.application_type}")
+                    print(f"job official url: {j.job_official_url}")
                     print("\n")
                     self.jobObjLists.append(j)
-                    break # no need for retry
+                    #break  # no need for retry
                 else:
-                    print(f"error response from link {response.status_code} , retry")
-                    time.sleep(5) # we slow down requests for 5 seconds
-                    continue # we continue with next retry 
+                    print(
+                        f"error response from link {response.status_code} , retry")
+                    time.sleep(5)  # we slow down requests for 5 seconds
+                    continue  # we continue with next retry
 
-        return self.jobObjLists
+            return self.jobObjLists
 
     def getJobTitlefromHtml(self, source_html) -> str:
         # Find the element using its class attribute
@@ -118,7 +122,7 @@ class JobBuilder:
     
     def storeAsCsv(self, file_name):
         # define the fieldnames for the CSV file
-        fieldnames = ["job_id", "job_url", "company_name", "job_title", "job_location", "posted_date", "job_description", "applied", "application_type"]
+        fieldnames = ["job_id", "job_url", "company_name", "job_title", "job_location", "posted_date", "job_description", "applied", "application_type","official_job_url"]
 
         # write the data to the CSV file
         with open(file_name, mode="w", newline="", encoding="utf-8") as csv_file:
@@ -134,7 +138,8 @@ class JobBuilder:
                     "posted_date": job.posted_date,
                     "job_description": job.job_description,
                     "applied": job.applied, 
-                    "application_type": job.application_type
+                    "application_type": job.application_type,
+                    "official_job_url": job.job_official_url
                 })
         print(f"{len(self.jobObjLists)} job(s) stored in {file_name}.")
         
@@ -145,6 +150,6 @@ if __name__ == '__main__':
     jobParserObj= JobParser('jobApp/secrets/linkedin.json')
     jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
     jobLinks = jobParserObj.generateLinksPerPage(1)
-    jobber = JobBuilder(jobLinks, "offSite") # can be upgraeded as a set( links, application_type)
+    jobber = JobBuilder(jobLinks, "offSite" ) # can be upgraeded as a set( links, application_type)
     jobber.createJobObjectList()
     jobber.storeAsCsv('jobApp/data/jobsOffSite.csv')

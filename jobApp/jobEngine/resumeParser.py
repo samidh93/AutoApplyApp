@@ -1,5 +1,7 @@
 from PyPDF2 import PdfReader, PdfWriter
 from reportlab.pdfgen import canvas
+from pdfminer.high_level import extract_text
+
 import docx
 #from docx2pdf import convert
 
@@ -16,6 +18,12 @@ class Resume:
             for i in range(page_count):
                 page = pdf_reader.pages[i]
                 text += page.extract_text()
+        return text
+    
+    def extract_text_pdfminer(self):
+        # Extract text from the PDF file
+        text = extract_text(self.file_path)
+        print(text)
         return text
     @staticmethod
     def saveContentToPdf( input_text, output_pdf):

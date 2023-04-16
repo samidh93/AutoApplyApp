@@ -40,7 +40,10 @@ class CandidateProfile:
         
     def extract_resume_plain_text(self):
         return self.resume_text
-    def extract_candidate_data_from_resume(self): #all in one call, maybe difficult to get
+    
+    ### @UPDATE: openai may not process the full resume due to 4095 tokens limit.
+    ### @TODO: search resume first for relevant sections, extract them and feed them to openai (shorter sentences)
+    def extract_personal_infos_from_resume(self): #all in one call, maybe difficult to get
         request = "given the following resume, extract candidate information data and return only these data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required. ignore unrelevant data\n \
         under education, extract data and return only these data as json like ['university': 'xxx', 'degree': 'xxx' and 'duration': 'xxx' or 'graduation_date': 'xxx'] no header education is required. ignore unrelevant data, max result are 3\n \
         under experience, extract data and return only these data as json like ['job_title': 'xxx', 'company_name': 'xxx' and 'duration': 'xxx'] no header experience is required. ignore unrelevant data\n \
@@ -56,7 +59,7 @@ class CandidateProfile:
         self.phone_number = infos_data['phone_number']
         self.linkedin = infos_data['linkedin']
 
-    def extract_candidate_personal_infos(self):
+    def extract_all_from_resume(self):
         request = "given the following resume, extract candidate information data and return only these data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required. ignore unrelevant data\n"
         full_qs = request + self.resume_text
         reply = self.cv_nlp.ask(full_qs)
@@ -79,7 +82,7 @@ class CandidateProfile:
         skills_obj = Skills(infos_data['skills']['Software'], infos_data['skills']['Languages'])
         print(skills_obj.softwares, skills_obj.languages)
         
-    def extract_experience(self)->list: # extract experience 
+    def extract_experience_from_resume(self)->list: # extract experience 
         request = "given the following resume, under experience, extract data and return only these data as json like ['job_title': 'xxx', 'company_name': 'xxx' and 'duration': 'xxx'] no header experience is required. ignore unrelevant data\n"
         full_qs = request + self.resume_text
         reply = self.cv_nlp.ask(full_qs)
@@ -91,7 +94,7 @@ class CandidateProfile:
             self.experience_list.append(experience_obj)
         return self.experience_list
     
-    def extract_education(self)->list:
+    def extract_education_from_resume(self)->list:
         request = "given the following resume, under education, extract data and return only these data as json like ['university': 'xxx', 'degree': 'xxx' and 'duration': 'xxx' or 'graduation_date': 'xxx'] no header education is required. ignore unrelevant data, max result are 3\n"
         full_qs = request + self.resume_text
         reply = self.cv_nlp.ask(full_qs)
@@ -103,7 +106,7 @@ class CandidateProfile:
             self.education_list.append(education_obj)
         return self.education_list     
     
-    def extract_skills(self)->list:
+    def extract_skills_from_resume(self)->list:
         request = "given the following resume, under skills, extract data and return only these data as json like ['Software': '[xxx]' and 'Languages': '[xxx]'] no header skills is required. ignore unrelevant data\n"
         full_qs = request + self.resume_text
         reply = self.cv_nlp.ask(full_qs)
@@ -117,16 +120,5 @@ class CandidateProfile:
 if __name__ == "__main__":
     candidate = CandidateProfile('jobApp/data/zayneb_dhieb_resume_english.pdf')
     # Create worker threads
-    t1 = threading.Thread(target=candidate.extract_candidate_data_from_resume, name="data thread")
-    #t2 = threading.Thread(target=candidate.extract_education, name="education thread")
-    #t3 = threading.Thread(target=candidate.extract_skills, name="skills thread")
-
-    # Start worker threads
-    t1.start()
-    #t2.start()
-    #t3.start()
-    # Wait for worker threads to finish
-    t1.join()
-    #t2.join()
-    #
-    # t3.join()
+    print(candidate.resume_text)
+    #print("")

@@ -14,8 +14,19 @@ class EmailApplication(Application):
         #TODO: put threadpool if email is a list
         gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
         gmail.send_email_with_attachments(f'{self.candidate_profile.email}',f'{job.company_email}',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationEmail(job), [self.candidate_profile.resume.file_path])
-        
+        job.applied = True
+
     def generateApplicationEmail(self, job:Job):
+        candidate_resume= self.candidate_profile.extract_resume_plain_text()
+        query = f"create a job application email for the job {job.job_title} at {job.company_name} in {job.job_location}. \
+        use the candidate resume below to extract his personal infos like firstname, lastname, adress, \
+        phone number and email, outline his experience, education and skills. "
+        #\n {candidate_resume}"
+        chatgpt = ChatGPT("jobApp/secrets/openai.json")
+        email_tosend = chatgpt.ask(query)
+        return email_tosend
+    
+    def generateApplicationToSendForAll(self, job:Job)-> str:
         candidate_resume= self.candidate_profile.extract_resume_plain_text()
         job_title, company, location =job.job_title, job.company_name, job.job_location
         query = f"create a job application email for the job {job_title} at {company} in {location}. \
@@ -24,9 +35,7 @@ class EmailApplication(Application):
         #\n {candidate_resume}"
         chatgpt = ChatGPT("jobApp/secrets/openai.json")
         email_tosend = chatgpt.ask(query)
-        job.applied = True
-        return email_tosend
-    
+        return email_tosend  
 
 if __name__ == '__main__':
     pass

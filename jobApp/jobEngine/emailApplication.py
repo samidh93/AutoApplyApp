@@ -11,6 +11,7 @@ class EmailApplication(Application):
         self.candidate_profile = candidate_profile
         self.jobs = jobs
         self.type = 'Email'
+        self.gmail_client = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
         self.candidate_experiences= self.candidate_profile.resume.extract_experience_section()
         self.candidate_educations= self.candidate_profile.resume.extract_education_section()
         self.candidate_infos= self.candidate_profile.resume.extract_info_section()
@@ -18,13 +19,22 @@ class EmailApplication(Application):
     def ApplyForJob(self, job: Job):
         print(f"sending email application for {job.job_title} at {job.company_name} in {job.job_location}")
         #TODO: put threadpool if email is a list
-        gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
         # as we have a list of possible emails
-        for email in job.company_email:
-            status = gmail.send_email_with_attachments(f'{self.candidate_profile.email}',f'{email}',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationTemplate(job), [self.candidate_profile.resume.file_path])
+        if len(job.company_email) > 1:
+            print("The email list has multiple elements:")
+            for email in job.company_email:
+                status = self.gmail_client.send_email_with_attachments(f'{self.candidate_profile.email}',f'{email}',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationTemplate(job), [self.candidate_profile.resume.file_path])
+                if status:
+                    job.setJobApplied(True) # applied for job
+        elif len(job.company_email) == 1:
+            print("The email list has only one element:")
+            email = job.company_email[0]
+            status = self.gmail_client.send_email_with_attachments(f'{self.candidate_profile.email}',f'{email}',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationTemplate(job), [self.candidate_profile.resume.file_path])
             if status:
                 job.setJobApplied(True) # applied for job
-    
+        else:
+            print("The email list is empty")
+
     def ApplyForAll(self):
         return super().ApplyForAll()
 
@@ -65,8 +75,8 @@ class EmailApplication(Application):
         return template.format(**email_data)
 
 if __name__ == '__main__':
-    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="dhiebzayneb89@gmail.com", phone_number="+21620094923")
-    jobs = [Job(1, None, "recruiting specialist", "terrNova","Berlin", "one day ago", "as recruiting specialist you will help us achieve our goals", company_email="sami.dhiab.x@gmail.com")]
+    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="samihomiebro@gmail.com", phone_number="+21620094923")
+    jobs = [Job(1, None, "Human Resources Business Partner m/w/d", "precise hotels and resorts","Berlin", "one day ago", "as recruiting specialist you will help us achieve our goals", company_email=["jobs@begu.com"])]
     emailApply = EmailApplication(candidate, jobs)
     #emailDarft = emailApply.generateApplicationTemplate(jobs[0],'jobApp/data/email_draft_template.json')
-    emailApply.ApplyForJob(jobs[0])
+    emailApply.ApplyForAll()

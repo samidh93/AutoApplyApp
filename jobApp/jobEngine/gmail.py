@@ -33,9 +33,9 @@ class Gmail:
         msg['from']= from_
         msg['to'] = to
         msg['subject'] = subject
-        # integrate email verification into sending
-        if self._verify_email(msg['to']) is not True:
-            return False
+        # integrate email verification into sending (only for @gmail clients)
+        #if self._verify_email(msg['to']) is not True:
+        #    return False
         # Add some text to the email
         msg.attach(MIMEText(body))
 
@@ -62,7 +62,7 @@ class Gmail:
             message = None
 
     def _verify_email(self, email)-> bool:
-        print(f"verify if email {email} exists")
+        print(f"verify if email {email} exists in gmail")
         result = self.service.users().messages().list(userId='me', q=email).execute()
         # Check if any emails were found
         messages = result.get('messages', [])

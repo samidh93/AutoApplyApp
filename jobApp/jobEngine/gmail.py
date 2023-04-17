@@ -56,6 +56,7 @@ class Gmail:
         try:
             message = self.service.users().messages().send(userId='me', body={'raw': raw_message}).execute()
             print(f'Sent message: {message["id"]}')
+            return True
         except HttpError as error:
             print(f'An error occurred: {error}')
             message = None

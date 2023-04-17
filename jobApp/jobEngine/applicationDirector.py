@@ -7,7 +7,7 @@ class ApplicationDirector:
     def __init__(self):
         self.builder = None
 
-    def construct_application(self, candidate_profile, jobs, application_type):
+    def construct_application(self, candidate_profile, jobs, application_type= 'Email' or 'Easy Apply' or 'Direct'):
         if application_type == 'Email':
             self.builder = EmailApplicationBuilder()
         elif application_type == 'Easy Apply':
@@ -25,10 +25,22 @@ class ApplicationDirector:
 
 
 if __name__ == '__main__':
-    from candidateProfile import CandidateProfile
     from job import Job
-    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="dhiebzayneb89@gmail.com")
-    jobs = [Job(1, None, "title", "homejob", "home", None, "", company_email="sami.dhiab.x@gmail.com")]
-    AppDirector = ApplicationDirector()
-    emailApply = AppDirector.construct_application(candidate,jobs, "Email")
-    emailApply.ApplyForJob(jobs[0])
+    from jobBuilderLinkedin import JobBuilder, JobParser
+    from emailCompanyBuilder import EmailCompanyBuilder
+    from candidateProfile import CandidateProfile
+
+    jobParserObj= JobParser('jobApp/secrets/linkedin.json')
+    jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
+    jobLinks = jobParserObj.generateLinksPerPage(1)
+    jobber = JobBuilder(jobLinks, "offSite" ) # can be upgraeded as a set( links, application_type)
+    jobObjList = jobber.createJobObjectList()
+    emailBuilder = EmailCompanyBuilder(jobObjList)    
+    emailBuilder.buildEmailList() # generate company email
+    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="dhiebzayneb89@gmail.com", phone_number=+21620094923)
+    appDirector = ApplicationDirector()
+    emailapp= appDirector.construct_application(candidate_profile=candidate, jobs=jobObjList, application_type='Email')
+    emailapp.ApplyForAll()
+    
+    #Resume.saveContentToDocx(emailDarft, 'jobApp/data/zayneb_dhieb_resume_english.docx')
+    #jobber.storeAsCsv('jobApp/data/jobsOffSite.csv')

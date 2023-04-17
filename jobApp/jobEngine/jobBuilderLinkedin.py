@@ -146,7 +146,6 @@ class JobBuilder:
 
 
 if __name__ == '__main__':
-    # TODO: add json parser
     jobParserObj= JobParser('jobApp/secrets/linkedin.json')
     jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
     jobLinks = jobParserObj.generateLinksPerPage(1)

@@ -37,25 +37,29 @@ class emailCompanyGenerator:
         print(f"chatgpt replied: {reply}")
         emails = json.loads(reply)
         return emails
-
+    
+    def locate_input_location(self,input_location:str,  country:str, list_of_cities:list[str]):
+        if input_location.lower()==country or any(city in input_location for city in list_of_cities):
+            return True
+    
     def generate_emails(self)->list:
         email_list = []
         com = "com"
-        if self.location.lower()=="france"  or self.location.lower() in self.french_cities[0]:
+        if self.locate_input_location(self.location, "france", self.french_cities[0]):
             fr = "fr"
             email_domains = ["recrutement", "carrieres", "emplois", "rh", "talents", "embauche",
                              "equipe", "travailleravecnous", "rejoigneznotreequipe", "opportunites"]
             email_list = [
                 f"{domain}@{self.company}.{fr}" for domain in email_domains]
 
-        elif self.location.lower()=="belgium"  or self.location.lower()  in self.belgien_cities[0]:
+        if self.locate_input_location(self.location, "belgium", self.belgien_cities[0]):
             be = "be"
             email_domains = ["recrutement", "carrieres", "emplois", "rh", "talents", "embauche",
                              "equipe", "travailleravecnous", "rejoigneznotreequipe", "opportunites"]
             email_list = [
                 f"{domain}@{self.company}.{be}" for domain in email_domains]
 
-        elif self.location.lower()=="switzerland"  or self.location.lower()  in self.swiss_cities[0]:
+        if self.locate_input_location(self.location, "switzerland", self.swiss_cities[0]):
             ch = "ch"
             email_domains = ["recrutement", "carrieres", "emplois", "rh", "talents", "embauche",
                              "equipe", "travailleravecnous", "rejoigneznotreequipe", "opportunites"]
@@ -63,7 +67,7 @@ class emailCompanyGenerator:
             email_list = [
                 f"{domain}@{self.company}.{ch}" for domain in email_domains]
 
-        elif self.location.lower()=="luxemburg"  or self.location.lower()  in self.luxemburg_Cities[0]:
+        if self.locate_input_location(self.location, "luxemburg", self.luxemburg_Cities[0]):
             lu = "lu"
             email_domains = ["recrutement", "carrieres", "emplois", "rh", "talents", "embauche",
                              "equipe", "travailleravecnous", "rejoigneznotreequipe", "opportunites"]
@@ -71,7 +75,7 @@ class emailCompanyGenerator:
             email_list = [
                 f"{domain}@{self.company}.{lu}" for domain in email_domains]
 
-        elif self.location.lower()=="germany"  or self.location.lower()  in self.german_cities[0]:
+        if self.locate_input_location(self.location, "germany", self.german_cities[0]):
             de = "de"
             email_domains = ["recruiting", "karriere", "jobs", "personal",
                              "talent", "bewerbung", "team", "mitarbeiten", "joinus", "chance"]
@@ -90,5 +94,5 @@ class emailCompanyGenerator:
 
 
 if __name__ == '__main__':
-    emailsgen = emailCompanyGenerator("KWS Group GmbH - gmbh GMBH , ltd", "germany")
+    emailsgen = emailCompanyGenerator("KWS Group GmbH - gmbh GMBH , ltd", "Paris, france")
     print(emailsgen.generate_emails())

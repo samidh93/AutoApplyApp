@@ -24,3 +24,5 @@ class EasyApplyApplication(Application):
     
     def ApplyForJob(self, job:Job):
         pass
+
+

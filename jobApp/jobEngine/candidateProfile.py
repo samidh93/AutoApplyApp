@@ -4,7 +4,15 @@ import json
 import requests
 from typing import List
 import threading
-
+from deprecated import deprecated
+"""Candidate Profile: contains all informations about applicant like first, last name, number and adress. \
+    as well as experience, education (backgorund in general). These informations need to be fullfilled by the user \
+    aka the applications upon registration. the current method is extracting sections from resume, which of course not \
+    the ideal solution for every resume outthere. we are using openai to extract data from resume, which is a itself a time
+    consuming task for each profile. \
+    Returns:
+        Candidate_profile: an object of type 
+"""
 class Experience:
     def __init__(self, job_title, company, duration):
         self.job_title = job_title
@@ -22,15 +30,17 @@ class Skills:
         self.languages = languages
         self.softwares = softwares
 
+
+## create more dynamic classes based on sections in resume 
 class CandidateProfile:
 
     def __init__(self, resume_path, firstname=None, lastname=None, address=None, email=None, phone_number=None, linkedin=None):
         self.resume = Resume(resume_path)
         self.resume_text = self.resume.extract_text()
         self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")
-        self.experience_list = []
-        self.education_list = []
-        self.skills_list = []
+        self.experience_list = [Experience]
+        self.education_list = [Education]
+        self.skills_list = [Skills]
         self.firstname = firstname
         self.lastname = lastname
         self.address = address
@@ -40,14 +50,10 @@ class CandidateProfile:
         
     def extract_resume_plain_text(self):
         return self.resume_text
-    
-    ### @UPDATE: openai may not process the full resume due to 4095 tokens limit.
-    ### @TODO: search resume first for relevant sections, extract them and feed them to openai (shorter sentences)
+
+
     def extract_personal_infos_from_resume(self): #all in one call, maybe difficult to get
-        request = "given the following resume, extract candidate information data and return only these data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required. ignore unrelevant data\n \
-        under education, extract data and return only these data as json like ['university': 'xxx', 'degree': 'xxx' and 'duration': 'xxx' or 'graduation_date': 'xxx'] no header education is required. ignore unrelevant data, max result are 3\n \
-        under experience, extract data and return only these data as json like ['job_title': 'xxx', 'company_name': 'xxx' and 'duration': 'xxx'] no header experience is required. ignore unrelevant data\n \
-        under skills, extract data and return only these data as json like ['Software': '[xxx]' and 'Languages': '[xxx]'] no header skills is required. ignore unrelevant data\n"
+        request = "given the following personal informations, return data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required.\n"
         full_qs = request + self.resume_text
         reply = self.cv_nlp.ask(full_qs)
         print(f"chatgpt replied\n {reply}")
@@ -58,9 +64,50 @@ class CandidateProfile:
         self.email = infos_data['email']
         self.phone_number = infos_data['phone_number']
         self.linkedin = infos_data['linkedin']
+    
+       
+    def extract_experience_from_resume(self)->list: # extract experience 
+        request = "given the following experience, return these data as json like ['job_title': 'xxx', 'company_name': 'xxx' and 'duration': 'xxx'] no header experience is required.\n"
+        full_qs = request + self.resume.extract_experience_section()
+        reply = self.cv_nlp.ask(full_qs)
+        print(f"chatgpt replied\n {reply}")
+        experience_data = json.loads(reply)
+        for exp in experience_data:
+            experience_obj = Experience(exp['job_title'], exp['company_name'], exp['duration'])
+            print(experience_obj.company_name, experience_obj.job_title, experience_obj.duration)
+            self.experience_list.append(experience_obj)
+        return self.experience_list
+    
+    def extract_education_from_resume(self)->list:
+        request = "given the following education, return these data as json like ['university': 'xxx', 'degree': 'xxx' and 'graduation_date': 'xxx'] no header education is required.\n"
+        full_qs = request + self.resume.extract_education_section()
+        reply = self.cv_nlp.ask(full_qs)
+        print(f"chatgpt replied\n {reply}")
+        education_data = json.loads(reply)
+        for edu in education_data:
+            education_obj = Education(edu['university'], edu['degree'], edu['graduation_date'])
+            print(education_obj.degree, education_obj.university, education_obj.duration)
+            self.education_list.append(education_obj)
+        return self.education_list     
+    
+    def extract_skills_from_resume(self)->list:
+        request = "given the following skills, return these data as json like ['Software': '[xxx]' and 'Languages': '[xxx]'] no header skills is required.S\n"
+        full_qs = request + self.resume.extract_skills_section()
+        reply = self.cv_nlp.ask(full_qs)
+        print(f"chatgpt replied\n {reply}")
+        skills_data = json.loads(reply)
+        skills_obj = Skills(skills_data['Software'], skills_data['Languages'])
+        print(skills_obj.softwares, skills_obj.languages)
+        self.skills_list.append(skills_obj)
+        return self.skills_list
 
+    ### @UPDATE: openai may not process the full resume due to 4095 tokens limit, using sections instead.
+    @deprecated(reason="This method is no longer supported. Use extract sections methods instead.")
     def extract_all_from_resume(self):
-        request = "given the following resume, extract candidate information data and return only these data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required. ignore unrelevant data\n"
+        request = "given the following resume, extract candidate information data and return only these data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required. ignore unrelevant data\n \
+        under education, extract data and return only these data as json like ['university': 'xxx', 'degree': 'xxx' and 'duration': 'xxx' or 'graduation_date': 'xxx'] no header education is required. ignore unrelevant data, max result are 3\n \
+        under experience, extract data and return only these data as json like ['job_title': 'xxx', 'company_name': 'xxx' and 'duration': 'xxx'] no header experience is required. ignore unrelevant data\n \
+        under skills, extract data and return only these data as json like ['Software': '[xxx]' and 'Languages': '[xxx]'] no header skills is required. ignore unrelevant data\n"        
         full_qs = request + self.resume_text
         reply = self.cv_nlp.ask(full_qs)
         print(f"chatgpt replied\n {reply}")
@@ -81,44 +128,9 @@ class CandidateProfile:
             self.education_list.append(education_obj)
         skills_obj = Skills(infos_data['skills']['Software'], infos_data['skills']['Languages'])
         print(skills_obj.softwares, skills_obj.languages)
-        
-    def extract_experience_from_resume(self)->list: # extract experience 
-        request = "given the following resume, under experience, extract data and return only these data as json like ['job_title': 'xxx', 'company_name': 'xxx' and 'duration': 'xxx'] no header experience is required. ignore unrelevant data\n"
-        full_qs = request + self.resume_text
-        reply = self.cv_nlp.ask(full_qs)
-        print(f"chatgpt replied\n {reply}")
-        experience_data = json.loads(reply)
-        for exp in experience_data:
-            experience_obj = Experience(exp['job_title'], exp['company_name'], exp['duration'])
-            print(experience_obj.company_name, experience_obj.job_title, experience_obj.duration)
-            self.experience_list.append(experience_obj)
-        return self.experience_list
-    
-    def extract_education_from_resume(self)->list:
-        request = "given the following resume, under education, extract data and return only these data as json like ['university': 'xxx', 'degree': 'xxx' and 'duration': 'xxx' or 'graduation_date': 'xxx'] no header education is required. ignore unrelevant data, max result are 3\n"
-        full_qs = request + self.resume_text
-        reply = self.cv_nlp.ask(full_qs)
-        print(f"chatgpt replied\n {reply}")
-        education_data = json.loads(reply)
-        for edu in education_data:
-            education_obj = Education(edu['university'], edu['degree'], edu['duration'] or edu['graduation_date'])
-            print(education_obj.degree, education_obj.university, education_obj.duration)
-            self.education_list.append(education_obj)
-        return self.education_list     
-    
-    def extract_skills_from_resume(self)->list:
-        request = "given the following resume, under skills, extract data and return only these data as json like ['Software': '[xxx]' and 'Languages': '[xxx]'] no header skills is required. ignore unrelevant data\n"
-        full_qs = request + self.resume_text
-        reply = self.cv_nlp.ask(full_qs)
-        print(f"chatgpt replied\n {reply}")
-        skills_data = json.loads(reply)
-        skills_obj = Skills(skills_data['Software'], skills_data['Languages'])
-        print(skills_obj.softwares, skills_obj.languages)
-        self.skills_list.append(skills_obj)
-        return self.skills_list
-
+ 
 if __name__ == "__main__":
     candidate = CandidateProfile('jobApp/data/zayneb_dhieb_resume_english.pdf')
-    # Create worker threads
-    print(candidate.resume_text)
-    #print("")
+    candidate.extract_education_from_resume()
+    candidate.extract_experience_from_resume()
+    candidate.extract_personal_infos_from_resume()

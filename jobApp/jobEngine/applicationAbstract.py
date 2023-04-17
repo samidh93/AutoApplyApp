@@ -7,8 +7,8 @@ from abc import ABC, abstractmethod
     
 class Application(ABC):
     def __init__(self, candidate: CandidateProfile, jobOffers:list[Job]) -> None:
-        self.candidate = candidate
-        self.jobs_to_apply_for = jobOffers
+        self.candidate_profile = candidate
+        self.jobs = jobOffers
 
     @abstractmethod
     def ApplyForJob(self, job:Job):
@@ -16,5 +16,5 @@ class Application(ABC):
 
     
     def ApplyForAll(self):
-        for j in self.jobs_to_apply_for:
+        for j in self.jobs:
             self.ApplyForJob(j)

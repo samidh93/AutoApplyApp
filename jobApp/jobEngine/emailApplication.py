@@ -21,7 +21,7 @@ class EmailApplication(Application):
         gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
         # as we have a list of possible emails
         for email in job.company_email:
-            status = gmail.send_email_with_attachments(f'{self.candidate_profile.email}',f'{job.company_email}',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationTemplate(job), [self.candidate_profile.resume.file_path])
+            status = gmail.send_email_with_attachments(f'{self.candidate_profile.email}',f'{email}',  f'job application as {job.job_title} at {job.company_name} in {job.job_location}', self.generateApplicationTemplate(job), [self.candidate_profile.resume.file_path])
             if status:
                 job.setJobApplied(True) # applied for job
     
@@ -49,7 +49,7 @@ class EmailApplication(Application):
         try:
             with open(output_file, "r") as f:
                 template = f.read()
-            print(template.format(**email_data))
+            #print(template.format(**email_data))
             return (template.format(**email_data))
         except FileNotFoundError:
             print("The file does not exist.")
@@ -58,7 +58,7 @@ class EmailApplication(Application):
         highlight the experiences: {self.candidate_experiences} and educations: {self.candidate_educations} \
         sincerely, {'{fullname}'} {'{phone_number}'}"
         chatgpt = ChatGPT("jobApp/secrets/openai.json")
-        print(f"query: {query}")
+        #print(f"query: {query}")
         template = chatgpt.ask(query)
         with open(output_file, "w") as f:
             json.dump(template, f)

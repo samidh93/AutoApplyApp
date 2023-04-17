@@ -20,10 +20,14 @@ class EmailExtractor:
                     f"error response from link {response.status_code} , retry")
                 time.sleep(5)  # we slow down requests for 5 seconds
                 continue  # we continue with next retry
+        return ""
 
         
     # Define a function to search for email addresses within the HTML
     def _find_emails(self,html)->list:
+        if html == "":
+            print("no html found, server not reachable..")
+            return []
         # Define a regular expression pattern to match email addresses
         pattern = r'\b(?!.*\bsvg\b)[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
         # Search for the pattern within the HTML using the re module

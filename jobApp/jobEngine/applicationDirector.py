@@ -37,7 +37,7 @@ if __name__ == '__main__':
     jobObjList = jobber.createJobObjectList()
     emailBuilder = EmailCompanyBuilder(jobObjList)    
     emailBuilder.buildEmailList() # generate company email
-    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="dhiebzayneb89@gmail.com", phone_number=+21620094923)
+    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="dhiebzayneb89@gmail.com", phone_number="+21620094923")
     appDirector = ApplicationDirector()
     emailapp= appDirector.construct_application(candidate_profile=candidate, jobs=jobObjList, application_type='Email')
     emailapp.ApplyForAll()

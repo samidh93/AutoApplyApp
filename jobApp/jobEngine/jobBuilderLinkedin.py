@@ -30,10 +30,12 @@ class JobBuilder:
         self.links = links
         self.jobObjLists = []
         self.application_type = application_type
+        self.requests_counter = 0
 
     def createJobObjectList(self) -> list[Job]:
         max_retry = 5
         for i, link in enumerate(self.links[0]):
+            self.requests_counter +=1 
             # we try 5 times if server retrun code 429 (too many requests in period of time)
             for _ in range(max_retry):
                 response = requests.get(link)
@@ -56,9 +58,9 @@ class JobBuilder:
                     print("\n")
                     self.jobObjLists.append(j)
                     break  # no need for retry
-                else:
+                elif response.status_code == 429:
                     print(
-                        f"error response from link {response.status_code} , retry")
+                        f"erro {response.status_code}: too  many requests. number of requests before limit {self.requests_counter}. \n slowing down requests time")
                     time.sleep(5)  # we slow down requests for 5 seconds
                     continue  # we continue with next retry
 

@@ -2,7 +2,7 @@ import requests
 from bs4 import BeautifulSoup, Comment
 from seleniumWrapper import WebScraper
 import json
-
+import csv
 class JobParser:
     def __init__(self, linkedin_data):
         """Parameter initialization"""
@@ -112,11 +112,25 @@ class JobParser:
     def generateLinksPerPage(self, max_pages = 5)-> list: #125 jobs
         for _ in range(max_pages):
             self.generateLinks()
+        #@NOTE: added save to csv to keep track of links
         if self.filter_easy_apply:
+            self.saveLinksToCsv(links= [self.easyApplyList, "na"])
             return [self.easyApplyList, "na"]
         else:
+            self.saveLinksToCsv(links= [self.offsiteApplyList, self.officialJobLinks ])
             return [self.offsiteApplyList, self.officialJobLinks ]  
     
+    def saveLinksToCsv(self, links,  csv_file='jobApp/data/links.csv'):
+        # Open the CSV file in write mode
+        with open(csv_file, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            # Write the header row
+            writer.writerow(['id', 'keyword', 'location', 'internal link', 'external link'])
+            # Write each row of data to a new row in the CSV file
+            for i, link in enumerate(links[0]):
+                writer.writerow([i+1, self.job_title, self.location, link, links[1][i] ])
+        print(f"links saved to {csv_file}")
+
     def _use_selenium_to_get_easy_apply_jobs(self):
         scraper = WebScraper('jobApp/secrets/linkedin.json', headless=False)
         scraper.bot.login_linkedin()
@@ -126,11 +140,7 @@ class JobParser:
         return linksToApply
 
 if __name__ == '__main__':
-   from job import Job
-   import csv
-   from lxml import html
-   from job import Job
-   from bs4 import BeautifulSoup
+
    jobParserObj= JobParser('jobApp/secrets/linkedin.json')
    jobParserObj.setEasyApplyFilter(False)
    jobsLinks = jobParserObj.generateLinksPerPage(1)

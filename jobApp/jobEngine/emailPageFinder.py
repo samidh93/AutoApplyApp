@@ -12,14 +12,18 @@ class EmailExtractor:
     def _get_html(self,url):
         max_retry = 5
         for _ in range(max_retry):
-            response = requests.get(url)
-            if response.status_code == 200:
-                return response.content.decode('utf-8')
-            else:
-                print(
-                    f"error response from link {response.status_code} , retry")
-                time.sleep(5)  # we slow down requests for 5 seconds
-                continue  # we continue with next retry
+            try:
+                response = requests.get(url, timeout=5)
+                if response.status_code == 200:
+                    return response.content.decode('utf-8')
+                else:
+                    print(
+                        f"error response from link {response.status_code} , retry")
+                    time.sleep(5)  # we slow down requests for 5 seconds
+                    continue  # we continue with next retry
+            except requests.exceptions.Timeout as err:
+                print(f"Request timed out: {err}")
+                continue
         return ""
 
         

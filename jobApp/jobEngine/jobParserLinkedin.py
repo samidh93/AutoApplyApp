@@ -179,7 +179,12 @@ class JobParser:
                 if os.stat(csv_file).st_size == 0:
                     writer.writerow(['id', 'keyword', 'location','link id', 'internal link', 'external link'])
                 for i, link in enumerate(links[0]):
-                    writer.writerow([i+1, self.job_title, self.location, self.extract_link_id(link) , link, links[1][i]])
+                    writer.writerow([i+1, 
+                                     self.job_title, 
+                                     self.location, 
+                                     self.extract_link_id(link),
+                                     link, 
+                                     links[1][i]])
         print(f"Links saved to {csv_file}")
 
 

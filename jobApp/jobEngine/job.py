@@ -1,5 +1,5 @@
 class Job:
-    def __init__(self, job_id, job_url,  job_title, company_name, job_location, posted_date, job_description=None, applied=False, application_type="offSite",  company_email=None, job_official_url = None ):
+    def __init__(self, job_id, job_url,  job_title, company_name, job_location, posted_date,job_link_id=None, job_description=None, applied=False, application_type="offSite",  company_email=None, job_official_url = None ):
 
         self.job_id = job_id
         self.job_url = job_url
@@ -12,6 +12,7 @@ class Job:
         self.job_description = job_description
         self.applied = applied
         self.application_type = application_type
+        self.job_link_id=job_link_id
 
     def setCompanyEmail (self, email:list):
         self.company_email = email

@@ -12,7 +12,7 @@ import time
 from abc import ABC, abstractmethod
 import csv
 from emailCompanyBuilder import EmailCompanyBuilder
-
+from fileLocker import FileLocker
 """jbo builder class to create job object list
 
     Returns:
@@ -37,15 +37,18 @@ class JobBuilder:
 
     def load_links_from_csv(self):
         links = [[], [], []]  # list of 2 lists
+        flocker =FileLocker()
         if os.path.isfile(self.csv_file):
             # Read
             with open(self.csv_file, mode='r', newline='') as file:
+                flocker.lockForRead(file)
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
                 for i, row in enumerate(reader):
                     links[0].append(row[4])  # intern links
                     links[1].append(row[5])  # extern links
                     links[2].append(row[3])  # link_id
+                flocker.unlock(file)
 
         self.links = links
 
@@ -164,9 +167,11 @@ class JobBuilder:
         fieldnames = ["job_id",  "job_url","job_title", "company_name", 
             "job_location", "posted_date","job_link_id", "job_description", 
             "applied", "application_type", "company_emails", "official_job_url"]
-
+        flocker = FileLocker()
         # write the data to the CSV file
         with open(file_name, mode="w", newline='') as csv_file:
+            # we lock for writing
+            flocker.lockForWrite(csv_file)
             writer = csv.writer(csv_file)
             writer.writerow(fieldnames)
             for job in self.jobObjLists:
@@ -184,14 +189,13 @@ class JobBuilder:
                     job.company_email,
                     job.job_official_url
                 ])
+            flocker.unlock(csv_file)
         print(f"{len(self.jobObjLists)} job(s) stored in {file_name}.")
         
 
 
 if __name__ == '__main__':
-    #jobParserObj= JobParser('jobApp/secrets/linkedin.json')
-    #jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
-    #jobLinks = jobParserObj.generateLinksPerPage(1)
+
     jobber = JobBuilder(None, "offSite", "jobApp/data/links.csv" ) 
     jobber.createJobObjectList()
     jobber.storeAsCsv('jobApp/data/jobs.csv')

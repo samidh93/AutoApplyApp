@@ -4,7 +4,7 @@ from jobBuilderLinkedin import JobBuilder, JobParser, Job
 import csv
 from abc import ABC, abstractmethod
 import os
-    
+from fileLocker import FileLocker
 class Application(ABC):
     def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile='jobApp/data/jobs.csv') -> None:
         self.candidate_profile = candidate
@@ -24,10 +24,12 @@ class Application(ABC):
         self.update_csv() # after finish, update 
 
     def load_jobs_from_csv(self):
+        flocker = FileLocker()
         jobs = [] #list of jobs
         if os.path.isfile(self.csv_file):
             # Read
             with open(self.csv_file, mode='r', newline='',  encoding="UTF-8") as file:
+                flocker.lockForRead(file)
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
                 for row in reader:
@@ -48,13 +50,17 @@ class Application(ABC):
                     job_official_url = row[11] if row[11] else None
                     job = Job(job_id, job_url, job_title, company_name, job_location, posted_date, job_link_id, job_description, applied, application_type, company_email, job_official_url)
                     jobs.append(job)
+                flocker.unlock(file)
         self.jobs = jobs
 
     def update_csv(self):
+        flocker = FileLocker()
         print("updating jobs in csv file")
         with open(self.csv_file, mode='r',newline='',  encoding="UTF-8" ) as file:
+            flocker.lockForRead(file)
             reader = csv.DictReader(file)
             job_data = [row for row in reader]
+            flocker.unlock(file)
 
         for job in self.jobs:
             for row in job_data:
@@ -62,7 +68,9 @@ class Application(ABC):
                     row['applied'] = True
 
         with open(self.csv_file, mode='w',newline='',  encoding="UTF-8" ) as file:
+            flocker.lockForWrite(file)
             writer = csv.DictWriter(file, fieldnames=reader.fieldnames)
             writer.writeheader()
             writer.writerows(job_data)
+            flocker.unlock(file)
     

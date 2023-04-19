@@ -6,7 +6,7 @@ import csv
 import os
 import re
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
-
+from fileLocker import FileLocker
 class JobParser:
     def __init__(self, linkedin_data):
         """Parameter initialization"""
@@ -154,26 +154,32 @@ class JobParser:
 
     def saveLinksToCsv(self, links, csv_file='jobApp/data/links.csv'):
         # Check if the CSV file exists: read and append only new links
+        flocker = FileLocker()
         ids = list()
         counter = 0
         if os.path.isfile(csv_file):
             # Read
             with open(csv_file, mode='r', newline='') as file:
+                flocker.lockForRead(file)
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
                 for row in reader:
                     ids.append(row[3]) # we get all ids there
+                flocker.unlock(file)
             # write
             
             with open(csv_file, mode='a', newline='') as file:
+                flocker.lockForWrite(file)
                 writer = csv.writer(file)
                 for i, link in enumerate(links[0]): # new links loop
                     if self.extract_link_id(link) not in ids: 
                         counter +=1
                         writer.writerow([len(ids)+counter, self.job_title, self.location, self.extract_link_id(link) , link, links[1][i]])
+                flocker.unlock(file)
         # no csv, write new from zero
         else: 
             with open(csv_file, mode='w', newline='') as file:
+                flocker.lockForWrite(file)
                 writer = csv.writer(file)
                 # Write the header row if the file is empty
                 if os.stat(csv_file).st_size == 0:
@@ -185,6 +191,7 @@ class JobParser:
                                      self.extract_link_id(link),
                                      link, 
                                      links[1][i]])
+                flocker.unlock(file)
         print(f"Links saved to {csv_file}")
 
 

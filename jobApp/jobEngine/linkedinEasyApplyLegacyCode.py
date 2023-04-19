@@ -26,6 +26,21 @@ class EasyApplyLinkedin:
         self.keywords = data["login"]['keywords']
         self.location = data["login"]['location']
         self.chromedriver = data["login"]['driver_path']
+        # params
+        self.base_url = data["urls"]['search_job_url']
+        self.page_num = data["params"]['pageNum']
+        self.job_title= data["login"]['keywords']
+        self.location = data["login"]['location']
+        self.job_pos = data["params"]['start']
+        self.filter_easy_apply = data["params"]['f_AL']
+        self.params = {
+            'keywords': self.job_title,
+            'location': self.location,
+            'position': self.job_pos, # 25 per page
+            'pageNum': self.page_num, # we increment this for next page
+            'f_AL': self.filter_easy_apply # we increment this for next page
+        }
+
         self.option = webdriver.ChromeOptions()
         if headless:
             self.option.add_argument("--headless=new")
@@ -55,13 +70,46 @@ class EasyApplyLinkedin:
         if save_cookies:
             self._save_cookies()
 
-    def getEasyApplyJobSearchUrlResults(self, url, parameters) -> list:
-        base_url = url
-        params = parameters
-        # construct the URL with the parameters
-        full_url = f"{base_url}?{'&'.join([f'{k}={v}' for k, v in params.items()])}"
+    def getEasyApplyJobSearchUrlResults(self) -> list:
+        print(f"getting job from page {self.params['pageNum']}")
+        full_url = f"{self.base_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
+        print(f"constructed url: {full_url }")
         self.driver.get(full_url)
 
+    def getUnlockJobLinksNoLogin(self, page_to_visit=5):
+        """This function finds all the offers through all the pages result of the search and filter"""
+        # find the total amount of results/pages
+        jobsPerPage= 0
+        total_results = self.driver.find_element(
+            By.CLASS_NAME, "results-context-header__job-count")
+        total_results_int = int(total_results.text.split(' ', 1)[0].replace(",", "").replace(".", ""))
+        print(f"total jobs found: {total_results_int}")
+        for page in range(page_to_visit):
+            results = self.driver.find_elements(
+                By.XPATH, '//*[@id="main-content"]/section[2]/ul/li' )
+            # for each job add, get the link
+            print(f"------------------------------------------------------------------- ")
+            print(f"scrolling down the page to load all results, current result count: {len(results)}")
+            print(f"current job per page count: {jobsPerPage}")
+            print(f"current loop interval: {jobsPerPage} ------> {len(results)}")
+            print(f"--------------------------------------------------------------------")
+            for result in results[jobsPerPage:]:
+                hover = ActionChains(self.driver).move_to_element(result)
+                hover.perform()
+                time.sleep(1)
+                try:
+                    link_element = WebDriverWait(result, 10).until(
+                        EC.presence_of_element_located((By.TAG_NAME, 'a')))
+                    link_href = link_element.get_attribute('href')
+                    print(f"link for job {link_href}")
+                    self.links.append(link_href)
+                    print("link added to list")
+                except:
+                    print("Element not found")
+            jobsPerPage = jobsPerPage+25
+            print(f"saved {len(self.links)} links")
+        return self.links
+                
     def getJobOffersListEasyApply(self, max_page_to_discover=1):
         """This function finds all the offers through all the pages result of the search and filter"""
         # find the total amount of results (if the results are above 24-more than one page-, we will scroll trhough all available pages)
@@ -274,8 +322,7 @@ class EasyApplyLinkedin:
     def apply(self):
         """Apply to job offers"""
         self.login_linkedin()
-        self.getEasyApplyJobSearchUrlResults(
-            self.data["urls"]["search_job_url"], self.data["params"])
+        self.getEasyApplyJobSearchUrlResults()
         self.getJobOffersListEasyApply()
         self.close_session()
 
@@ -301,4 +348,5 @@ class EasyApplyLinkedin:
 
 if __name__ == '__main__':
     bot = EasyApplyLinkedin('jobApp/secrets/linkedin.json')
-    bot.apply()
+    bot.getEasyApplyJobSearchUrlResults()
+    bot.getUnlockJobLinksNoLogin()

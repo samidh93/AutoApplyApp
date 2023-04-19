@@ -10,7 +10,7 @@ from jobParserLinkedin import JobParser
 from seleniumWrapper import WebScraper
 import time
 from abc import ABC, abstractmethod
-
+import csv
 
 import csv
 
@@ -26,12 +26,28 @@ load_dotenv(find_dotenv())
 class JobBuilder:
 
     # TODO Add new classes: EasyApplyJobBuilder, OffsiteJobBuilder
-    def __init__(self, links: list, application_type: str):
+    def __init__(self, links: list, application_type: str, csv_links='jobApp/data/links.csv'):
         self.links = links
         self.jobObjLists = []
         self.application_type = application_type
         self.requests_counter = 0
+        self.csv_file= csv_links
+        if csv_links:
+            print("loading links from file directly")
+            self.load_links_from_csv()
 
+    def load_links_from_csv(self):
+        links = [[],[]] #list of 2 lists
+        if os.path.isfile(self.csv_file):
+            # Read
+            with open(self.csv_file, mode='r', newline='') as file:
+                reader = csv.reader(file)
+                next(reader)  # Skip header row
+                for i, row in enumerate(reader):
+                    links[0].append(row[4]) # intern links
+                    links[1].append(row[5])  # extern links
+        self.links = links
+        
     def createJobObjectList(self) -> list[Job]:
         max_retry = 5
         for i, link in enumerate(self.links[0]):
@@ -148,9 +164,9 @@ class JobBuilder:
 
 
 if __name__ == '__main__':
-    jobParserObj= JobParser('jobApp/secrets/linkedin.json')
-    jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
-    jobLinks = jobParserObj.generateLinksPerPage(1)
-    jobber = JobBuilder(jobLinks, "offSite" ) # can be upgraeded as a set( links, application_type)
+    #jobParserObj= JobParser('jobApp/secrets/linkedin.json')
+    #jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
+    #jobLinks = jobParserObj.generateLinksPerPage(1)
+    jobber = JobBuilder(None, "offSite", "jobApp/data/links.csv" ) # can be upgraeded as a set( links, application_type)
     jobber.createJobObjectList()
     jobber.storeAsCsv('jobApp/data/jobsOffSite.csv')

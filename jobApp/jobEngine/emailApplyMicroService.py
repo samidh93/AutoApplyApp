@@ -1,6 +1,7 @@
 from applicationDirector import ApplicationDirector
 from candidateProfile import CandidateProfile
 
+# TODO Move all paths required for a service  to a config file
     
 class EmailApplyMicroService:
 
@@ -14,4 +15,7 @@ class EmailApplyMicroService:
     def run_service(self):
         print(f"running {self.name} microservice..")
         self.emailapp.ApplyForAll()
-    
+
+if __name__ == '__main__':
+    emailApply = EmailApplyMicroService()
+    emailApply.run_service()

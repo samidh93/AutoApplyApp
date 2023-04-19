@@ -40,7 +40,7 @@ class JobBuilder:
         flocker =FileLocker()
         if os.path.isfile(self.csv_file):
             # Read
-            with open(self.csv_file, mode='r', newline='') as file:
+            with open(self.csv_file, mode='r', newline='', encoding='utf-8') as file:
                 flocker.lockForRead(file)
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
@@ -169,7 +169,7 @@ class JobBuilder:
             "applied", "application_type", "company_emails", "official_job_url"]
         flocker = FileLocker()
         # write the data to the CSV file
-        with open(file_name, mode="w", newline='') as csv_file:
+        with open(file_name, mode="w", newline='', encoding='utf-8') as csv_file:
             # we lock for writing
             flocker.lockForWrite(csv_file)
             writer = csv.writer(csv_file)

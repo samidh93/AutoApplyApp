@@ -159,7 +159,7 @@ class JobParser:
         counter = 0
         if os.path.isfile(csv_file):
             # Read
-            with open(csv_file, mode='r', newline='') as file:
+            with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
                 flocker.lockForRead(file)
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
@@ -168,7 +168,7 @@ class JobParser:
                 flocker.unlock(file)
             # write
             
-            with open(csv_file, mode='a', newline='') as file:
+            with open(csv_file, mode='a', newline='', encoding='utf-8') as file:
                 flocker.lockForWrite(file)
                 writer = csv.writer(file)
                 for i, link in enumerate(links[0]): # new links loop
@@ -178,7 +178,7 @@ class JobParser:
                 flocker.unlock(file)
         # no csv, write new from zero
         else: 
-            with open(csv_file, mode='w', newline='') as file:
+            with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
                 flocker.lockForWrite(file)
                 writer = csv.writer(file)
                 # Write the header row if the file is empty

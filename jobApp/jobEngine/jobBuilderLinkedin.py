@@ -11,8 +11,7 @@ from seleniumWrapper import WebScraper
 import time
 from abc import ABC, abstractmethod
 import csv
-
-import csv
+from emailCompanyBuilder import EmailCompanyBuilder
 
 """jbo builder class to create job object list
 
@@ -47,39 +46,55 @@ class JobBuilder:
                     links[0].append(row[4]) # intern links
                     links[1].append(row[5])  # extern links
         self.links = links
-        
+
     def createJobObjectList(self) -> list[Job]:
         max_retry = 5
+        start_time = time.time()
         for i, link in enumerate(self.links[0]):
             self.requests_counter +=1 
             # we try 5 times if server retrun code 429 (too many requests in period of time)
             for _ in range(max_retry):
-                response = requests.get(link)
-                if response.status_code == 200:
-                    # Create an HTML tree from the response text
-                    tree = html.fromstring(response.text)
-                    job_id = i + 1  # add an ID to the job
-                    j = Job(job_id, link, self.getJobTitlefromHtml(tree), self.getCompanyNamefromHtml(tree), self.getLocationfromHtml(
-                        tree), self.getPostedDatefromHtml(tree), self.getJobDescriptionFromHtml(tree), False, job_official_url=self.links[1][i])
-                    print(f"Job id: {j.job_id}")
-                    print(f"Job URL: {j.job_url}")
-                    print(f"Company Name: {j.company_name}")
-                    print(f"Job Title: {j.job_title}")
-                    print(f"Job Location: {j.job_location}")
-                    print(f"Posted Date: {j.posted_date}")
-                    print(f"Job Description: {j.job_description[0:100]}")
-                    print(f"Applied: {j.applied}")
-                    print(f"application type: {j.application_type}")
-                    print(f"job official url: {j.job_official_url}")
-                    print("\n")
-                    self.jobObjLists.append(j)
-                    break  # no need for retry
-                elif response.status_code == 429:
-                    print(
-                        f"erro {response.status_code}: too  many requests. number of requests before limit {self.requests_counter}. \n slowing down requests time")
-                    time.sleep(5)  # we slow down requests for 5 seconds
-                    continue  # we continue with next retry
+                try:
+                    response = requests.get(link)
+                    if response.status_code == 200:
+                        # Create an HTML tree from the response text
+                        tree = html.fromstring(response.text)
+                        job_id = i + 1  # add an ID to the job
+                        job_title = self.getJobTitlefromHtml(tree)
+                        company_name = self.getCompanyNamefromHtml(tree)
+                        location =self.getLocationfromHtml(tree)
+                        posted_date = self.getPostedDatefromHtml(tree)
+                        job_description = self.getJobDescriptionFromHtml(tree)
+                        intern_link = link
+                        extern_link=self.links[1][i]
+                        emails = EmailCompanyBuilder.getJobEmails(company_name, location,response.content.decode('utf-8'),  intern_link, extern_link)
+                        j = Job(job_id, intern_link, job_title, company_name,location ,posted_date ,job_description ,False ,company_email= emails, job_official_url=extern_link )
+                        print(f"Job id: {j.job_id}")
+                        print(f"Job URL: {j.job_url}")
+                        print(f"Company Name: {j.company_name}")
+                        print(f"Company Emails: {j.company_email}")
+                        print(f"Job Title: {j.job_title}")
+                        print(f"Job Location: {j.job_location}")
+                        print(f"Posted Date: {j.posted_date}")
+                        print(f"Job Description: {j.job_description[0:100]}")
+                        print(f"Applied: {j.applied}")
+                        print(f"application type: {j.application_type}")
+                        print(f"job official url: {j.job_official_url}")
+                        print("\n")
+                        self.jobObjLists.append(j)
+                        break  # no need for retry
+                    elif response.status_code == 429:
+                        end_time = time.time()
+                        print(
+                            f"error {response.status_code}: too  many requests. number of requests per seconds: \n \
+                             {self.requests_counter}/{end_time-start_time}  slowing down requests time to 5 sec ")
+                        time.sleep(5)  # we slow down requests for 5 seconds
+                        continue  # we continue with next retry
 
+                except requests.exceptions.Timeout as err:
+                    print(f"Request timed out: {err}")
+                    time.sleep(3)  # we slow down requests for 5 seconds
+                    continue
         
         return self.jobObjLists
 

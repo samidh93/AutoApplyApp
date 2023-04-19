@@ -39,7 +39,10 @@ class EmailExtractor:
         # Return a list of unique email addresses
         return list(set(matches))
     
-    def extract_emails(self):
+    def extract_emails(self, html_input=None):
+        if html_input:
+            print("extracting directly from html, skipping url")
+            return self._find_emails(html_input)
         return self._find_emails(self._get_html(self.url))
 
 if __name__ == '__main__':

@@ -1,7 +1,6 @@
 from emailPageFinder import EmailExtractor
 from emailRandomGenerator import emailCompanyGenerator 
 from job import Job
-from jobBuilderLinkedin import JobBuilder, JobParser
 
 class EmailCompanyBuilder:
     """ takes a list of jobs, try to find the company emails for each job:
@@ -60,16 +59,51 @@ class EmailCompanyBuilder:
                 print(e)  
                 print("generation with ai failed, aborting job..")
             print("-------------------------------------------------------------------------")
+    
+    @staticmethod
+    def getJobEmails( company_name, company_location, html, intern_link, extern_link):
+            print("-------------------------------------------------------------------------")
+            try:
+                print("try finding emails from the job url by portal link")
+                extracted = EmailExtractor(intern_link).extract_emails(html)
+                if len(extracted)>0:
+                    print(f"company {company_name} email {extracted} found")
+                    return extracted
+                else:
+                    raise ValueError("The emails list is empty")
+            except ValueError as e:
+                print(e)  
+                print("extraction from job link failed, try next method..")
+            ####################################
+            ####################################
+            try:
+                print("try finding emails from the job url by official link")
+                extracted = EmailExtractor(extern_link).extract_emails(html)
+                if len(extracted)>0:
+                    print(f"company {company_name} email {extracted} found")
+                    return extracted
+                else:
+                    raise ValueError("The emails list is empty")
+            except ValueError as e:
+                print(e)  
+                print("extraction from job link failed, try next method..")
+            ####################################################
+            ####################################################
+            try:
+                print("try generating emails with AI")
+                generated = emailCompanyGenerator(company_name, company_location).generate_emails()
+                if len(generated)>0:
+                    print(f"company {company_name} in {company_location} emails {generated} generated")
+                    return generated
+                else:
+                    raise ValueError("The emails list is empty")
+            except ValueError as e:
+                print(e)  
+                print("generation with ai failed, aborting job..")
+            print("-------------------------------------------------------------------------")   
 
 if __name__ == '__main__':
-    jobParserObj= JobParser('jobApp/secrets/linkedin.json')
-    jobParserObj.setEasyApplyFilter(False) # optional as unauthenticated has no access to easy apply 
-    jobLinks = jobParserObj.generateLinksPerPage(1)
-    jobber = JobBuilder(jobLinks, "offSite" ) # can be upgraeded as a set( links, application_type)
-    jobObjList = jobber.createJobObjectList()
-    jobber.storeAsCsv('jobApp/data/jobsOffSite.csv')
-    emailBuilder = EmailCompanyBuilder(jobObjList)    
-    emailBuilder.buildEmailList()
+    pass
     
 
 

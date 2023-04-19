@@ -27,7 +27,7 @@ class Application(ABC):
         jobs = [] #list of jobs
         if os.path.isfile(self.csv_file):
             # Read
-            with open(self.csv_file, mode='r', newline='') as file:
+            with open(self.csv_file, mode='r', newline='',  encoding="UTF-8") as file:
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
                 for row in reader:
@@ -52,7 +52,7 @@ class Application(ABC):
 
     def update_csv(self):
         print("updating jobs in csv file")
-        with open(self.csv_file, mode='r') as file:
+        with open(self.csv_file, mode='r',newline='',  encoding="UTF-8" ) as file:
             reader = csv.DictReader(file)
             job_data = [row for row in reader]
 
@@ -61,7 +61,7 @@ class Application(ABC):
                 if row['job_id'] == str(job.job_id):
                     row['applied'] = True
 
-        with open(self.csv_file, mode='w', newline='') as file:
+        with open(self.csv_file, mode='w',newline='',  encoding="UTF-8" ) as file:
             writer = csv.DictWriter(file, fieldnames=reader.fieldnames)
             writer.writeheader()
             writer.writerows(job_data)

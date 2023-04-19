@@ -8,7 +8,7 @@ class emailCompanyGenerator:
     def __init__(self, company:str, location:str):
         self.company = company
         self.location = location
-        exclude_patterns = ["ag", "mg", "gmbh","group","inc", "corp", "ltd","-"," ",".", ","]
+        exclude_patterns = ["ag", "mg", "gmbh","group","inc", "corp", "ltd","-"," ",".", ",","&", "'", "->"]
         self._replaceStrPattern(exclude_patterns)
 
     def _replaceStrPattern(self, patterns:list)->None:
@@ -16,6 +16,8 @@ class emailCompanyGenerator:
             if pattern in self.company.lower() or pattern in self.company:
                 self.company = re.sub(r"(?i)\b" + pattern + r"\b", "", self.company)
                 self.company = self.company.replace(pattern, "")
+                # Remove special characters and foreign language characters
+                self.company = re.sub(r'[^\w\s,.!?]', '', self.company, flags=re.UNICODE)
 
     @staticmethod
     def get_country_cities_domain(csv_file):

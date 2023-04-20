@@ -8,7 +8,7 @@ import re
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
 from fileLocker import FileLocker
 class JobParser:
-    def __init__(self, linkedin_data):
+    def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv'):
         """Parameter initialization"""
         with open(linkedin_data) as config_file:
             data = json.load(config_file)
@@ -31,7 +31,7 @@ class JobParser:
         self.officialJobLinks = []
         # the bot
         self.bot = EasyApplyLinkedin('jobApp/secrets/linkedin.json', headless=True)
-
+        self.csv_file = csv_links
 
     def setEasyApplyFilter(self, easy_apply_filter=False):
         print("Warning: easy apply filter is only visible for logged user ")
@@ -99,11 +99,11 @@ class JobParser:
                 self.filterJobList(link, False, True)
         if self.filter_easy_apply:
             print(f"total links easy apply found {len(self.easyApplyList)}")  
-            self.saveLinksToCsv(links= [self.easyApplyList, "na"])
+            self.saveLinksToCsv( [self.easyApplyList, "na"], self.csv_file)
             return  [self.easyApplyList, "na"]
         else:
             print(f"total links offsite apply found {len(self.offsiteApplyList)}") 
-            self.saveLinksToCsv(links= [self.offsiteApplyList, self.officialJobLinks ])
+            self.saveLinksToCsv( [self.offsiteApplyList, self.officialJobLinks ],self.csv_file)
             return [self.offsiteApplyList, self.officialJobLinks ]
 
     def filterJobList(self, job_href, onsite=False, offsite=False )-> list:
@@ -152,7 +152,7 @@ class JobParser:
         id = id_string[dash_index+1:]
         return id
 
-    def saveLinksToCsv(self, links, csv_file='jobApp/data/links.csv'):
+    def saveLinksToCsv(self, links, csv_file):
         # Check if the CSV file exists: read and append only new links
         flocker = FileLocker()
         ids = list()

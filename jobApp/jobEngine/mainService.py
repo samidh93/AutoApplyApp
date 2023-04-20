@@ -2,18 +2,15 @@ import subprocess
 import os
 
 current_path = os.path.dirname(os.path.abspath(__file__))
+joblinkservice = current_path+"\jobLinksMicroService.py"
+jobbuildservice = current_path+"\jobBuildMicroService.py"
+emailapplyservice = current_path+"\emailApplyMicroService.py"
+csv_links = "jobApp/data/links.csv"
+csv_jobs = "jobApp/data/jobs.csv"
 
-joblinkservice = "\jobLinksMicroService.py"
-jobbuildservice = "\jobBuildMicroService.py"
-emailapplyservice = "\emailApplyMicroService.py"
-# start the firsf'
-#p1 = subprocess.Popen(['python', current_path+joblinkservice])
-#p1.wait()
-
-# start the seconf'
-p2 = subprocess.Popen(['python', current_path+jobbuildservice])
+p1 = subprocess.Popen(['python', csv_links])
+p1.wait()
+p2 = subprocess.Popen(['python', csv_links, csv_jobs ])
 p2.wait()
-
-# start the thirf'
-p3 = subprocess.Popen(['python', current_path+emailapplyservice])
+p3 = subprocess.Popen(['python', csv_jobs])
 p3.wait()

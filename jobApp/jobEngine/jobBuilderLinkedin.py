@@ -25,7 +25,7 @@ load_dotenv(find_dotenv())
 class JobBuilder:
 
     # TODO Add new classes: EasyApplyJobBuilder, OffsiteJobBuilder
-    def __init__(self, links: list, application_type: str, csv_links='jobApp/data/links.csv'):
+    def __init__(self, links: list, application_type: str, csv_links='jobApp/data/links.csv',csv_jobs='jobApp/data/jobs.csv'):
         self.links = links
         self.jobObjLists = []
         self.application_type = application_type
@@ -34,6 +34,8 @@ class JobBuilder:
         if csv_links:
             print("loading links from file directly")
             self.load_links_from_csv()
+        if csv_jobs:
+            self.csv_jobs=csv_jobs
 
     def load_links_from_csv(self):
         links = [[], [], []]  # list of 2 lists
@@ -104,7 +106,7 @@ class JobBuilder:
                     print(f"Request timed out: {err}")
                     time.sleep(3)  # we slow down requests for 5 seconds
                     continue
-
+        self.storeAsCsv(self.csv_jobs)
         return self.jobObjLists
 
     def getJobTitlefromHtml(self, source_html) -> str:

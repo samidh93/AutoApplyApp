@@ -12,7 +12,7 @@ class EmailApplication(Application):
         self.candidate_profile = candidate_profile
         self.jobs = jobs
         self.type = 'Email'
-        self.gmail_client = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
+        self.gmail_client = Gmail('jobApp/secrets/credentials_zayneb.json', 'jobApp/secrets/gmail_token.json' )
         self.candidate_experiences= self.candidate_profile.resume.extract_experience_section()
         self.candidate_educations= self.candidate_profile.resume.extract_education_section()
         self.candidate_infos= self.candidate_profile.resume.extract_info_section()

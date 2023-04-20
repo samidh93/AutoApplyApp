@@ -25,7 +25,7 @@ if __name__ == '__main__':
         csv_jobs= args[2]
         print(f"csv links file: {csv_links}")
         print(f"csv jobs file: {csv_jobs}")
-        jlink = JobBuilderMicroService(csv_file=csv_links, csv_jobs=csv_jobs)
+        jlink = JobBuilderMicroService(csv_links=csv_links, csv_jobs=csv_jobs)
         jlink.run_service()
     else:
         jlink = JobBuilderMicroService()

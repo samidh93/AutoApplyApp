@@ -12,19 +12,23 @@ from email.mime.base import MIMEBase
 from email import encoders
 
 class Gmail:
-    def __init__(self, credentials_path, token_path):
+    def __init__(self, credentials_path, token_path, api_key_file="jobApp/secrets/gmail_key.json"):
         self.cwd = os.getcwd()
         self.token_path = os.path.join(self.cwd, token_path)
         self.credentials_path = os.path.join(self.cwd, credentials_path)
+        self.api_key_file = api_key_file
         # Construct the path to the token.json file relative to the current working directory
         # Check if the file exists
         if os.path.exists(self.credentials_path ):
             print("credentials.json found at:", self.credentials_path )
         else:
             print("credentials.json not found at:", self.credentials_path )
-
-        self.creds = self._authenticate()
-        self.service = build('gmail', 'v1', credentials=self.creds)
+        if self.credentials_path:
+            self.creds = self._authenticate_via_file_cred()
+            self.service = build('gmail', 'v1', credentials=self.creds)
+        #if self.api_key_file:
+        #    self.key = self._authenticate_via_api_key()
+        #    self.service = build('gmail', 'v1', developerKey=self.key)
 
     def send_email_with_attachments(self, from_, to, subject, body, attachment_paths):
 
@@ -74,8 +78,18 @@ class Gmail:
         print(f"id: messages[0]['id']")
         return True
 
-    def _authenticate(self):
-        
+    def _authenticate_via_api_key(self):
+        SCOPES = ['https://mail.google.com/']
+        key = None
+        if os.path.exists(self.api_key_file):
+            print("api key file file exists")
+            with open(self.api_key_file, 'r') as f:
+                data = json.load(f)
+        key = data["zayneb"]["api_key"]
+        print(f"api key loaded: {key}")
+        return key
+    
+    def _authenticate_via_file_cred(self):
         SCOPES = ['https://mail.google.com/']
         creds = None
         if os.path.exists(self.token_path):
@@ -94,5 +108,5 @@ class Gmail:
         return creds
 
 if __name__ == '__main__':
-    gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/token.json' )
+    gmail = Gmail('jobApp/secrets/credentials.json', 'jobApp/secrets/gmail_token.json' )
     gmail.send_email_with_attachments('dhiebzayneb89@gmail.com','sami.dhiab.x@gmail.com',  'job application for project manager position in Paris, France', 'ai generated email content based on resume', ['jobApp/data/resume.pdf', 'jobApp/data/jobs.png'])

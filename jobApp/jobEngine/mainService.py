@@ -8,9 +8,9 @@ emailapplyservice = current_path+"\emailApplyMicroService.py"
 csv_links = "jobApp/data/links.csv"
 csv_jobs = "jobApp/data/jobs.csv"
 
-p1 = subprocess.Popen(['python', csv_links])
-p1.wait()
-p2 = subprocess.Popen(['python', csv_links, csv_jobs ])
-p2.wait()
-p3 = subprocess.Popen(['python', csv_jobs])
+#p1 = subprocess.Popen(['python',joblinkservice, csv_links])
+#p1.wait()
+#p2 = subprocess.Popen(['python',jobbuildservice, csv_links, csv_jobs ])
+#p2.wait()
+p3 = subprocess.Popen(['python',emailapplyservice, csv_jobs])
 p3.wait()

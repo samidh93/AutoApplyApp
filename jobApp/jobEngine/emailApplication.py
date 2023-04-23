@@ -41,7 +41,6 @@ class EmailApplication(Application):
             if status:
                 job.setJobApplied(True) # applied for job
                 print(f"set job applied {job.applied}")
-
         else:
             print("The email list is empty")
     def ApplyForAll(self):

@@ -14,7 +14,7 @@ class FormLocator:
         soup = BeautifulSoup(html, 'html.parser')
         
         # Find the first form element within the HTML
-        form = soup.findAll('form')
+        form = soup.find('form')
         
         if form:
             # Return the form element if found

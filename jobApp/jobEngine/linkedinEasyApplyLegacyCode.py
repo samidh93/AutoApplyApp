@@ -1,7 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
@@ -50,7 +49,7 @@ class EasyApplyLinkedin:
         self.option.binary_location = data["login"]["browser_bin_location"]
         s = Service(self.chromedriver)
         self.driver = webdriver.Chrome(service=s, options=self.option)
-        self.driver.implicitly_wait(30)
+        self.driver.implicitly_wait(5)
         self.data = data
         self.links = []
         self.jobs = []

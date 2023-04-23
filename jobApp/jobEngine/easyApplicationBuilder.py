@@ -1,6 +1,6 @@
 from applicationBuilderAbstract import ApplicationBuilder
-from applicationAbstract import Application
 from jobBuilderLinkedin import JobBuilder, JobParser, Job
+from easyApplyApplication import EasyApplyApplication
 
 class EasyApplyApplicationBuilder(ApplicationBuilder):
     def __init__(self):
@@ -16,13 +16,5 @@ class EasyApplyApplicationBuilder(ApplicationBuilder):
     def build_application(self):
         return EasyApplyApplication(self.candidate_profile, self.jobs)
 
-class EasyApplyApplication(Application):
-    def __init__(self, candidate_profile, jobs):
-        self.candidate_profile = candidate_profile
-        self.jobs = jobs
-        self.type = 'Easy Apply'
-    
-    def ApplyForJob(self, job:Job):
-        pass
 
 

@@ -1,6 +1,6 @@
 from applicationBuilderAbstract import ApplicationBuilder
-from applicationAbstract import Application
 from jobBuilderLinkedin import JobBuilder, JobParser, Job
+from directApplication  import DirectApplication
 
 class DirectApplicationBuilder(ApplicationBuilder):
     def __init__(self):
@@ -16,10 +16,3 @@ class DirectApplicationBuilder(ApplicationBuilder):
     def build_application(self):
         return DirectApplication(self.candidate_profile, self.jobs)
 
-class DirectApplication(Application):
-    def __init__(self, candidate_profile, jobs):
-        self.candidate_profile = candidate_profile
-        self.jobs = jobs
-        self.type = 'Direct'
-    def ApplyForJob(self, job:Job):
-        pass

@@ -92,7 +92,7 @@ class EasyApplyLinkedin:
             print(f"current job per page count: {jobsPerPage}")
             print(f"current loop interval: {jobsPerPage} ------> {len(results)}")
             print(f"--------------------------------------------------------------------")
-            for result in results[jobsPerPage:]:
+            for i, result in enumerate(results[jobsPerPage:]):
                 hover = ActionChains(self.driver).move_to_element(result)
                 hover.perform()
                 time.sleep(1)
@@ -100,7 +100,7 @@ class EasyApplyLinkedin:
                     link_element = WebDriverWait(result, 10).until(
                         EC.presence_of_element_located((By.TAG_NAME, 'a')))
                     link_href = link_element.get_attribute('href')
-                    print(f"link for job {link_href}")
+                    print(f"link_{i} for job {link_href}")
                     self.links.append(link_href)
                     print("link added to list")
                 except:

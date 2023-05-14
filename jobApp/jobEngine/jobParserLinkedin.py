@@ -7,6 +7,7 @@ import os
 import re
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
 from fileLocker import FileLocker
+import time
 class JobParser:
     def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv'):
         """Parameter initialization"""
@@ -92,43 +93,55 @@ class JobParser:
     def generateLinksSeleniumV2(self, pages=5):
         self.bot.getEasyApplyJobSearchUrlResults()
         self.jobList = self.bot.getUnlockJobLinksNoLogin(pages) # we have all links
-        for link in self.jobList:
-            if self.filter_easy_apply: # if we are looking only for easy apply jobs
-                self.filterJobList(link, True, False)
-            else:
-                self.filterJobList(link, False, True)
-        if self.filter_easy_apply:
-            print(f"total links easy apply found {len(self.easyApplyList)}")  
-            self.saveLinksToCsv( [self.easyApplyList, "na"], self.csv_file)
-            return  [self.easyApplyList, "na"]
-        else:
-            print(f"total links offsite apply found {len(self.offsiteApplyList)}") 
-            self.saveLinksToCsv( [self.offsiteApplyList, self.officialJobLinks ],self.csv_file)
-            return [self.offsiteApplyList, self.officialJobLinks ]
+        for i, link in enumerate(self.jobList):
+            #if self.filter_easy_apply: # if we are looking only for easy apply jobs
+            #    self.filterJobList(link, True, False)
+            #else:
+            #    self.filterJobList(link, False, True)
+                print(f"filtering job at: {i}")
+                self.filterJobList(link, True, True)
+
+        # save all in same csv file: testing purpose
+        print(f"total links intern (easy apply) found {len(self.easyApplyList)}")  
+        print(f"total links extern (official apply) found {len(self.officialJobLinks)}")  
+        self.saveLinksToCsv( [self.easyApplyList, self.officialJobLinks], self.csv_file)
+        return  [self.easyApplyList,self.officialJobLinks]
+        #if self.filter_easy_apply:
+        #    print(f"total links easy apply found {len(self.easyApplyList)}")  
+        #    self.saveLinksToCsv( [self.easyApplyList, "na"], self.csv_file)
+        #    return  [self.easyApplyList, "na"]
+        #else:
+        #    print(f"total links offsite apply found {len(self.offsiteApplyList)}") 
+        #    self.saveLinksToCsv( [self.offsiteApplyList, self.officialJobLinks ],self.csv_file)
+        #    return [self.offsiteApplyList, self.officialJobLinks ]
 
     def filterJobList(self, job_href, onsite=False, offsite=False )-> list:
-            response = requests.get(job_href)
-            html_source = response.content
-            # Create a BeautifulSoup object to parse the HTML source code
-            soup = BeautifulSoup(html_source, "html.parser")
-            if offsite:
-                button = soup.find('button', {'data-tracking-control-name': 'public_jobs_apply-link-offsite_sign-up-modal'})
-                if button is not None:
-                    print("offsite apply ")
-                    self.offsiteApplyList.append(job_href)
-                    self.getOfficialJobLink(soupObjRef=soup)
-                    return self.offsiteApplyList
-                else:
-                    print("button offsite not found \n")  
+            try:
+                response = requests.get(job_href)
+                html_source = response.content
+                time.sleep(1)
+                # Create a BeautifulSoup object to parse the HTML source code
+                soup = BeautifulSoup(html_source, "html.parser")
+                if offsite:
+                    button = soup.find('button', {'data-tracking-control-name': 'public_jobs_apply-link-offsite_sign-up-modal'})
+                    if button is not None:
+                        print("offsite apply")
+                        self.offsiteApplyList.append(job_href)
+                        self.getOfficialJobLink(soupObjRef=soup)
+                        return self.offsiteApplyList
+                    else:
+                        print("button offsite not found")  
 
-            if onsite:
-                button = soup.find('button', {'data-tracking-control-name': 'public_jobs_apply-link-onsite'})
-                if button is not None:
-                    print("onsite apply \n")
-                    self.easyApplyList.append(job_href)
-                    return self.easyApplyList
-                else:
-                    print("button onsite not found \n")  
+                if onsite:
+                    button = soup.find('button', {'data-tracking-control-name': 'public_jobs_apply-link-onsite'})
+                    if button is not None:
+                        print("onsite apply")
+                        self.easyApplyList.append(job_href)
+                        return self.easyApplyList
+                    else:
+                        print("button onsite not found")  
+            except:
+                print("url no reachable")
 
     def getOfficialJobLink(self, soupObjRef:BeautifulSoup):
         #soup = BeautifulSoup(html_doc, "html.parser")

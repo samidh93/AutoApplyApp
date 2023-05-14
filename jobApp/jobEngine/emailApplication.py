@@ -57,7 +57,7 @@ class EmailApplication(Application):
         return email_tosend
     
     # generate application email as a template for all: create one template with ai
-    def generateApplicationTemplate(self, job:Job,  output_file:str='jobApp/data/email_draft_template.json')-> str:
+    def generateApplicationTemplate(self, job:Job,  output_file:str='jobApp/data/cover.json')-> str:
         email_data = {
         "job_title": job.job_title,
         "company": job.company_name,

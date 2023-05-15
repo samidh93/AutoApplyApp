@@ -131,7 +131,7 @@ class JobParser:
             # {"onsite": None, "offsite": None}
             links_pair["offsite"] = offsite_link
             # {"onsite": None, "offsite": None}
-            links_pair["onsite"] = "None"
+            links_pair["onsite"] = job_href
         else:
             print("button offsite not found, onsite apply is ommited")
             # {"onsite": None, "offsite": None}

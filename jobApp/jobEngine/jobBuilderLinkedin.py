@@ -89,6 +89,8 @@ class JobBuilder:
                         print(f"Posted Date: {j.posted_date}")
                         print(f"Job Description: {j.job_description[0:100]}")
                         print(f"Applied: {j.applied}")
+                        if j.job_official_url != "None": ## if external type application
+                            j.application_type = "external"
                         print(f"application type: {j.application_type}")
                         print(f"job official url: {j.job_official_url}")
                         print("\n")

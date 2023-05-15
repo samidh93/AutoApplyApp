@@ -10,3 +10,4 @@ data/
 jobApp/secrets/
 jobApp/data/
 jobApp/jsApp/node_modules/
+__pycache__

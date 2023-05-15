@@ -89,18 +89,19 @@ class EmailCompanyBuilder:
                 print("extraction from job link failed, try next method..")
             ####################################################
             ####################################################
-            try:
-                print("try generating emails with AI")
-                generated = emailCompanyGenerator(company_name, company_location).generate_emails()
-                if len(generated)>0:
-                    print(f"company {company_name} in {company_location} emails {generated} generated")
-                    return generated
-                else:
-                    raise ValueError("The emails list is empty")
-            except ValueError as e:
-                print(e)  
-                print("generation with ai failed, aborting job..")
-            print("-------------------------------------------------------------------------")   
+            #try:
+            #    print("try generating emails with AI")
+            #    generated = emailCompanyGenerator(company_name, company_location).generate_emails()
+            #    if len(generated)>0:
+            #        print(f"company {company_name} in {company_location} emails {generated} generated")
+            #        return generated
+            #    else:
+            #        raise ValueError("The emails list is empty")
+            #except ValueError as e:
+            #    print(e)  
+            #    print("generation with ai failed, aborting job..")
+            #print("-------------------------------------------------------------------------")   
+            return []
 
 if __name__ == '__main__':
     pass

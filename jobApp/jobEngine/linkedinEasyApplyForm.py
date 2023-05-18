@@ -26,7 +26,7 @@ class LinkedInEasyApplyForm(FormFillBase ):
         scraper = WebScraper('jobApp/secrets/linkedin.json', headless=False)
         bot = scraper.createJobSearchSession()
         self.driver = bot.driver # pass the new driver to current one
-        self.driver.implicitly_wait(10)
+        self.driver.implicitly_wait(20)
 
     def load_links_from_csv(self):
         # load only onsite links
@@ -81,7 +81,7 @@ class LinkedInEasyApplyForm(FormFillBase ):
         # click on the easy apply button, skip if already applied to the position
         try:
             # Wait for the button to appear on the page
-            wait = WebDriverWait(self.driver, 10)  # Maximum wait time of 10 seconds
+            wait = WebDriverWait(self.driver, 20)  # Maximum wait time of 10 seconds
             button = wait.until(EC.visibility_of_element_located((By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")))
             button.click()
         # if already applied

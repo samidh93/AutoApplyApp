@@ -169,7 +169,10 @@ class EasyApplyLinkedin:
                         for title_ext in titles_ext:
                             self.clickOnJob(title_ext)
         return self.links
-
+    
+    def getCurrentSeleniumDriver(self):
+        return self.driver
+    
     def clickOnJob(self, job_add):
         print('You are applying to the position of: ', job_add.text)
         job_add.click()

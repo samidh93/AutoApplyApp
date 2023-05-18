@@ -18,9 +18,16 @@ class Application(ABC):
     def ApplyForJob(self, job:Job):
         pass
  
-    def ApplyForAll(self):
+    def ApplyForAll(self, application_type = "internal" or "external"):
+        print("applying for jobs from the csv file")
         for j in self.jobs:
-            self.ApplyForJob(j)
+            print(f"job type: {j.application_type}")
+            if application_type == j.application_type: # apply for the same type
+                print(f"applying for easy apply jobs only with id: {j.job_id}")
+                self.ApplyForJob(j)
+            else:
+                print(f"ignoring {j.application_type} ")
+                continue
         self.update_csv() # after finish, update 
 
     def load_jobs_from_csv(self):
@@ -45,7 +52,7 @@ class Application(ABC):
                     posted_date = row[5]
                     job_link_id = row[6] if row[6] else None
                     job_description = row[7] if row[7] else None
-                    application_type = row[9] if row[9] else "offSite"
+                    application_type = row[9] if row[9] else "external"
                     company_email = eval(row[10]) if row[10] else None
                     job_official_url = row[11] if row[11] else None
                     job = Job(job_id, job_url, job_title, company_name, job_location, posted_date, job_link_id, job_description, applied, application_type, company_email, job_official_url)
@@ -65,7 +72,7 @@ class Application(ABC):
         for job in self.jobs:
             for row in job_data:
                 if row['job_id'] == str(job.job_id):
-                    row['applied'] = True
+                    row['applied'] = job.application_type
 
         with open(self.csv_file, mode='w',newline='',  encoding='utf-8' ) as file:
             flocker.lockForWrite(file)

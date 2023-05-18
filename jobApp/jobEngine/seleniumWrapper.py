@@ -2,6 +2,7 @@
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin, webdriver
 import json
 from urllib.parse import urlparse
+import threading
 
 
 class WebScraper:
@@ -17,7 +18,8 @@ class WebScraper:
         self.searchCmdExecutorUrl = None
         self.server_port= None
 
-    def createLoginSession(self, writeSessionToFile=True, sessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:
+
+    def createLoginSession(self, login_task_finished=None,login_task_killed = False, writeSessionToFile=True, sessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:
         """ create a session only for login and start detached"""
         self.loginSession = EasyApplyLinkedin(self.linked_data, self.headless)
         self.loginSession.login_linkedin()
@@ -35,14 +37,21 @@ class WebScraper:
             with open(sessionFile, "w") as f:
                  json.dump(new_data, f)
         
+        #login_task_finished.set()
         # Keep the old session alive
-        input("------------------------------   Press Enter to quit  ------------------------------")
+        #input("------------------------------   Press Enter to quit  ------------------------------")
+        while True:
+            login_task_finished.set()
+            if login_task_killed:
+                break
+
+
         return self.loginSession
 
     def createJobSearchSession(self, attachToLoginSessionFromFile=True, SessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:
         """ create a session only for job search and attach to the login session"""
         if attachToLoginSessionFromFile:
-            print("using json file variables")
+            print("attach session using json file session data")
             with open(SessionFile, "r") as f:
                 data = json.load(f)
             self.server_port = self.getPortFromUrl( data["session"]["cmdExecutor"])

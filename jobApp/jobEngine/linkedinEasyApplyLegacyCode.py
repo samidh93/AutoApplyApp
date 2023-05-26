@@ -320,6 +320,7 @@ class EasyApplyLinkedin:
         """This function closes the actual session"""
         print('End of the session, see you later!')
         self.driver.close()
+        self.driver.quit()
 
     def apply(self):
         """Apply to job offers"""

@@ -5,6 +5,7 @@ import csv
 from abc import ABC, abstractmethod
 import os
 from fileLocker import FileLocker
+import threading
 class Application(ABC):
     def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile='jobApp/data/jobs.csv') -> None:
         self.candidate_profile = candidate
@@ -17,17 +18,27 @@ class Application(ABC):
     @abstractmethod
     def ApplyForJob(self, job:Job):
         pass
- 
+    
+    # add thread for each job application
     def ApplyForAll(self, application_type = "internal" or "external"):
+        threads = [threading.Thread] #list of threeads
         print("applying for jobs from the csv file")
         for j in self.jobs:
             print(f"job type: {j.application_type}")
             if application_type == j.application_type: # apply for the same type
-                print(f"applying for easy apply jobs only with id: {j.job_id}")
+                print(f"creating thread for easy  apply job with: {j.job_id}")
+                #thread = threading.Thread(target=self.ApplyForJob, args=(j,))
+                #thread.daemon = True
+                #thread.start()
+                #threads.append(thread)
                 self.ApplyForJob(j)
             else:
                 print(f"ignoring {j.application_type} ")
                 continue
+        # Wait for all threads to finish
+        #for thread in threads:
+        #    print(f"runnig thread")
+        #    thread.join(self)   
         self.update_csv() # after finish, update 
 
     def load_jobs_from_csv(self):
@@ -72,7 +83,7 @@ class Application(ABC):
         for job in self.jobs:
             for row in job_data:
                 if row['job_id'] == str(job.job_id):
-                    row['applied'] = job.application_type
+                    row['applied'] = job.applied
 
         with open(self.csv_file, mode='w',newline='',  encoding='utf-8' ) as file:
             flocker.lockForWrite(file)

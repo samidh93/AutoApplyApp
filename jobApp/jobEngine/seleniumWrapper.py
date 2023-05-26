@@ -65,8 +65,7 @@ class WebScraper:
             self.searchSession.driver.command_executor._url  = data["session"]["cmdExecutor"]
             # Open a new window and switch to it
             self.searchSession.driver.execute_script("window.open('','_blank');")
-            
-            self.searchSession.driver.switch_to.window(self.searchSession.driver.window_handles[1])
+            self.searchSession.driver.switch_to.window(self.searchSession.driver.window_handles[0])
         else:
             print("using class members variables not json file..")
             self.searchSession = EasyApplyLinkedin(self.linked_data, self.headless)

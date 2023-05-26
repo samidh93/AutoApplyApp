@@ -20,9 +20,9 @@ class EasyApplyApplication(Application):
         self.login_task_finished = threading.Event()
         self.login_task_killed = threading.Event()
         # run the login task
-        self.runLoginTask()
+        #self.runLoginTask()
         # Start the session pairing task -> after login session success 
-        self.login_task_finished.wait()
+        #self.login_task_finished.wait()
         # create the instance, pass the session 
         self.easyApplyFormObj = LinkedInEasyApplyForm() # the actual logic behind form
 

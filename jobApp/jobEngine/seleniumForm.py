@@ -76,7 +76,7 @@ class SeleniumFormHandler(FormFillBase):
                                 self.full_name_fields, self.email_fields, self.phone_fields, self.cv_fields, self.bio_fields]
         self.fields_obj_list = []
         self.pair_to_send = []
-
+        self.form = None
 ###########################################################
 ################### FORM API V2 ###########################
 ###########################################################
@@ -100,6 +100,7 @@ class SeleniumFormHandler(FormFillBase):
 
     def get_all_input_fields(self):
         # get all input fields
+        print("looking for forms")
         try:
             self.form = self.driver.find_element(By.TAG_NAME, 'form')
         except:

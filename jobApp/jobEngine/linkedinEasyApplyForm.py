@@ -12,10 +12,11 @@ from formFillBase import FormFillBase
 from seleniumWrapper import WebScraper
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from seleniumForm import Field, SeleniumFormHandler
 
 ''' use linkedin easy apply form template'''
 
-class LinkedInEasyApplyForm(FormFillBase ):
+class LinkedInEasyApplyForm( SeleniumFormHandler ):
     def __init__(self, url=None, csv_links='jobApp/data/links.csv'):
         self.links = []
         self.csv_file = csv_links
@@ -62,7 +63,21 @@ class LinkedInEasyApplyForm(FormFillBase ):
 
     def fillFirstPage(self):
         # fill the expected first page template
-        pass
+        try:
+            div_element = self.driver.find_element(By.CSS_SELECTOR, 'div.artdeco-modal.artdeco-modal--layer-default.jobs-easy-apply-modal')
+            if div_element:
+                # Find the form element within the div
+                form_element = div_element.find_element(By.TAG_NAME, 'form')
+                if form_element:
+                    print(f"form_element object {form_element}")
+                else:
+                    # The form element was not found within the div
+                    print('Form element not found')
+            else:
+                # The div element was not found
+                print('Div element not found')
+        except:
+            print("no page found")
 
     def fillSecondPage(self):
         # fill the expected second page template
@@ -92,11 +107,12 @@ class LinkedInEasyApplyForm(FormFillBase ):
             #wait = WebDriverWait(self.driver, 30)  # Maximum wait time of 10 seconds
             #button = wait.until(EC.presence_of_element_located((By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")))
             # Wait for the button element to be clickable
-            button = WebDriverWait(self.driver, 20).until(
-            EC.presence_of_element_located((By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
+            button = WebDriverWait(self.driver, 30).until(
+            EC.element_to_be_clickable((By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )
             #button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
             button.click()
+            print("button apply clicked")
 
   
         # if already applied or not found
@@ -108,6 +124,7 @@ class LinkedInEasyApplyForm(FormFillBase ):
         # return true if job was success, false if job not found, deleted or can't apply
         self.get_the_url(job_link) # get the url form the job 
         self.clickApplyPage() # try to click
+
         return False
 
     def applyForAllLinks(self):

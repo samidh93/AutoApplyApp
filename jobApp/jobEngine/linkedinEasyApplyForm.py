@@ -124,6 +124,7 @@ class LinkedInEasyApplyForm( SeleniumFormHandler ):
         # return true if job was success, false if job not found, deleted or can't apply
         self.get_the_url(job_link) # get the url form the job 
         self.clickApplyPage() # try to click
+        self.fillFirstPage()
 
         return False
 

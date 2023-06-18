@@ -98,14 +98,16 @@ class SeleniumFormHandler(FormFillBase):
         # navigate to the URL
         self.driver.get(url)
 
-    def get_all_input_fields(self):
+    def get_all_input_fields(self, form=None):
         # get all input fields
         print("looking for forms")
-        try:
-            self.form = self.driver.find_element(By.TAG_NAME, 'form')
-        except:
-            print("No form found")
-            return -1
+        if self.form == None:
+            try:
+                self.form = self.driver.find_element(By.TAG_NAME, 'form')
+            except:
+                print("No form found")
+                return -1
+        print("form already found")
         textareas = self.form.find_elements(By.TAG_NAME, 'textarea')
         try:
             input_fields = self.form.find_elements(By.TAG_NAME, 'input')

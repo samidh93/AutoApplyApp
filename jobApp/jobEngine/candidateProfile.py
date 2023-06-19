@@ -5,6 +5,7 @@ import requests
 from typing import List
 import threading
 from deprecated import deprecated
+
 """Candidate Profile: contains all informations about applicant like first, last name, number and adress. \
     as well as experience, education (backgorund in general). These informations need to be fullfilled by the user \
     aka the applications upon registration. the current method is extracting sections from resume, which of course not \
@@ -47,6 +48,8 @@ class CandidateProfile:
         self.email = email
         self.phone_number = phone_number
         self.linkedin = linkedin
+        self.phone_code = "Germany (+49)"
+
         
     def extract_resume_plain_text(self):
         return self.resume_text

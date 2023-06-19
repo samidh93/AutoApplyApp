@@ -23,8 +23,8 @@ class EasyApplyApplication(Application):
         #self.runLoginTask()
         # Start the session pairing task -> after login session success 
         #self.login_task_finished.wait()
-        # create the instance, pass the session 
-        self.easyApplyFormObj = LinkedInEasyApplyForm() # the actual logic behind form
+        # create the instance, pass the session: pass down the candidate profile object
+        self.easyApplyFormObj = LinkedInEasyApplyForm(candidate_profile=candidate_profile) # the actual logic behind form
 
     def runLoginTask(self):
         self.loginbot = WebScraper('jobApp/secrets/linkedin.json', headless=False)

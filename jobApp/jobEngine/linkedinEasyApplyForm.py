@@ -18,7 +18,6 @@ from candidateProfile import CandidateProfile
 from collections.abc import Iterable
 
 
-
 ''' use linkedin easy apply form template'''
 
 
@@ -71,22 +70,25 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
 
     def clickApplyPage(self):
         # click on the easy apply button, skip if already applied to the position
-        time.sleep(3)
-        try:
-            print("try clicking button easy apply")
-            # Wait for the button element to be clickable
-            button = WebDriverWait(self.driver, 50).until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
-            )
-            # button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
-            button.click()
-            print("button apply clicked")
-        # if already applied or not found
-        except:
-            print('easy apply job button is not found, skipping')
-            self.status = False
+        button_apply_clicked = False
+        while not button_apply_clicked:
+            try:
+                print("try clicking button easy apply")
+                # Wait for the button element to be clickable
+                button = WebDriverWait(self.driver, 30).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
+                )
+                # button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
+                button.click()
+                button_apply_clicked = True
+                print("button apply clicked")
 
+            # if already applied or not found
+            except:
+                print('easy apply job button is not found, retry..')
+                self.status = False
+            time.sleep(5)
     def _find_form_first_page(self):
       # fill the expected first page template
         try:
@@ -113,8 +115,10 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         self._createDictFromFormDiv()
         # fill the form with candidate data
         self._send_user_details(self.candidate, self.label_elements_map)
+        # click next buttton
+        self._clickNextPage(self.form)
 
-    def _send_user_details(self, user:CandidateProfile, elements_dict):
+    def _send_user_details(self, user: CandidateProfile, elements_dict):
         for label, element in elements_dict.items():
             if label == 'First name':
                 self.send_value(element, user.firstname)
@@ -133,19 +137,17 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         element.clear()
         element.send_keys(value)
 
-
     def select_option(self, select_element, user_value):
         select = Select(select_element)
         if isinstance(select.options, Iterable):
             if user_value in select.options:
                 select.select_by_visible_text(user_value)
-            else: # return first option to bypass error; needed to be corrected
-                select.select_by_visible_text(select.first_selected_option.text)
+            else:  # return first option to bypass error; needed to be corrected
+                select.select_by_visible_text(
+                    select.first_selected_option.text)
             return
         else:
-                select.select_by_visible_text(select.first_selected_option.text)
-
-
+            select.select_by_visible_text(select.first_selected_option.text)
 
     def _createDictFromFormDiv(self):
         if self.form != None:  # if form is found
@@ -157,7 +159,6 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 label_element = div.find_element(By.TAG_NAME, 'label')
                 label = label_element.text.strip()
                 print(f"Label: {label}")
-
                 try:
                     input_element = div.find_element(By.TAG_NAME, 'input')
                     value = input_element.get_attribute('value').strip()
@@ -167,29 +168,13 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 except:
                     select_element = div.find_element(By.TAG_NAME, 'select')
                     # Create a Select object
-                    #select = Select(select_element)
+                    # select = Select(select_element)
                     # assign label with select elem object
                     self.label_elements_map[label] = select_element
             # Iterate over the dictionary
             for key in self.label_elements_map:
                 value = self.label_elements_map[key]
                 print(f"Key: {key}, Value: {value}")
-
-    def handleSelectOptions(self, selectElem: Select):
-        # Get the currently selected option
-        selected_option = selectElem.first_selected_option
-        print(f"Selected option: {selected_option.text}")
-        # Get all options
-        options = selectElem.options
-        print("Available options:")
-        for option in options:
-            print(option.text)
-        # Select an option by value
-        # Replace 'option_value' with the value of the option you want to select
-        # selectElem.select_by_value('option_value')
-        # Select an option by visible text
-        # Replace 'Option Text' with the visible text of the option you want to select
-        selectElem.select_by_visible_text('Germany (+49)')
 
     def fillSecondPage(self):
         # fill the expected second page template
@@ -199,9 +184,17 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         # fill the expected options select page template
         pass
 
-    def clickNextPage(self):
+    def _clickNextPage(self, form):
         # click the next page button
-        pass
+        # Find the button using its aria-label attribute
+        try:
+            button = form.find_element(By.XPATH, "//span[text()='Next']")
+
+             #   "button[aria-label='Continue to next step']"
+            # Click the button
+            button.click()
+        except:
+            print("next button not found")
 
     def clickReviewPage(self):
         # click the review page button

@@ -4,6 +4,8 @@ import requests
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+
 from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchElementException
 import os
 import time
@@ -34,6 +36,8 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         self.driver = bot.driver  # pass the new driver to current one
         self.label_elements_map = {}
         self.candidate = candidate_profile
+        self.button_apply_clicked = False
+
         # self.driver.implicitly_wait(20)
 
     def load_links_from_csv(self):
@@ -70,33 +74,32 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
 
     def clickApplyPage(self):
         # click on the easy apply button, skip if already applied to the position
-        button_apply_clicked = False
-        while not button_apply_clicked:
-            try:
-                print("try clicking button easy apply")
-                # Wait for the button element to be clickable
-                button = WebDriverWait(self.driver, 30).until(
-                    EC.element_to_be_clickable(
-                        (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
-                )
-                # button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
-                button.click()
-                button_apply_clicked = True
-                print("button apply clicked")
+        try:
+            print("try clicking button easy apply")
+            # Wait for the button element to be clickable
+            button = WebDriverWait(self.driver, 30).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
+            )
+            # button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
+            button.click()
+            self.button_apply_clicked = True
+            print("button apply clicked")
 
             # if already applied or not found
-            except:
-                print('easy apply job button is not found, retry..')
-                self.status = False
-            time.sleep(5)
+        except:
+            print('easy apply job button is not found, retry..')
+            self.status = False
+
     def _find_form_first_page(self):
       # fill the expected first page template
         try:
-            div_element = self.driver.find_element(
+            self.div_element_form_holder = self.driver.find_element(
                 By.CSS_SELECTOR, 'div.artdeco-modal.artdeco-modal--layer-default.jobs-easy-apply-modal')
-            if div_element:
+            if self.div_element_form_holder:
                 # Find the form element within the div
-                form_element = div_element.find_element(By.TAG_NAME, 'form')
+                form_element = self.div_element_form_holder.find_element(
+                    By.TAG_NAME, 'form')
                 if form_element:
                     print(f"form_element found: form object {form_element}")
                     self.form = form_element  # pass the form to parent
@@ -109,16 +112,7 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         except:
             print("no page found")
 
-    def fillFirstPage(self):
-        self._find_form_first_page()  # try to find the form
-        # create the key,value pair for each element on the form
-        self._createDictFromFormDiv()
-        # fill the form with candidate data
-        self._send_user_details(self.candidate, self.label_elements_map)
-        # click next buttton
-        self._clickNextPage(self.form)
-
-    def _send_user_details(self, user: CandidateProfile, elements_dict):
+    def _send_user_details(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         for label, element in elements_dict.items():
             if label == 'First name':
                 self.send_value(element, user.firstname)
@@ -130,12 +124,22 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 self.send_value(element, user.phone_number)
             elif label == 'Email address':
                 self.select_option(element, user.email)
+            elif label == 'Upload resume':
+                self.send_value(element, user.resume.file_path)
             else:
                 raise ValueError("Unsupported label: {}".format(label))
 
-    def send_value(self, element, value):
-        element.clear()
-        element.send_keys(value)
+    def send_value(self, element: WebElement, value: str):
+        element_type = element.get_attribute("type")
+        if element_type == "file":
+            print("The web element is a file input.")
+            print(f"sending file path: {value}")
+            element.send_keys(value)
+        elif element_type == "text":
+            element.clear()
+            element.send_keys(value)
+        else:
+            print("input type not recognized")
 
     def select_option(self, select_element, user_value):
         select = Select(select_element)
@@ -149,48 +153,81 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         else:
             select.select_by_visible_text(select.first_selected_option.text)
 
-    def _createDictFromFormDiv(self):
+    def _find_divs_document_upload(self) -> list[WebElement]:
         if self.form != None:  # if form is found
-            # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = self.form.find_elements(
-                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
-            # Iterate over the divs and extract the label and corresponding input/select values
-            for div in divs:
-                label_element = div.find_element(By.TAG_NAME, 'label')
-                label = label_element.text.strip()
-                print(f"Label: {label}")
-                try:
-                    input_element = div.find_element(By.TAG_NAME, 'input')
-                    value = input_element.get_attribute('value').strip()
-                    print(f"Input Value: {value}")
-                    # assign label with input elem object
-                    self.label_elements_map[label] = input_element
-                except:
-                    select_element = div.find_element(By.TAG_NAME, 'select')
-                    # Create a Select object
-                    # select = Select(select_element)
-                    # assign label with select elem object
-                    self.label_elements_map[label] = select_element
-            # Iterate over the dictionary
-            for key in self.label_elements_map:
-                value = self.label_elements_map[key]
-                print(f"Key: {key}, Value: {value}")
+            try:
+                div_elements = self.form.find_elements(
+                    By.XPATH, "//div[contains(@class, 'js-jobs-document-upload__container') and contains(@class, 'display-flex') and contains(@class, 'flex-wrap')]")
+                return div_elements
+            except NoSuchElementException:
+                print("No div elements found")
+
+    def _find_divs_selection_grouping(self) -> list[WebElement]:
+        if self.form != None:  # if form is found
+            try:
+                # Find the div with class "jobs-easy-apply-form-section__grouping"
+                divs = self.form.find_elements(
+                    By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+                return divs
+            except NoSuchElementException:
+                print("No div elements found")
+
+    def _createDictFromFormDiv(self, divs:  list[WebElement]):
+        # Iterate over the divs and extract the label and corresponding input/select values
+        for div in divs:
+            label_element = div.find_element(By.TAG_NAME, 'label')
+            label = label_element.text.strip()
+            print(f"Label: {label}")
+            try:
+                input_element = div.find_element(By.TAG_NAME, 'input')
+                value = input_element.get_attribute('value').strip()
+                print(f"Input Value: {value}")
+                # assign label with input elem object
+                self.label_elements_map[label] = input_element
+            except:
+                select_element = div.find_element(By.TAG_NAME, 'select')
+                # Create a Select object
+                # select = Select(select_element)
+                # assign label with select elem object
+                self.label_elements_map[label] = select_element
+        # Iterate over the dictionary
+        for key in self.label_elements_map:
+            value = self.label_elements_map[key]
+            print(f"Key: {key}, Value: {value}")
+
+    def fillFirstPage(self):
+        self._find_form_first_page()  # try to find the form
+        divs = self._find_divs_selection_grouping()
+        if len(divs) != 0:
+            # create the key,value pair for each element on the form
+            self._createDictFromFormDiv(divs)
+            # fill the form with candidate data
+            self._send_user_details(self.candidate, self.label_elements_map)
+            # click next buttton
+            self._clickNextPage(self.form)
 
     def fillSecondPage(self):
-        # fill the expected second page template
-        pass
+        self._find_form_first_page()  # try to find the form
+        divs = self._find_divs_document_upload()
+        if len(divs) != 0:
+            # create the key,value pair for each element on the form
+            self._createDictFromFormDiv(divs)
+            # fill the form with candidate data
+            self._send_user_details(self.candidate, self.label_elements_map)
+            # click next buttton
+            self._clickNextPage(self.form)
 
     def fillOptionsSelectPage(self):
         # fill the expected options select page template
         pass
 
-    def _clickNextPage(self, form):
+    def _clickNextPage(self, form: WebElement):
         # click the next page button
         # Find the button using its aria-label attribute
         try:
             button = form.find_element(By.XPATH, "//span[text()='Next']")
 
-             #   "button[aria-label='Continue to next step']"
+            #   "button[aria-label='Continue to next step']"
             # Click the button
             button.click()
         except:
@@ -224,8 +261,14 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
     def applyForJob(self, job_link: str) -> bool:
         # return true if job was success, false if job not found, deleted or can't apply
         self.get_the_url(job_link)  # get the url form the job
-        self.clickApplyPage()  # try to click
+        
+        self.clickApplyPage()  # try to click apply button: retry when not clicked
+        if not self.button_apply_clicked:
+            time.sleep(3)
+            self.clickApplyPage()
         self.fillFirstPage()  # detect form and fill first page
+        self.label_elements_map.clear()
+        self.fillSecondPage()  # fill second page
 
         return False
 

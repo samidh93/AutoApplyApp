@@ -6,11 +6,13 @@ from abc import ABC, abstractmethod
 import os
 from fileLocker import FileLocker
 import threading
+from config import Config
+
 class Application(ABC):
-    def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile='jobApp/data/jobs.csv') -> None:
+    def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile=Config.jobs_file_path()[0]) -> None:
         self.candidate_profile = candidate
         self.jobs = jobOffers
-        self.csv_file=csvJobsFile
+        self.csv_file = csvJobsFile
         if csvJobsFile:
             print("loading jobs from file directly")
             self.load_jobs_from_csv()

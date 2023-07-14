@@ -1,0 +1,9 @@
+selenium
+beautifulsoup4
+googletrans==4.0.0-rc1
+PyPDF2
+requests
+lxml
+stem
+fake_useragent
+openai

@@ -7,3 +7,5 @@ lxml
 stem
 fake_useragent
 openai
+python-dotenv
+msvcrt

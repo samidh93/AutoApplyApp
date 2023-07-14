@@ -10,6 +10,11 @@ class emailCompanyGenerator:
         self.location = location
         exclude_patterns = ["ag", "mg", "gmbh","group","inc", "corp", "ltd","-"," ",".", ",","&", "'", "->"]
         self._replaceStrPattern(exclude_patterns)
+        german_cities = get_country_cities_domain("jobApp/data/de.csv")
+        french_cities = get_country_cities_domain("jobApp/data/fr.csv")
+        belgien_cities = get_country_cities_domain("jobApp/data/be.csv")
+        swiss_cities = get_country_cities_domain("jobApp/data/sw.csv")
+        luxemburg_Cities = get_country_cities_domain("jobApp/data/sw.csv")
 
     def _replaceStrPattern(self, patterns:list)->None:
         for pattern in patterns:
@@ -19,18 +24,14 @@ class emailCompanyGenerator:
                 # Remove special characters and foreign language characters
                 self.company = re.sub(r'[^\w\s,.!?]', '', self.company, flags=re.UNICODE)
 
-    @staticmethod
-    def get_country_cities_domain(csv_file):
+    
+    def get_country_cities_domain(self, csv_file):
         # Open the CSV file and read the data
         with open(csv_file, encoding='utf-8') as f:
             reader = csv.reader(f, delimiter=',')
             return [[row[0] for row in reader], [row[4] for row in reader]]
 
-    german_cities = get_country_cities_domain("jobApp/data/de.csv")
-    french_cities = get_country_cities_domain("jobApp/data/fr.csv")
-    belgien_cities = get_country_cities_domain("jobApp/data/be.csv")
-    swiss_cities = get_country_cities_domain("jobApp/data/sw.csv")
-    luxemburg_Cities = get_country_cities_domain("jobApp/data/sw.csv")
+
 
     def genEmailsViaChatGpt(self) -> list:
         query = f"what is the career or recruiting email of the company {self.company} located in {self.location}. \

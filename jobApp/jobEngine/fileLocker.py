@@ -1,4 +1,3 @@
-import msvcrt
 
 class FileLocker:
     def __init__(self) -> None:

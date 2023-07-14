@@ -20,8 +20,8 @@ class EasyApplyLinkedin:
         """Parameter initialization"""
         with open(linkedin_data) as config_file:
             data = json.load(config_file)
-        self.email = data["login"]['email'][1]
-        self.password = data["login"]['password'][1]
+        self.email = data["login"]['email'][0]
+        self.password = data["login"]['password'][0]
         self.keywords = data["login"]['keywords']
         self.location = data["login"]['location']
         self.chromedriver = data["login"]['driver_path']
@@ -46,7 +46,7 @@ class EasyApplyLinkedin:
         if detached:
             self.option.add_argument("--detached")
 
-        self.option.binary_location = data["login"]["browser_bin_location"]
+        #self.option.binary_location = data["login"]["browser_bin_location"]
         s = Service(self.chromedriver)
         self.driver = webdriver.Chrome(service=s, options=self.option)
         self.driver.implicitly_wait(5)

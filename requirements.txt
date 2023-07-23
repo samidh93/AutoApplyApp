@@ -8,4 +8,10 @@ stem
 fake_useragent
 openai
 python-dotenv
-msvcrt
+google-auth
+google-auth-oauthlib
+google-api-python-client
+pdfplumber
+python-docx
+deprecated
+google-cloud-translate

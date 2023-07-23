@@ -6,10 +6,10 @@ from abc import ABC, abstractmethod
 import os
 from fileLocker import FileLocker
 import threading
-from config import Config
+from config import UserConfig, AppConfig
 
 class Application(ABC):
-    def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile=Config.jobs_file_path()[0]) -> None:
+    def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile=UserConfig.get_jobs_file_path()) -> None:
         self.candidate_profile = candidate
         self.jobs = jobOffers
         self.csv_file = csvJobsFile

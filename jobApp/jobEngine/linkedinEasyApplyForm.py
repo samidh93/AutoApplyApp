@@ -118,8 +118,8 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 self.send_value(element, user.firstname)
             elif label == 'Last name':
                 self.send_value(element, user.lastname)
-            elif label == 'Phone country code':
-                self.select_option(element, user.phone_code)
+            #elif label == 'Phone country code':
+            #    self.select_option(element, user.phone_code)
             elif label == 'Mobile phone number':
                 self.send_value(element, user.phone_number)
             elif label == 'Email address':

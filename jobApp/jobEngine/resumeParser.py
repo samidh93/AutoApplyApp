@@ -1,5 +1,5 @@
 from PyPDF2 import PdfReader, PdfWriter
-from reportlab.pdfgen import canvas # should be deleted
+#from reportlab.pdfgen import canvas # should be deleted
 import pdfplumber
 import re
 

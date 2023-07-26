@@ -27,7 +27,7 @@ class Education:
         self.duration = duration
         
 class Skills:
-    def __init__(self, softwares, languages):
+    def __init__(self, softwares: list, languages:list):
         self.languages = languages
         self.softwares = softwares
 
@@ -50,7 +50,24 @@ class CandidateProfile:
         self.linkedin = linkedin
         self.phone_code = "Germany (+49)"
 
-        
+        # test cases
+        self.set_expected_salary("40000")
+        self.set_languages_expertise("C1")
+        self.set_nationality("Tunisian")
+        self.set_years_experiences("5")
+
+    def set_nationality(self, nationality:str):
+        self.nationality = nationality
+    def set_expected_salary(self, salary:str):
+        self.salary = salary
+    def set_years_experiences(self, years:str):
+        self.years_exp= years
+    def set_languages_expertise(self, languages_expertise: str):
+        self.languages_expert = languages_expertise
+    def set_visa_requirement(self, job_location:str):
+        if self.nationality == job_location:
+            return False
+        return True
     def extract_resume_plain_text(self):
         return self.resume_text
 

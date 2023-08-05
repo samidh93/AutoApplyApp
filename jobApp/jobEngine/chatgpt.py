@@ -43,23 +43,9 @@ class ChatGPT:
 
 
 if __name__ == '__main__':
-    chatgpt = ChatGPT("secrets/openai.json")
+    chatgpt = ChatGPT("/Users/sami/dev/AutoApplyApp/jobApp/secrets/openai.json")
     q1 = "create a draft email to the hiring manager for my job application as project manager at IPSET"
-    q2 =" create a draft email for software engineer job application at bosch  \
-        Experience:  \
-        Lead robotics & software engineer theion Jun 2021 - Present (1 year 10 months) \
-        Project: software solution design of several custom Machines for sulfur battery production. \
-        Team size: 5 Tech-stack: C++, python, Qt, uml, ros, git, github actions, docker, cmake, sql, agile scrum \
-        Software Engineer German Aerospace Center (DLR) Apr 2020 - Jun 2021 (1 year 3 months) \
-        Project: development of autonomus driving simulation testing framework \
-        Team size: 9 Tech-stack: c++, python, ros, git, gitlab ci, docker, sumo, yaml, json, cmake, agile scrum \
-        Working Student embedded software Berlin University of Applied Sciences Berlin (BHT) \
-        Apr 2019 - Apr 2020 (1 year 1 month) Project: design of customized stereolithography 3d printer \
-        Team size: 4 Tech-stack: c, c++, stm32, cubemx, simulink \
-        "
-    q3 = "create a draft email to apply for the job as recruiting manager at BIC in paris, france"
+   
     # Example usage of the ask() function
     chatgpt.ask(q1)
-    chatgpt.ask(q2)
-    chatgpt.ask(q3)
     chatgpt.printConversationHistory()

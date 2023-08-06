@@ -51,7 +51,7 @@ class CandidateProfile:
         self.phone_code = "Germany (+49)"
 
         # test cases
-        self.set_expected_salary("40000")
+        self.set_expected_salary("50000")
         self.set_languages_expertise("C1")
         self.set_nationality("Tunisian")
         self.set_years_experiences("5")

@@ -118,11 +118,11 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 self.send_value(element, user.firstname)
             elif label == 'Last name':
                 self.send_value(element, user.lastname)
-            #elif label == 'Phone country code':
-            #    self.select_option(element, user.phone_code)
+            elif 'Phone country code' in label:
+                self.select_option(element, user.phone_code)
             elif label == 'Mobile phone number':
                 self.send_value(element, user.phone_number)
-            elif label == 'Email address':
+            elif 'Email address' in label:
                 self.select_option(element, user.email)
             else:
                 raise ValueError("Unsupported label: {}".format(label))
@@ -139,45 +139,83 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
     def _send_user_answers(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         # try to answer most form questions
         for label, element in elements_dict.items():
-            if element.get_attribute("type") == "text":
+            if isinstance(element, list):
+                print("The element is of type list.")
+                if element[0].get_attribute("type") == "radio":
+                    #handle dialog questions
+                    self._handle_dialog_question(label , element)
+                elif element[0].get_attribute("type") == "checkbox":
+                    #handle dialog questions
+                    self._handle_checkbox_question(label , element)
+            elif element.get_attribute("type") == "text":
                 # handle text based questions
-                self._handle_text_question(element)
-            elif element.get_attribute("type") == "dialog":
+                self._handle_text_question(label, element)
+            else:
                 #handle dialog questions
-                self._handle_dialog_question(element)
-            elif element.TAG_NAME == "select":
-                #handle dialog questions
-                self._handle_select_question(element)
-
-    def _handle_text_question(self, element: WebElement ):
+                self._handle_select_question(label , element)
+    def _handle_text_question(self, label, element: WebElement ):
         try:
-            print("text question")
+            print("processing text question")
+            if "salary" in label:
+                self.send_value(element, self.candidate.salary)
         except:
             pass 
-    def _handle_dialog_question(self, element: WebElement ):
+    def _handle_dialog_question(self, label, element: WebElement ):
         try:
-            print("dialog question")
+            print("processing dialog question")
+            input_options = element.find_elements(By.TAG_NAME, "input")
+            for opt in input_options:
+                if opt.get_attribute("value") == "Yes":
+                    opt.click()
         except:
             pass 
-    def _handle_select_question(self, element: WebElement ):
+    def _handle_select_question(self, label, element: WebElement ):
         try:
-            print("select question")
+            print("processing select question")
+            dropdown = Select(element)
+            # Get the number of options in the dropdown
+            options_count = len(dropdown.options)
+            # Calculate the index of the middle option
+            middle_index = options_count // 2
+            # Select the option in the middle by index
+            dropdown.select_by_index(options_count-1)
         except:
             pass 
-
+    def _handle_checkbox_question(self, label , elements: WebElement):
+        try:
+            print("checkbox question")
+            options_count = len(elements)
+            middle_index = options_count // 2
+            # random value in the middle
+            checkbox = elements[options_count-1]
+            # Find the associated label using its attributes (for or id) or relationship (preceding-sibling, following-sibling, etc.)
+            label = checkbox.find_element(By.XPATH, "//label[@for='" + checkbox.get_attribute("id") + "']")
+            if not label.is_selected():
+                label.click()  # Click the label to interact with the checkbox
+                print("Label clicked successfully.")
+        except Exception as e:
+            print("An error occurred:", e)
     def send_value(self, element: WebElement, value: str):
         element_type = element.get_attribute("type")
         if element_type == "file":
-            #print("The web element is a file input.")
             print(f"sending file path: {value}")
             element.send_keys(value)
         elif element_type == "text":
             element.clear()
             element.send_keys(value)
-        elif element_type == "radio":
-            pass
         else:
             print("input type not recognized")
+
+    def click_option(self, element: WebElement, value: str):
+        element_type = element.get_attribute("type")
+        if element_type == "radio":
+            for elem in element:
+                if elem == value:
+                    elem.click()
+        elif element_type == "checkbox":
+            for elem in element:
+                if elem == value:
+                    elem.click()
 
     def select_option(self, select_element, user_value):
         select = Select(select_element)
@@ -186,7 +224,7 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 select.select_by_visible_text(user_value)
             else:  # return first option to bypass error; needed to be corrected
                 select.select_by_visible_text(
-                    select.first_selected_option.text)
+                    select.first_selected_option.accessible_name)
             return
         else:
             select.select_by_visible_text(select.first_selected_option.text)
@@ -214,16 +252,57 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
     def _createDictFromFormDiv(self, divs:  list[WebElement]):
         # Iterate over the divs and extract the label and corresponding input/select values
         for div in divs:
-            label = self._find_label_tag(div)
-            if label is not None:
-                input_elem = self._find_input_tag(div, label)
-                if input_elem is not None:
-                    self.label_elements_map[label] = input_elem
-                else:
-                    select_elem = self._find_select_tag(div, label)     
-                    if select_elem is not None:
-                        self.label_elements_map[label] = select_elem
+            fieldset = self._find_fieldset_tag(div)
+            if fieldset is not None:
+                # we have a set of fields (dialog or checkbox)
+                span_text = self._find_span_text(fieldset)
+                inputs_elems = self._find_input_options_tag(fieldset, span_text.text)
+                print(f"added field element with label: {span_text}")
+                self.label_elements_map[span_text.text] = inputs_elems
+            # search for label w
+            else:
+                label = self._find_label_tag(div)
+                if label is not None:
+                    input_elem = self._find_input_tag(div, label)
+                    # text field
+                    if input_elem is not None:
+                        print(f"added input element with label: {label}")
+                        self.label_elements_map[label] = input_elem
+                    # search for select options
+                    else:
+                        select_elem = self._find_select_tag(div, label)     
+                        if select_elem is not None:
+                            print(f"added select element with label: {label}")
+                            self.label_elements_map[label] = select_elem
 
+    def _find_fieldset_tag(self, element: WebElement):
+        try: 
+            fieldset_element = element.find_element(By.TAG_NAME, 'fieldset')
+            print(f"Fieldset: {fieldset_element.text}")
+
+            return fieldset_element
+            #print(f"Label: {label}")
+        except NoSuchElementException:
+            # Handle the case when 'select' element is not found
+            print("fieldset element not found.")       
+    def _find_span_text(self, element: WebElement):
+        try: 
+            span_element = element.find_element(By.TAG_NAME, 'span')
+            span_element.text.strip()
+            return span_element
+            #print(f"Label: {label}")
+        except NoSuchElementException:
+            # Handle the case when 'select' element is not found
+            print("no span element not found.")         
+    def _find_input_options_tag(self, element: WebElement, label=None):
+        try:
+            # Attempt to find the 'input' element inside the 'div' element
+            input_elements = element.find_elements(By.TAG_NAME, 'input')
+            #print(f"Input Value: {value}")
+            return input_elements
+        except NoSuchElementException:
+            # Handle the case when 'input' element is not found
+            print("Input elements not found.")
     def _find_label_tag(self, element: WebElement):
         try: 
             label_element = element.find_element(By.TAG_NAME, 'label')
@@ -261,17 +340,19 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
              print("Select element not found.")
 
     def fillFormPage(self):
-        if self._find_header(self.form) == "Contact info" or "Kontaktinfo":
-            self._fill_contact_info(self.form)
-            self.label_elements_map.clear()
-        if self._find_header(self.form) == "Resume" or "Lebenslauf":
-            self._fill_resume(self.form)
-            self.label_elements_map.clear()
-        if self._find_header(self.form) == "Additional" or "Additional Questions" or "Weitere Fragen":
-            #print("filling additional")
-            self._fill_additionals(self.form)
-            self.label_elements_map.clear()
-
+        header = self._find_header(self.form)
+        if header == "Contact info" or header == "Kontaktinfo":
+            return self._fill_contact_info(self.form)
+            #self.label_elements_map.clear()
+        elif header == "Resume" or header == "Lebenslauf":
+            return self._fill_resume(self.form)
+            #self.label_elements_map.clear()
+        elif header == "Additional" or header == "Additional Questions" or header == "Weitere Fragen":
+            print("filling additional questions")
+            return self._fill_additionals(self.form)
+            #self.label_elements_map.clear()
+        else:
+            print("page header no recognized")
     def _fill_contact_info(self, form: WebElement):
         #self._find_application_form()  # try to find the form
         try:
@@ -282,13 +363,12 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 # fill the form with candidate data
                 self._send_user_contact_infos(self.candidate, self.label_elements_map)
                 # click next buttton
-                #self._clickNextPage(self.form)
+                self.label_elements_map.clear()
         except:
             print("no contact infos to fill")
-            return
-
+    ###
     def _fill_resume(self, form: WebElement):
-        #self._find_application_form()  # try to find the form
+        self.label_elements_map.clear()
         try:
             divs = self._find_divs_document_upload()
             if len(divs) != 0:
@@ -297,10 +377,12 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 # fill the form with candidate data
                 self._send_user_documents(self.candidate, self.label_elements_map)
                 # click next buttton
-                #self._clickNextPage(self.form)
+                self.label_elements_map.clear()
+
         except:
             print("no resume to fill")
-            return
+    
+    ####
     def _fill_additionals(self, form: WebElement):
         #self._find_application_form()  # try to find the form
         try:
@@ -311,10 +393,9 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
                 # fill the form with candidate data
                 self._send_user_answers(self.candidate, self.label_elements_map)
                 # click next buttton
-                #self._clickNextPage(self.form)
-        except:
-            print("no additionals to fill")
-            return
+                self.label_elements_map.clear()
+        except Exception as e:
+            print("catched error while filling additional questions", e)
     ######## find hear ####
     def _find_header(self, form: WebElement):
         try:
@@ -374,8 +455,10 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         # click the submit page button
         # Find the button using its aria-label attribute
         try:
-            button = form.find_element(By.XPATH, "//span[text()='Submit application']")
-            # Click the button
+            wait = WebDriverWait(self.driver, 10)
+            button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
+            # Scroll to the button to ensure it's in view
+            self.driver.execute_script("arguments[0].scrollIntoView();", button)
             button.click()
             self.SubmitClicked = True
             return True
@@ -390,8 +473,8 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         try:
             button = form.find_element(By.XPATH, "//span[text()='Next']")
             return True
-        except NoSuchElementException:
-            # Handle the case when 'select' element is not found
+        except :            
+            # Handle the case when 'next' element is not found
             print("next button element not found.")
             return False
     def _detectReviewButtonForm(self, form: WebElement):
@@ -399,16 +482,21 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         try:
             button = form.find_element(By.XPATH, "//span[text()='Review']")
             return True
-        except NoSuchElementException:
+        except :
             # Handle the case when 'select' element is not found
             print("Review button element not found.")
             return False
     def _detectSubmitButtonForm(self, form: WebElement):
         # Find the button using its aria-label attribute
         try:
-            button = form.find_element(By.XPATH, "//span[text()='Submit application']")
+            #button = form.find_element(By.XPATH, "//span[text()='Submit application']")
+            # Wait for the button to be clickable or visible
+            wait = WebDriverWait(self.driver, 10)
+            button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
+            # Scroll to the button to ensure it's in view
+            self.driver.execute_script("arguments[0].scrollIntoView();", button)
             return True
-        except NoSuchElementException:
+        except :
             # Handle the case when 'select' element is not found
             print("Submit button element not found.")
             return False
@@ -417,14 +505,16 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         if self._detectSubmitButtonForm(form): # only submit
             print("page form with submit detected")
             return self._execute_submit(form)
-        if self._detectReviewButtonForm(form): # recursive one
-            print("page form with submit detected")
+        elif self._detectReviewButtonForm(form): # recursive one
+            print("page form with review detected")
             self._execute_review(form)
             return self._detect_form_page_type(form)
-        if self._detectNextButtonForm(form): # recursive many
+        elif self._detectNextButtonForm(form): # recursive many
             print("page form with next detected")
             self._execute_next(form)
             return self._detect_form_page_type(form)
+        else:
+            form.submit()
 
     ########### each case func ########
     def _execute_submit(self, form:WebElement):

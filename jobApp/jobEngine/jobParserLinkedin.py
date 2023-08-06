@@ -146,7 +146,6 @@ class JobParser:
             print(f"--------------------------------------------------------------------")
             for i, result in enumerate(results[jobsPerPage:]):
                 hover = ActionChains(sel_driver).move_to_element(result)
-                time.sleep(1)
                 hover.perform()
                 time.sleep(1)
                 try:
@@ -158,7 +157,8 @@ class JobParser:
                     print("link added to list")
                     html_source = self.openLinkNewTabAndGetHtmlSource(sel_driver, link_href)
                     if filter_links:
-                        self.filterJobList(link_href, html_source)
+                        pair = self.filterJobList(link_href, html_source)
+                        self.links_pair_list.append(pair)
                     if save_html:
                         self.html_sources.append(html_source)
                 except:
@@ -173,19 +173,14 @@ class JobParser:
         # Open a new tab
         driver.execute_script("window.open('', '_blank');")
         driver.switch_to.window(driver.window_handles[1])  # Switch to the new tab
-
         # Navigate to a URL in the new tab
         driver.get(link)
-
         # Read the HTML source of the new tab
         new_tab_html_source = driver.page_source
-
         # Close the new tab
         driver.close()
-
         # Switch back to the original tab
         driver.switch_to.window(driver.window_handles[0])
-
         return new_tab_html_source
 
     def filterJobList(self, job_href = None,html_src= None, onsite=False, offsite=False) -> dict:

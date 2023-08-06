@@ -55,14 +55,22 @@ class JobBuilder:
         self.links = links
 
     def createJobObject(self, job_id, link_int,link_ext,link_id, html_source) -> Job:
-        tree = html.fromstring(html_source)
+        try:
+            # Convert the decoded HTML source to a tree structure
+            encoding = 'utf-8'  # Replace with the actual encoding if known
+            decoded_html = html_source.decode(encoding)
+            tree = html.fromstring(decoded_html)
+            # Now you can work with the html_tree
+        except Exception as e:
+            print("Error parsing HTML:", e)
+            return
         job_title = self.getJobTitlefromHtml(tree)
         company_name = self.getCompanyNamefromHtml(tree)
         location = self.getLocationfromHtml(tree)
         posted_date = self.getPostedDatefromHtml(tree)
         job_description = self.getJobDescriptionFromHtml(tree)
         emails = EmailCompanyBuilder.getJobEmails(
-            company_name, location, html_source.decode('utf-8'),  link_int, link_ext)
+            company_name, location, html_source,  link_int, link_ext)
         j = Job(job_id, link_int, job_title, company_name, location, posted_date, link_id,
                 job_description, False, company_email=emails, job_official_url=link_ext)
         print(f"Job id: {j.job_id}")
@@ -94,7 +102,8 @@ class JobBuilder:
                     extern_link = self.links[1][i]
                     link_id = self.links[2][i]
                     if html_sources is not None:
-                        self.createJobObject(i, intern_link, extern_link, link_id, html_sources[i])
+                        self.createJobObject(i, intern_link, extern_link, link_id, html_sources[i-1])
+                        break
                     else:
                         response = requests.get(link)
                         if response.status_code == 200:

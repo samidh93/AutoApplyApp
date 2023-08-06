@@ -54,7 +54,35 @@ class JobBuilder:
 
         self.links = links
 
-    def createJobObjectList(self) -> list[Job]:
+    def createJobObject(self, job_id, link_int,link_ext,link_id, html_source) -> Job:
+        tree = html.fromstring(html_source)
+        job_title = self.getJobTitlefromHtml(tree)
+        company_name = self.getCompanyNamefromHtml(tree)
+        location = self.getLocationfromHtml(tree)
+        posted_date = self.getPostedDatefromHtml(tree)
+        job_description = self.getJobDescriptionFromHtml(tree)
+        emails = EmailCompanyBuilder.getJobEmails(
+            company_name, location, html_source.decode('utf-8'),  link_int, link_ext)
+        j = Job(job_id, link_int, job_title, company_name, location, posted_date, link_id,
+                job_description, False, company_email=emails, job_official_url=link_ext)
+        print(f"Job id: {j.job_id}")
+        print(f"Job link_id: {j.job_link_id}")
+        print(f"Job URL: {j.job_url}")
+        print(f"Company Name: {j.company_name}")
+        print(f"Company Emails: {j.company_email}")
+        print(f"Job Title: {j.job_title}")
+        print(f"Job Location: {j.job_location}")
+        print(f"Posted Date: {j.posted_date}")
+        print(f"Job Description: {j.job_description[0:100]}")
+        print(f"Applied: {j.applied}")
+        if j.job_official_url != "None": ## if external type application
+            j.application_type = "external"
+        print(f"application type: {j.application_type}")
+        print(f"job official url: {j.job_official_url}")
+        print("\n")
+        self.jobObjLists.append(j)
+
+    def createJobObjectList(self, html_sources=None) -> list[Job]:
         max_retry = 5
         start_time = time.time()
         for i, link in enumerate(self.links[0]):
@@ -62,47 +90,24 @@ class JobBuilder:
             # we try 5 times if server retrun code 429 (too many requests in period of time)
             for _ in range(max_retry):
                 try:
-                    response = requests.get(link)
-                    if response.status_code == 200:
-                        # Create an HTML tree from the response text
-                        tree = html.fromstring(response.text)
-                        job_id = i + 1  # add an ID to the job
-                        job_title = self.getJobTitlefromHtml(tree)
-                        company_name = self.getCompanyNamefromHtml(tree)
-                        location = self.getLocationfromHtml(tree)
-                        posted_date = self.getPostedDatefromHtml(tree)
-                        job_description = self.getJobDescriptionFromHtml(tree)
-                        intern_link = link
-                        extern_link = self.links[1][i]
-                        link_id = self.links[2][i]
-                        emails = EmailCompanyBuilder.getJobEmails(
-                            company_name, location, response.content.decode('utf-8'),  intern_link, extern_link)
-                        j = Job(job_id, intern_link, job_title, company_name, location, posted_date, link_id,
-                                job_description, False, company_email=emails, job_official_url=extern_link)
-                        print(f"Job id: {j.job_id}")
-                        print(f"Job link_id: {j.job_link_id}")
-                        print(f"Job URL: {j.job_url}")
-                        print(f"Company Name: {j.company_name}")
-                        print(f"Company Emails: {j.company_email}")
-                        print(f"Job Title: {j.job_title}")
-                        print(f"Job Location: {j.job_location}")
-                        print(f"Posted Date: {j.posted_date}")
-                        print(f"Job Description: {j.job_description[0:100]}")
-                        print(f"Applied: {j.applied}")
-                        if j.job_official_url != "None": ## if external type application
-                            j.application_type = "external"
-                        print(f"application type: {j.application_type}")
-                        print(f"job official url: {j.job_official_url}")
-                        print("\n")
-                        self.jobObjLists.append(j)
-                        break  # no need for retry
-                    elif response.status_code == 429:
-                        end_time = time.time()
-                        print(
-                            f"error {response.status_code}: too  many requests. number of requests per seconds: \n \
-                             {self.requests_counter}/{end_time-start_time}  slowing down requests time to 5 sec ")
-                        time.sleep(5)  # we slow down requests for 5 seconds
-                        continue  # we continue with next retry
+                    intern_link = link
+                    extern_link = self.links[1][i]
+                    link_id = self.links[2][i]
+                    if html_sources is not None:
+                        self.createJobObject(i, intern_link, extern_link, link_id, html_sources[i])
+                    else:
+                        response = requests.get(link)
+                        if response.status_code == 200:
+                            # Create an HTML tree from the response text
+                            self.createJobObject(i,intern_link, extern_link, link_id,  response.content )
+                            break  # no need for retry
+                        elif response.status_code == 429:
+                            end_time = time.time()
+                            print(
+                                f"error {response.status_code}: too  many requests. number of requests per seconds: \n \
+                                {self.requests_counter}/{end_time-start_time}  slowing down requests time to 5 sec ")
+                            time.sleep(5)  # we slow down requests for 5 seconds
+                            continue  # we continue with next retry
 
                 except requests.exceptions.Timeout as err:
                     print(f"Request timed out: {err}")

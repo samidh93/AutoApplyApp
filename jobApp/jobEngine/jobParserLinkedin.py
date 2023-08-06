@@ -8,7 +8,16 @@ import re
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
 from fileLocker import FileLocker
 import time
-
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 
 class JobParser:
     def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv'):
@@ -40,6 +49,7 @@ class JobParser:
         self.links_pair = {"onsite": "None", "offsite": "None"}
         # list of dict [ {"onsite": None, "offsite": None} ]
         self.links_pair_list = []
+        self.html_sources = []
 
     def setEasyApplyFilter(self, easy_apply_filter=False):
         print("Warning: easy apply filter is only visible for logged user ")
@@ -105,17 +115,86 @@ class JobParser:
         self.jobList = self.bot.getUnlockJobLinksNoLogin(
             pages)  # we have all links
         for i, link in enumerate(self.jobList):
-            print(f"filtering job with index {i}")
+            #print(f"filtering job with index {i}")
             pair = self.filterJobList(link)
-            print(f"pair: {pair}")
+            #print(f"pair: {pair}")
             self.links_pair_list.append(pair)
-        print(f"list: {self.links_pair_list}")
+        #print(f"list: {self.links_pair_list}")
         self.saveLinksToCsv(self.links_pair_list, self.csv_file)
 
-    def filterJobList(self, job_href, onsite=False, offsite=False) -> dict:
+    def createListOfLinksDriver(self, page_to_visit, filter_links= True, save_html=True):
+        # iterate all results and extract each job link
+        sel_driver = self.bot.getEasyApplyJobSearchUrlResults()
+        links = []
+       # find the total amount of results/pages
+        jobsPerPage= 0
+        try:
+            total_results = sel_driver.find_element(
+                By.CLASS_NAME, "results-context-header__job-count")
+            total_results_int = int(total_results.text.split(' ', 1)[0].replace(",", "").replace(".", "").replace("+",""))
+            print(f"total jobs found: {total_results_int}")
+        except NoSuchElementException:
+            pass
+        for page in range(page_to_visit):
+            results = sel_driver.find_elements(
+                By.XPATH, '//*[@id="main-content"]/section[2]/ul/li' )
+            # for each job add, get the link
+            print(f"------------------------------------------------------------------- ")
+            print(f"scrolling down the page to load all results, current result count: {len(results)}")
+            print(f"current job per page count: {jobsPerPage}")
+            print(f"current loop interval: {jobsPerPage} ------> {len(results)}")
+            print(f"--------------------------------------------------------------------")
+            for i, result in enumerate(results[jobsPerPage:]):
+                hover = ActionChains(sel_driver).move_to_element(result)
+                time.sleep(1)
+                hover.perform()
+                time.sleep(1)
+                try:
+                    link_element = WebDriverWait(result, 10).until(
+                        EC.presence_of_element_located((By.TAG_NAME, 'a')))
+                    link_href = link_element.get_attribute('href')
+                    print(f"link_{i} for job {link_href}")
+                    links.append(link_href)
+                    print("link added to list")
+                    html_source = self.openLinkNewTabAndGetHtmlSource(sel_driver, link_href)
+                    if filter_links:
+                        self.filterJobList(link_href, html_source)
+                    if save_html:
+                        self.html_sources.append(html_source)
+                except:
+                    print("Element not found")
+            jobsPerPage = jobsPerPage+25
+            print(f"saved {len(links)} links")
+
+        self.saveLinksToCsv(self.links_pair_list, self.csv_file)
+        return links, self.html_sources
+
+    def openLinkNewTabAndGetHtmlSource(self, driver, link):
+        # Open a new tab
+        driver.execute_script("window.open('', '_blank');")
+        driver.switch_to.window(driver.window_handles[1])  # Switch to the new tab
+
+        # Navigate to a URL in the new tab
+        driver.get(link)
+
+        # Read the HTML source of the new tab
+        new_tab_html_source = driver.page_source
+
+        # Close the new tab
+        driver.close()
+
+        # Switch back to the original tab
+        driver.switch_to.window(driver.window_handles[0])
+
+        return new_tab_html_source
+
+    def filterJobList(self, job_href = None,html_src= None, onsite=False, offsite=False) -> dict:
         links_pair = {"onsite": "None", "offsite": "None"}
-        response = requests.get(job_href)
-        html_source = response.content
+        if html_src is not None:
+            html_source= html_src
+        else:
+            response = requests.get(job_href)
+            html_source = response.content
         # @NOTE: the requests here to be moved while getting the url at the same step
         time.sleep(1)  # slow down request
         # Create a BeautifulSoup object to parse the HTML source code

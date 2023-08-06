@@ -16,18 +16,6 @@ class JobBuilderMicroService:
 
 
 if __name__ == '__main__':
-    import sys
-    args = sys.argv
-    csv_links = ""
-    csv_jobs = ""
-    # get the csv links
-  #  if args[1] and args[2]:
-  #      csv_links=args[1]
-  #      csv_jobs= args[2]
-  #      print(f"csv links file: {csv_links}")
-  #      print(f"csv jobs file: {csv_jobs}")
-  #      jlink = JobBuilderMicroService(csv_links=csv_links, csv_jobs=csv_jobs)
-  #      jlink.run_service()
-  #  else:
+
     jlink = JobBuilderMicroService()
     jlink.run_service()

@@ -11,7 +11,6 @@ from selenium.webdriver.chrome.service import Service
 import re
 import time
 import json
-from selenium.webdriver.chrome.service import Service
 
 
 class EasyApplyLinkedin:
@@ -69,20 +68,24 @@ class EasyApplyLinkedin:
         if save_cookies:
             self._save_cookies()
 
-    def getEasyApplyJobSearchUrlResults(self) -> list:
+    def getEasyApplyJobSearchUrlResults(self):
         print(f"getting job from page {self.params['pageNum']}")
         full_url = f"{self.base_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
         print(f"constructed url: {full_url }")
         self.driver.get(full_url)
+        return self.driver
 
     def getUnlockJobLinksNoLogin(self, page_to_visit=5):
         """This function finds all the offers through all the pages result of the search and filter"""
         # find the total amount of results/pages
         jobsPerPage= 0
-        total_results = self.driver.find_element(
-            By.CLASS_NAME, "results-context-header__job-count")
-        total_results_int = int(total_results.text.split(' ', 1)[0].replace(",", "").replace(".", ""))
-        print(f"total jobs found: {total_results_int}")
+        try:
+            total_results = self.driver.find_element(
+                By.CLASS_NAME, "results-context-header__job-count")
+            total_results_int = int(total_results.text.split(' ', 1)[0].replace(",", "").replace(".", "").replace("+",""))
+            print(f"total jobs found: {total_results_int}")
+        except NoSuchElementException:
+            pass
         for page in range(page_to_visit):
             results = self.driver.find_elements(
                 By.XPATH, '//*[@id="main-content"]/section[2]/ul/li' )

@@ -513,8 +513,7 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             print("page form with next detected")
             self._execute_next(form)
             return self._detect_form_page_type(form)
-        else:
-            form.submit()
+
 
     ########### each case func ########
     def _execute_submit(self, form:WebElement):
@@ -540,13 +539,12 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         if not self.button_apply_clicked:
             time.sleep(3)
             self.clickApplyPage()
+        if not self.button_apply_clicked:
+            return False
         # detect form page type: 
         self._find_application_form()  # try to find the form
         self._detect_form_page_type(self.form)
-
-
-
-        return False
+        return True
 
     #### apply for all jobs ######
     def applyForAllLinks(self):
@@ -554,9 +552,10 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             print(f"parsing link: {link}")
             self.get_the_url(link)
             self.clickApplyPage()
+        
+        # loop to keep browser from quitting
         while (1):
             pass
-
 
 if __name__ == '__main__':
     easyApplyForm = LinkedInEasyApplyForm()

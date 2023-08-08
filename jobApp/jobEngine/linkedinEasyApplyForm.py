@@ -72,24 +72,7 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             print("can't open link in the browser")
             self.status = False
 
-    def clickApplyPage(self):
-        # click on the easy apply button, skip if already applied to the position
-        try:
-            print("try clicking button easy apply")
-            # Wait for the button element to be clickable
-            button = WebDriverWait(self.driver, 30).until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
-            )
-            # button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
-            button.click()
-            self.button_apply_clicked = True
-            print("button apply clicked")
-
-            # if already applied or not found
-        except:
-            print('easy apply job button is not found, retry..')
-            self.status = False
+  
 
     def _find_application_form(self):
       # fill the expected first page template
@@ -158,6 +141,8 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             print("processing text question")
             if "salary" in label:
                 self.send_value(element, self.candidate.salary)
+            if "Erfahrung" or "Experience" in label:
+                self.send_value(element, self.candidate.years_exp)
         except:
             pass 
     def _handle_dialog_question(self, label, element: WebElement ):
@@ -165,6 +150,7 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             print("processing dialog question")
             input_options = element.find_elements(By.TAG_NAME, "input")
             for opt in input_options:
+                print("option: ", opt)
                 if opt.get_attribute("value") == "Yes":
                     opt.click()
         except:
@@ -412,17 +398,19 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         try:
             print("try clicking button easy apply")
             # Wait for the button element to be clickable
-            button = WebDriverWait(self.driver, 30).until(
+            button = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )
             # button = self.driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
             button.click()
+            self.button_apply_clicked = True
             print("button apply clicked")
         # if already applied or not found
         except:
             print('easy apply job button is not found, skipping')
             self.status = False
+
     def _clickNextPage(self, form: WebElement):
         # click the next page button
         # Find the button using its aria-label attribute
@@ -520,12 +508,26 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         # on page submit execute
         return self._clickSubmitPage(form)
     def _execute_review(self, form:WebElement):
-        # on page review execute
+        current_header = self._find_header(form)
+        # click review, if header is same, try filling the page if is not filled
+        self._clickReviewPage(form)
+        last_header = self._find_header(form)
+        if last_header != current_header:
+            # we skipped page
+            return
+            # on page review execute
         self.fillFormPage()
         # return button clicker
         return self._clickReviewPage(form)
 
     def _execute_next(self, form:WebElement): # this 90% of the cases 
+        current_header = self._find_header(form)
+        # click review, if header is same, try filling the page if is not filled
+        self._clickNextPage(form)
+        last_header = self._find_header(form)
+        if last_header != current_header:
+            # we skipped page
+            return
         # on page next execute
         self.fillFormPage()
         # return button clicker
@@ -537,13 +539,14 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         self.get_the_url(job_link)  # get the url form the job
         self.clickApplyPage()  # try to click apply button: retry when not clicked
         if not self.button_apply_clicked:
-            time.sleep(3)
+            #time.sleep()
             self.clickApplyPage()
         if not self.button_apply_clicked:
             return False
         # detect form page type: 
         self._find_application_form()  # try to find the form
         self._detect_form_page_type(self.form)
+        self.button_apply_clicked = False
         return True
 
     #### apply for all jobs ######

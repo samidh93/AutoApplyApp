@@ -58,7 +58,7 @@ class JobBuilder:
         try:
             # Convert the decoded HTML source to a tree structure
             encoding = 'utf-8'  # Replace with the actual encoding if known
-            decoded_html = html_source.decode(encoding)
+            decoded_html = html_source
             tree = html.fromstring(decoded_html)
             # Now you can work with the html_tree
         except Exception as e:
@@ -102,7 +102,7 @@ class JobBuilder:
                     extern_link = self.links[1][i]
                     link_id = self.links[2][i]
                     if html_sources is not None:
-                        self.createJobObject(i, intern_link, extern_link, link_id, html_sources[i-1])
+                        self.createJobObject(i, intern_link, extern_link, link_id, html_sources[i])
                         break
                     else:
                         response = requests.get(link)

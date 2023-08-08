@@ -26,7 +26,10 @@ class Application(ABC):
         threads = [threading.Thread] #list of threeads
         print("applying for jobs from the csv file")
         for j in self.jobs:
-            print(f"job type: {j.application_type}")
+            if j.applied:
+            # we already applied for this job
+                continue
+            print(f"application filter type: {application_type}, current job application type: {j.application_type}")
             if application_type == j.application_type: # apply for the same type
                 print(f"creating thread for easy  apply job with: {j.job_id}")
                 #thread = threading.Thread(target=self.ApplyForJob, args=(j,))

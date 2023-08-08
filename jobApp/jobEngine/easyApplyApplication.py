@@ -48,10 +48,10 @@ class EasyApplyApplication(Application):
             self.login_task_killed.set()
         
     def ApplyForJob(self, job:Job):
-        status = False
+        applied = False
         print(f"sending easy application for {job.job_title} at {job.company_name} in {job.job_location}")
-        status = self.easyApplyFormObj.applyForJob(job.job_url)
-        if status:
+        applied = self.easyApplyFormObj.applyForJob(job.job_url)
+        if applied:
             job.setJobApplied(True) # applied for job
             print(f"set job applied {job.applied}")
         else:

@@ -136,13 +136,15 @@ class JobBuilder:
 
         return job_title
 
-    def getCompanyNamefromHtml(self, source_html) -> str:
+    def getCompanyNamefromHtml(self,  source_html, driver=None) -> str:
         try:
             company_name = source_html.xpath(
                 '//a[@class="topcard__org-name-link topcard__flavor--black-link"]')[0].text.strip()
         except IndexError:
             print("Index out of range: No company name found")
             company_name = "na"
+        #else:
+        #    driver.find_element(By.)
 
         return company_name
 

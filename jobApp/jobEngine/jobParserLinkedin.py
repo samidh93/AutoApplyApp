@@ -20,7 +20,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 
 class JobParser:
-    def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv'):
+    def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv',  easyApply = False):
         """Parameter initialization"""
         with open(linkedin_data) as config_file:
             data = json.load(config_file)
@@ -43,13 +43,14 @@ class JobParser:
         self.officialJobLinks = []
         # the bot
         self.bot = EasyApplyLinkedin(
-            'jobApp/secrets/linkedin.json', headless=True)
+            'jobApp/secrets/linkedin.json', headless=False)
         self.csv_file = csv_links
         # pair to store links {"onsite": None, "offsite": None}
         self.links_pair = {"onsite": "None", "offsite": "None"}
         # list of dict [ {"onsite": None, "offsite": None} ]
         self.links_pair_list = []
         self.html_sources = []
+
 
     def setEasyApplyFilter(self, easy_apply_filter=False):
         print("Warning: easy apply filter is only visible for logged user ")
@@ -124,20 +125,35 @@ class JobParser:
 
     def createListOfLinksDriver(self, page_to_visit, filter_links= True, save_html=True):
         # iterate all results and extract each job link
+        self.bot.login_linkedin(True)
         sel_driver = self.bot.getEasyApplyJobSearchUrlResults()
         links = []
        # find the total amount of results/pages
         jobsPerPage= 0
+        print(f"total pages to visit: {page_to_visit}")
         try:
             total_results = sel_driver.find_element(
-                By.CLASS_NAME, "results-context-header__job-count")
+                By.CLASS_NAME, "jobs-search-results-list__subtitle")
             total_results_int = int(total_results.text.split(' ', 1)[0].replace(",", "").replace(".", "").replace("+",""))
             print(f"total jobs found: {total_results_int}")
         except NoSuchElementException:
-            pass
+            print("no results found ")
+        ## find pages
+        try:
+            list_pages = sel_driver.find_element(
+                    By.XPATH, '//ul[contains(@class, "artdeco-pagination__pages--number")]')
+            num_pages_availables_buttons = list_pages.find_elements(By.TAG_NAME, 'li' )
+            pages_availables_str = num_pages_availables_buttons[-1].find_element(By.TAG_NAME, 'span' ).text
+            pages_availables = int(pages_availables_str)
+            print(f"pages availables: {pages_availables}")
+            if page_to_visit > pages_availables:
+                page_to_visit = pages_availables
+        except Exception as e:
+            print("exception:", e)
         for page in range(page_to_visit):
-            results = sel_driver.find_elements(
-                By.XPATH, '//*[@id="main-content"]/section[2]/ul/li' )
+            list_elements = sel_driver.find_element(By.CLASS_NAME,"scaffold-layout__list-container")
+            results = list_elements.find_elements(
+                By.TAG_NAME, 'li' )
             # for each job add, get the link
             print(f"------------------------------------------------------------------- ")
             print(f"scrolling down the page to load all results, current result count: {len(results)}")
@@ -190,8 +206,8 @@ class JobParser:
         else:
             response = requests.get(job_href)
             html_source = response.content
-        # @NOTE: the requests here to be moved while getting the url at the same step
-        time.sleep(1)  # slow down request
+            # @NOTE: the requests here to be moved while getting the url at the same step
+            time.sleep(1)  # slow down request
         # Create a BeautifulSoup object to parse the HTML source code
         soup = BeautifulSoup(html_source, "html.parser")
         # find offsite apply
@@ -260,7 +276,6 @@ class JobParser:
                     ids.append(row[3])  # we get all ids there
                 flocker.unlock(file)
             # write
-
             with open(csv_file, mode='a', newline='', encoding='utf-8') as file:
                 flocker.lockForWrite(file)
                 writer = csv.writer(file)

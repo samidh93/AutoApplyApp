@@ -130,7 +130,6 @@ class JobParser:
         links = []
        # find the total amount of results/pages
         jobsPerPage= 0
-        print(f"total pages to visit: {page_to_visit}")
         try:
             total_results = sel_driver.find_element(
                 By.CLASS_NAME, "jobs-search-results-list__subtitle")
@@ -143,44 +142,43 @@ class JobParser:
             list_pages = sel_driver.find_element(
                     By.XPATH, '//ul[contains(@class, "artdeco-pagination__pages--number")]')
             num_pages_availables_buttons = list_pages.find_elements(By.TAG_NAME, 'li' )
-            pages_availables_str = num_pages_availables_buttons[-1].find_element(By.TAG_NAME, 'span' ).text
-            pages_availables = int(pages_availables_str)
-            print(f"pages availables: {pages_availables}")
+            last_li = num_pages_availables_buttons[-1]
+            last_p = last_li.get_attribute("data-test-pagination-page-btn")
+            print(f"last page: {last_p}")
+            pages_availables = int(last_p)
             if page_to_visit > pages_availables:
                 page_to_visit = pages_availables
+            print(f"pages availables: {pages_availables}")
+            print(f"total pages to visit: {page_to_visit}")
         except Exception as e:
             print("exception:", e)
         for page in range(page_to_visit):
-            list_elements = sel_driver.find_element(By.CLASS_NAME,"scaffold-layout__list-container")
-            results = list_elements.find_elements(
-                By.TAG_NAME, 'li' )
-            # for each job add, get the link
-            print(f"------------------------------------------------------------------- ")
-            print(f"scrolling down the page to load all results, current result count: {len(results)}")
-            print(f"current job per page count: {jobsPerPage}")
-            print(f"current loop interval: {jobsPerPage} ------> {len(results)}")
-            print(f"--------------------------------------------------------------------")
-            for i, result in enumerate(results[jobsPerPage:]):
-                hover = ActionChains(sel_driver).move_to_element(result)
-                hover.perform()
-                time.sleep(1)
+            jobs_container = sel_driver.find_element(By.CLASS_NAME,"scaffold-layout__list-container")
+            li_elements = jobs_container.find_elements(By.CSS_SELECTOR,'li[id^="ember"][class*="jobs-search-results__list-item"]')
+            # Print the list of extracted job titles
+            print(f"number of jobs on this page: {len(li_elements)}")
+            for i, result in enumerate(li_elements):
                 try:
-                    link_element = WebDriverWait(result, 10).until(
+                    hover = ActionChains(sel_driver).move_to_element(result)
+                    hover.perform()
+                    time.sleep(1)
+                    link_element = WebDriverWait(result, 3).until(
                         EC.presence_of_element_located((By.TAG_NAME, 'a')))
                     link_href = link_element.get_attribute('href')
                     print(f"link_{i} for job {link_href}")
                     links.append(link_href)
                     print("link added to list")
-                    html_source = self.openLinkNewTabAndGetHtmlSource(sel_driver, link_href)
-                    if filter_links:
-                        pair = self.filterJobList(link_href, html_source)
-                        self.links_pair_list.append(pair)
-                    if save_html:
-                        self.html_sources.append(html_source)
-                except:
-                    print("Element not found")
-            jobsPerPage = jobsPerPage+25
-            print(f"saved {len(links)} links")
+                    #html_source = self.openLinkNewTabAndGetHtmlSource(sel_driver, link_href)
+                    #if filter_links:
+                    #    pair = self.filterJobList(link_href, html_source)
+                    #    self.links_pair_list.append(pair)
+                    #if save_html:
+                    #    self.html_sources.append(html_source)
+                except Exception as e:
+                    print("exception:", e)
+            print(f"found {len(links)} job links on this page")
+            for i, link in enumerate(links):
+                pass
 
         self.saveLinksToCsv(self.links_pair_list, self.csv_file)
         return links, self.html_sources

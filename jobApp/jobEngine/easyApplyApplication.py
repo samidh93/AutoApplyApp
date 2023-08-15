@@ -50,7 +50,7 @@ class EasyApplyApplication(Application):
     def ApplyForJob(self, job:Job):
         applied = False
         print(f"sending easy application for {job.job_title} at {job.company_name} in {job.job_location}")
-        applied = self.easyApplyFormObj.applyForJob(job.job_url)
+        applied = self.easyApplyFormObj.applyForJob(job.link)
         if applied:
             job.setJobApplied(True) # applied for job
             print(f"set job applied {job.applied}")

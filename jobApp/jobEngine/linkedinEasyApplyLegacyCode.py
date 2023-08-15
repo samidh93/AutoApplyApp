@@ -58,15 +58,18 @@ class EasyApplyLinkedin:
     def login_linkedin(self, save_cookies=False):
         """This function logs into your personal LinkedIn profile"""
         # go to the LinkedIn login url
-        self.driver.get("https://www.linkedin.com/login")
-        # introduce email and password and hit enter
-        login_email = self.driver.find_element(By.NAME, 'session_key')
-        login_email.clear()
-        login_email.send_keys(self.email)
-        login_pass = self.driver.find_element(By.NAME, 'session_password')
-        login_pass.clear()
-        login_pass.send_keys(self.password)
-        login_pass.send_keys(Keys.RETURN)
+        try: 
+            self.driver.get("https://www.linkedin.com/login")
+            # introduce email and password and hit enter
+            login_email = self.driver.find_element(By.NAME, 'session_key')
+            login_email.clear()
+            login_email.send_keys(self.email)
+            login_pass = self.driver.find_element(By.NAME, 'session_password')
+            login_pass.clear()
+            login_pass.send_keys(self.password)
+            login_pass.send_keys(Keys.RETURN)
+        except Exception as e:
+            print("exception:", e)
         if save_cookies:
             self._save_cookies()
 

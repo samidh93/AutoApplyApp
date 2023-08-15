@@ -145,5 +145,3 @@ class JobParser:
 if __name__ == '__main__':
 
     jobParserObj = JobParser('jobApp/secrets/linkedin.json')
-    jobParserObj.setEasyApplyFilter(False)
-    jobsLinks = jobParserObj.generateLinksSeleniumV2()

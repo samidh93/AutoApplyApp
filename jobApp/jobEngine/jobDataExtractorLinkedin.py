@@ -84,9 +84,10 @@ class LinkedinJobDetailsExtractor:
             # Extract the text content of the <div> element
             content = div_element.text
             # Print the extracted content
-            print("Job Details:")
-            print(content)
-            return content
+            skip = "see link directly"
+            print(f"Job Details: {skip}")
+            #print(content)
+            return skip
         except Exception as e:
             print("Exception:", e)
 
@@ -117,4 +118,4 @@ class LinkedinJobDetailsExtractor:
             print("Job Poster's Name:", poster_name)
             return poster_name
         except Exception as e:
-            print("Exception:", e)
+            return None

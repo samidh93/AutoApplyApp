@@ -31,7 +31,7 @@ class Application(ABC):
                 continue
             print(f"application filter type: {application_type}, current job application type: {j.application_type}")
             if application_type == j.application_type: # apply for the same type
-                print(f"creating thread for easy  apply job with: {j.job_id}")
+                print(f"creating thread for easy  apply job with: {j.id}")
                 #thread = threading.Thread(target=self.ApplyForJob, args=(j,))
                 #thread.daemon = True
                 #thread.start()
@@ -51,27 +51,24 @@ class Application(ABC):
         jobs = [] #list of jobs
         if os.path.isfile(self.csv_file):
             # Read
-            with open(self.csv_file, mode='r', newline='',  encoding='utf-8') as file:
-                flocker.lockForRead(file)
-                reader = csv.reader(file)
-                next(reader)  # Skip header row
-                for row in reader:
-                    applied = True if row[8].lower() == 'true' else False
-                    if applied == True:
-                        print("already applied for job")
-                        continue #ignore job
-                    job_id = row[0]
-                    job_url = row[1]
-                    job_title = row[2]
-                    company_name = row[3]
-                    job_location = row[4]
-                    posted_date = row[5]
-                    job_link_id = row[6] if row[6] else None
-                    job_description = row[7] if row[7] else None
-                    application_type = row[9] if row[9] else "external"
-                    company_email = eval(row[10]) if row[10] else None
-                    job_official_url = row[11] if row[11] else None
-                    job = Job(job_id, job_url, job_title, company_name, job_location, posted_date, job_link_id, job_description, applied, application_type, company_email, job_official_url)
+            with open(self.csv_file, "r", newline='', encoding='utf-8') as file:
+                csv_reader = csv.DictReader(file)
+                for row in csv_reader:
+                    job = Job(
+                        id=row["id"],
+                        job_id=row["job_id"],
+                        link=row["link"],
+                        job_title=row["job_title"],
+                        job_location=row["job_location"],
+                        company_name=row["company_name"],
+                        num_applicants=row["num_applicants"],
+                        posted_date=row["posted_date"],
+                        job_description=row["job_description"],
+                        company_emails=row["company_emails"],
+                        job_poster_name=row["job_poster_name"],
+                        application_type=row["application_type"],
+                        applied=row["applied"] == "True"
+                    )
                     jobs.append(job)
                 flocker.unlock(file)
         self.jobs = jobs

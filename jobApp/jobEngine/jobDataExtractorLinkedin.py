@@ -75,3 +75,46 @@ class LinkedinJobDetailsExtractor:
             return self.job_id
         except Exception as e:
             print("Exception:", e)
+
+    def getJobDescriptionText(self, element:WebElement):
+
+        try:
+            # Find the <div> element with the specified class and ID
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-description-content__text#job-details')
+            # Extract the text content of the <div> element
+            content = div_element.text
+            # Print the extracted content
+            print("Job Details:")
+            print(content)
+            return content
+        except Exception as e:
+            print("Exception:", e)
+
+    def getCompanyEmails(self, element:WebElement):
+        #find job title 
+        try:
+            # Find the <div> element with the specified class and ID
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-description-content__text#job-details')
+            # Extract the text content of the <div> element
+            content = div_element.text
+            # Use a regular expression to find email addresses
+            email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+            emails = re.findall(email_pattern, content)
+            # Print the extracted email addresses
+            print("Extracted Email Addresses:", emails)
+            return emails
+        except Exception as e:
+            print("exception:", e)
+
+    def getHiringManagerName(self, element:WebElement):
+        #find job title 
+        try:
+            # Find the <span> element with the specified class
+            span_element = element.find_element(By.CSS_SELECTOR,'span.jobs-poster__name.t-14.t-black.mb0')
+            # Extract the text content of the <span> element
+            poster_name = span_element.text.strip()
+            # Print the extracted job poster's name
+            print("Job Poster's Name:", poster_name)
+            return poster_name
+        except Exception as e:
+            print("Exception:", e)

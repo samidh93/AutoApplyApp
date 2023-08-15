@@ -1,3 +1,4 @@
+from typing import Any
 import requests
 import os
 import sys
@@ -269,63 +270,9 @@ class JobBuilder:
             flocker.unlock(csv_file)
         print(f"{len(self.jobObjLists)} job(s) stored in {file_name}.")
         
-class LinkedinJobDetailsExtractor:
 
-    def __init__(self):
-        pass
-   ####### use selenium ####
-    def getJobTitleSelenium(self, element: WebElement):
-        #find job title 
-        try:
-            #div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
-            title= element.find_element(By.CSS_SELECTOR,'h2.t-24.t-bold.jobs-unified-top-card__job-title')
-            self.extracted_title = title.text
-            print(f"job title: {self.extracted_title}")
-            return self.extracted_title 
-        except Exception as e:
-            print("exception:", e)
-
-    def getCompanySelenium(self, element: WebElement):
-        #find company title 
-        try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
-            company=  div_element.find_element(By.CSS_SELECTOR,"a.app-aware-link")
-            self.extracted_company = company.text
-            return self.extracted_company
-        except Exception as e:
-            print("exception:", e)
-
-    def getLocationSelenium(self, element: WebElement):
-        #find job title 
-        try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
-            location=  div_element.find_element(By.CSS_SELECTOR,"a")
-            self.extracted_location = location.text
-            return self.extracted_location
-        except Exception as e:
-            print("exception:", e)
-
-    def getNumberApplicants(self, element:WebElement):
-        #find job title 
-        try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
-            applicants=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--neutral:nth-of-type(3)')
-            self.num_applicants = applicants.text
-            return self.num_applicants
-        except Exception as e:
-            print("exception:", e)
-
-    def getPublicationDate(self, element:WebElement):
-        #find job title 
-        try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
-            date=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--neutral:nth-of-type(1)')
-            self.publish_date = date.text
-            return self.publish_date
-        except Exception as e:
-            print("exception:", e)
-
-
+ 
+    
 if __name__ == '__main__':
 
     jobber = JobBuilder(None, "offSite", "jobApp/data/links.csv" ) 

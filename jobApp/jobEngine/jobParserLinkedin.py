@@ -11,9 +11,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from jobDataExtractorLinkedin import LinkedinJobDetailsExtractor
+from job import Job
 
 class JobParser:
-    def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv',  easyApply = False):
+    def __init__(self, linkedin_data, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal"):
         """Parameter initialization"""
         with open(linkedin_data) as config_file:
             data = json.load(config_file)
@@ -32,10 +33,11 @@ class JobParser:
         }
         # the bot
         self.bot = EasyApplyLinkedin('jobApp/secrets/linkedin.json', headless=True)
-        self.csv_file = csv_links
+        self.csv_file = csv_file_out
         self.job_details_list = []
+        self.application_type = application_type
 
-    def createListOfLinksDriver(self, page_to_visit, filter_links= True, save_html=True):
+    def createJobsList(self, page_to_visit):
         # iterate all results and extract each job link
         self.bot.login_linkedin(True)
         sel_driver = self.bot.getEasyApplyJobSearchUrlResults()
@@ -52,16 +54,16 @@ class JobParser:
                 self.moveClickJob(sel_driver, job)
                 job_index+=1
                 print(f"current job index: {job_index}")
-                job_details = self.getJobDetailsDict(sel_driver)
-                self.job_details_list.append(job_details)
-            time.sleep(1)
+                jobObj = self.createJobObj(job_index, job, sel_driver)
+                self.job_details_list.append(jobObj.to_dict())
+            #time.sleep(1)
             sel_driver = self.bot.getEasyApplyJobSearchUrlResults(start=job_index)
             time.sleep(1)
         # save is not here
         self.writeDataToCsv(self.job_details_list, self.csv_file)
         return self.job_details_list
 
-    def getJobDetailsDict(self, job: WebElement, driver: WebElement):
+    def createJobObj(self, index: int, job: WebElement, driver: WebElement)->Job:
         jobDataExtractor = LinkedinJobDetailsExtractor()
         link = self.getJobLink(job)
         job_id = jobDataExtractor.getJobID(job)
@@ -70,13 +72,17 @@ class JobParser:
         company= jobDataExtractor.getCompanySelenium(div_element)
         num_applicants= jobDataExtractor.getNumberApplicants(div_element)
         published= jobDataExtractor.getPublicationDate(div_element)
-        job_details = {"job_id": job_id, "link": link, "title": job_title, "location": self.location, 
-                       "company": company, "number_applicants": num_applicants, "date publication": published}
-        return job_details
+        job_description = jobDataExtractor.getJobDescriptionText(div_element)
+        emails = jobDataExtractor.getCompanyEmails(div_element)
+        poster_name = jobDataExtractor.getHiringManagerName(div_element)
+        applied = False
+        job = Job(id=index,  job_id=job_id,  link=link, job_title=job_title, job_location= self.location, company_name=company,num_applicants= num_applicants, posted_date=published,
+                 job_description=job_description, company_emails=emails, job_poster_name=poster_name, application_type=self.application_type, applied=applied )
+        return job
 
     def getJobLink(self, job: WebElement):
         try:
-            link_element = WebDriverWait(job, 3).until(
+            link_element = WebDriverWait(job, 1).until(
             EC.presence_of_element_located((By.TAG_NAME, 'a')))
             link_href = link_element.get_attribute('href')
             return link_href
@@ -134,51 +140,6 @@ class JobParser:
             writer.writeheader()  # Write the header row
             writer.writerows(Data_in)  # Write the data rows
         print(f"CSV file '{Csv_file_out}' created successfully.")
-
-    def saveJobsDataToCsv(self, jobsDict, csv_file):
-        # Check if the CSV file exists: read and append only new links
-        flocker = FileLocker()
-        ids = list()
-        counter = 0
-        if os.path.isfile(csv_file):
-            # Read
-            with open(csv_file, mode='r', newline='', encoding='utf-8') as file:
-                flocker.lockForRead(file)
-                reader = csv.reader(file)
-                next(reader)  # Skip header row
-                for row in reader:
-                    ids.append(row[3])  # we get all ids there
-                flocker.unlock(file)
-            # write
-            with open(csv_file, mode='a', newline='', encoding='utf-8') as file:
-                flocker.lockForWrite(file)
-                writer = csv.writer(file)
-                for i, link in enumerate(jobsDict):  # new links loop
-                    if link["job_id"] not in ids:
-                        counter += 1
-                        writer.writerow([len(ids)+counter,
-                                         self.job_title,
-                                         self.location,
-                                         link["job_id"],
-                                         link["link"]])
-                flocker.unlock(file)
-        # no csv, write new from zero
-        else:
-            with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
-                flocker.lockForWrite(file)
-                writer = csv.writer(file)
-                # Write the header row if the file is empty
-                if os.stat(csv_file).st_size == 0:
-                    writer.writerow(
-                        ['id', 'keyword', 'location', 'job_id', 'link'])
-                for i, link in enumerate(jobsDict):
-                    writer.writerow([i+1,
-                                     self.job_title,
-                                     self.location,
-                                     link["job_id"],
-                                     link["link"]])
-                flocker.unlock(file)
-        print(f"Links saved to {csv_file}")
 
 
 if __name__ == '__main__':

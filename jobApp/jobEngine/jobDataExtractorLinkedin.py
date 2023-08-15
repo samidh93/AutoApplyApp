@@ -64,3 +64,14 @@ class LinkedinJobDetailsExtractor:
             return self.publish_date
         except Exception as e:
             print("exception:", e)
+    
+    def getJobID(self, element:WebElement):
+        # extract job id 
+        try:
+            # Extract the job ID attribute value
+            self.job_id = element.get_attribute('data-occludable-job-id')
+            # Print the extracted job ID
+            print("Job ID:", self.job_id)
+            return self.job_id
+        except Exception as e:
+            print("Exception:", e)

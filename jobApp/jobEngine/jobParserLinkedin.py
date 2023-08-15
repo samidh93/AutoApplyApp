@@ -1,23 +1,15 @@
-import requests
-from bs4 import BeautifulSoup, Comment
-from seleniumWrapper import WebScraper
 import json
 import csv
 import os
-import re
 from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
 from fileLocker import FileLocker
 import time
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
-#from jobBuilderLinkedin import JobBuilder
 from jobDataExtractorLinkedin import LinkedinJobDetailsExtractor
 
 class JobParser:
@@ -38,236 +30,112 @@ class JobParser:
             'pageNum': self.page_num,  # we increment this for next page
             'f_AL': self.filter_easy_apply  # we increment this for next page
         }
-        self.jobList = []
-        self.easyApplyList = []
-        self.offsiteApplyList = []
-        self.officialJobLinks = []
         # the bot
-        self.bot = EasyApplyLinkedin(
-            'jobApp/secrets/linkedin.json', headless=True)
+        self.bot = EasyApplyLinkedin('jobApp/secrets/linkedin.json', headless=True)
         self.csv_file = csv_links
-        # pair to store links {"onsite": None, "offsite": None}
-        self.links_pair = {"onsite": "None", "offsite": "None"}
-        # list of dict [ {"onsite": None, "offsite": None} ]
-        self.links_pair_list = []
-        self.html_sources = []
-
-
-    def setEasyApplyFilter(self, easy_apply_filter=False):
-        print("Warning: easy apply filter is only visible for logged user ")
-        self.filter_easy_apply = easy_apply_filter
-        # set the filter to true or false
-        self.params['f_AL'] = easy_apply_filter
-
-    def generateLinksPerPage(self, max_pages=5) -> list:  # 125 jobs
-        for _ in range(max_pages):
-            self.generateLinks()
-        # @NOTE: added save to csv to keep track of links
-        if self.filter_easy_apply:
-            self.saveLinksToCsv(links=[self.easyApplyList, "na"])
-            return [self.easyApplyList, "na"]
-        else:
-            self.saveLinksToCsv(
-                links=[self.offsiteApplyList, self.officialJobLinks])
-            return [self.offsiteApplyList, self.officialJobLinks]
-
-    def generateLinks(self):
-        full_url = f"{self.base_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
-        print(f"constructed url: {full_url }")
-        response = requests.get(self.base_url, params=self.params)
-        html_source = response.content
-        # Create a BeautifulSoup object to parse the HTML source code
-        soup = BeautifulSoup(html_source, "html.parser")
-        # Find the element
-        jobCount = soup.find(class_="results-context-header__job-count")
-        # Check if the element was found
-        if jobCount:
-            # Print the contents of the jobCount
-            print("total job found: "+str(jobCount.contents))
-        else:
-            print("jobCount not found")
-        # Find the element with the id 'results-list__title'
-        element = soup.select_one(
-            '#main-content > section.two-pane-serp-page__results-list > ul')
-        # Find all <li> elements
-        li_elements = element.find_all('li')
-        links = []
-        for li in li_elements:
-            if li.find("a") and "href" in li.a.attrs:
-                href = li.a["href"]
-                print("link to job found: "+str(href))
-                if self.filter_easy_apply:  # if we are looking only for easy apply jobs
-                    self.filterJobList(href, True, False)
-                    links.append(href)  # keep track of global links
-                else:
-                    self.filterJobList(href, False, True)
-                    links.append(href)
-        self.jobList += links
-        print(f"total links found {len(self.jobList)}")
-        if self.filter_easy_apply:
-            print(f"total links easy apply found {len(self.easyApplyList)}")
-            return [self.easyApplyList, "na"]
-        else:
-            print(
-                f"total links offsite apply found {len(self.offsiteApplyList)}")
-            return [self.offsiteApplyList, self.officialJobLinks]
-
-    def generateLinksSeleniumV2(self, pages=5):
-        self.bot.getEasyApplyJobSearchUrlResults()
-        self.jobList = self.bot.getUnlockJobLinksNoLogin(
-            pages)  # we have all links
-        for i, link in enumerate(self.jobList):
-            #print(f"filtering job with index {i}")
-            pair = self.filterJobList(link)
-            #print(f"pair: {pair}")
-            self.links_pair_list.append(pair)
-        #print(f"list: {self.links_pair_list}")
-        self.saveLinksToCsv(self.links_pair_list, self.csv_file)
+        self.job_details_list = []
 
     def createListOfLinksDriver(self, page_to_visit, filter_links= True, save_html=True):
         # iterate all results and extract each job link
         self.bot.login_linkedin(True)
         sel_driver = self.bot.getEasyApplyJobSearchUrlResults()
-        links = []
+        total_jobs = self.getTotalJobsSearchCount(sel_driver)
+        total_pages = self.getAvailablesPages(sel_driver)
+        if page_to_visit > total_pages:
+            page_to_visit = total_pages # we can only extract availables opages
+        job_index=0
+        for _ in range(page_to_visit) : #skip first page, iterate until number of pages to visit
+            job_list = self.getListOfJobsOnPage(sel_driver)
+            # Print the list of extracted job titles
+            print(f"number of jobs on this page: {len(job_list)}")
+            for job in job_list:
+                self.moveClickJob(sel_driver, job)
+                job_index+=1
+                print(f"current job index: {job_index}")
+                job_details = self.getJobDetailsDict(sel_driver)
+                self.job_details_list.append(job_details)
+            time.sleep(1)
+            sel_driver = self.bot.getEasyApplyJobSearchUrlResults(start=job_index)
+            time.sleep(1)
+        # save is not here
+        self.writeDataToCsv(self.job_details_list, self.csv_file)
+        return self.job_details_list
+
+    def getJobDetailsDict(self, job: WebElement, driver: WebElement):
         jobDataExtractor = LinkedinJobDetailsExtractor()
-       # find the total amount of results/pages
+        link = self.getJobLink(job)
+        job_id = jobDataExtractor.getJobID(job)
+        div_element = driver.find_element(By.CSS_SELECTOR,'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
+        job_title= jobDataExtractor.getJobTitleSelenium(div_element)
+        company= jobDataExtractor.getCompanySelenium(div_element)
+        num_applicants= jobDataExtractor.getNumberApplicants(div_element)
+        published= jobDataExtractor.getPublicationDate(div_element)
+        job_details = {"job_id": job_id, "link": link, "title": job_title, "location": self.location, 
+                       "company": company, "number_applicants": num_applicants, "date publication": published}
+        return job_details
+
+    def getJobLink(self, job: WebElement):
         try:
-            total_results = sel_driver.find_element(
+            link_element = WebDriverWait(job, 3).until(
+            EC.presence_of_element_located((By.TAG_NAME, 'a')))
+            link_href = link_element.get_attribute('href')
+            return link_href
+        except Exception as e:
+            print("exception:", e)
+
+    def getTotalJobsSearchCount(self, element: WebElement):
+       # find the total amount of results 
+        try:
+            total_results = element.find_element(
                 By.CLASS_NAME, "jobs-search-results-list__subtitle")
             total_results_int = int(total_results.text.split(' ', 1)[0].replace(",", "").replace(".", "").replace("+",""))
             print(f"total jobs found: {total_results_int}")
+            return total_results_int
         except NoSuchElementException:
             print("no results found ")
-        ## find pages
+
+    def getAvailablesPages(self, element: WebElement):
+        ## find pages availables
         try:
-            list_pages = sel_driver.find_element(
+            list_pages = element.find_element(
                     By.XPATH, '//ul[contains(@class, "artdeco-pagination__pages--number")]')
             list_pages_availables = list_pages.find_elements(By.TAG_NAME, 'li' )
             last_li = list_pages_availables[-1]
             last_p = last_li.get_attribute("data-test-pagination-page-btn")
             pages_availables = int(last_p)
-            if page_to_visit > pages_availables:
-                page_to_visit = pages_availables
             print(f"total pages availables: {pages_availables}")
-            print(f"total pages to visit: {page_to_visit}")
+            return pages_availables
         except Exception as e:
             print("exception:", e)
-        list_pages_to_iterates = list_pages_availables[1:page_to_visit]
-        jobsPerPage=0
-        for page in range(page_to_visit) : #skip first page, iterate until number of pages to visit
+    
+    def getListOfJobsOnPage(self, element: WebElement):
             # find jobs on page
-            jobs_container = sel_driver.find_element(By.CLASS_NAME,"scaffold-layout__list-container")
+        try:
+            jobs_container = element.find_element(By.CLASS_NAME,"scaffold-layout__list-container")
             li_elements = jobs_container.find_elements(By.CSS_SELECTOR,'li[id^="ember"][class*="jobs-search-results__list-item"]')
-            # Print the list of extracted job titles
-            print(f"number of jobs on this page: {len(li_elements)}")
-            for i, result in enumerate(li_elements):
-                try:
-                    hover = ActionChains(sel_driver).move_to_element(result)
-                    hover.perform()
-                    result.click()
-                   #time.sleep(1)
-                    link_element = WebDriverWait(result, 3).until(
-                        EC.presence_of_element_located((By.TAG_NAME, 'a')))
-                    link_href = link_element.get_attribute('href')
-                    links.append(link_href)
-                    print("link added to list")
-                    # extract job details
-                    div_element = sel_driver.find_element(By.CSS_SELECTOR,'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
-                    job_title= jobDataExtractor.getJobTitleSelenium(div_element)
-                    company= jobDataExtractor.getCompanySelenium(div_element)
-                    num_applicants= jobDataExtractor.getNumberApplicants(div_element)
-                    published= jobDataExtractor.getPublicationDate(div_element)
-                    links_pair = {"onsite": link_href, "offsite": "None"}
-                    self.links_pair_list.append(links_pair)
-                    #if save_html:
-                    #    self.html_sources.append(html_source)
-                except Exception as e:
-                    print("exception:", e)
-            jobsPerPage+=25
-            time.sleep(5)
-            sel_driver = self.bot.getEasyApplyJobSearchUrlResults(start=jobsPerPage)
+            return li_elements
+        except Exception as e:
+            print("exception:", e)
 
-        self.saveLinksToCsv(self.links_pair_list, self.csv_file)
-        return links, self.html_sources
+    def moveClickJob(self, driver: WebElement, element:WebElement):
+        # move the cursor to the job, click it to focus  
+        try:
+            hover = ActionChains(driver).move_to_element(element)
+            hover.perform()
+            element.click()
+        except Exception as e:
+            print("exception:", e)
 
-    def openLinkNewTabAndGetHtmlSource(self, driver, link):
-        # Open a new tab
-        driver.execute_script("window.open('', '_blank');")
-        driver.switch_to.window(driver.window_handles[1])  # Switch to the new tab
-        # Navigate to a URL in the new tab
-        driver.get(link)
-        # Read the HTML source of the new tab
-        new_tab_html_source = driver.page_source
-        # Close the new tab
-        driver.close()
-        # Switch back to the original tab
-        driver.switch_to.window(driver.window_handles[0])
-        return new_tab_html_source
+    def writeDataToCsv(self, Data_in, Csv_file_out):
+        # Write the dictionary to the CSV file
+        with open(Csv_file_out, 'w', newline='') as file:
+            fieldnames = Data_in[0].keys()
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()  # Write the header row
+            writer.writerows(Data_in)  # Write the data rows
+        print(f"CSV file '{Csv_file_out}' created successfully.")
 
-    def filterJobList(self, job_href = None,html_src= None, onsite=False, offsite=False) -> dict:
-        links_pair = {"onsite": "None", "offsite": "None"}
-        if html_src is not None:
-            html_source= html_src
-        else:
-            response = requests.get(job_href)
-            html_source = response.content
-            # @NOTE: the requests here to be moved while getting the url at the same step
-            time.sleep(1)  # slow down request
-        # Create a BeautifulSoup object to parse the HTML source code
-        soup = BeautifulSoup(html_source, "html.parser")
-        # find offsite apply
-        button = soup.find('button', {
-                           'data-tracking-control-name': 'public_jobs_apply-link-offsite_sign-up-modal'})
-        # public_jobs_apply-link-onsite
-        if button is not None:  # if found
-            print("offsite apply button found")
-            # self.offsiteApplyList.append(job_href)
-            offsite_link = self.getOfficialJobLink(soupObjRef=soup)
-            # {"onsite": None, "offsite": None}
-            links_pair["offsite"] = offsite_link
-            # {"onsite": None, "offsite": None}
-            links_pair["onsite"] = job_href
-        else:
-            print("button offsite not found, onsite apply is ommited")
-            # {"onsite": None, "offsite": None}
-            links_pair["offsite"] = "None"
-            # {"onsite": None, "offsite": None}
-            links_pair["onsite"] = job_href
-        return links_pair
-
-    def getOfficialJobLink(self, soupObjRef: BeautifulSoup) -> str:
-        # soup = BeautifulSoup(html_doc, "html.parser")
-        # find the element with the 'id' attribute value of 'applyUrl'
-        apply_url_element = soupObjRef.find(id='applyUrl')
-        # find the comment node inside the 'applyUrl' element
-        comment_node = (apply_url_element.find(
-            string=lambda string: isinstance(string, Comment)))
-        official_link = comment_node.replace('"', '')
-        # print the text content of the comment node
-        print(f"official job link: {official_link}")
-        self.officialJobLinks.append(official_link)
-        return official_link
-
-    def extract_link_id(self, link: str):
-        if link["onsite"] == "None":
-            link = link["offsite"]
-        else:
-            link = link["onsite"]
-        # find the first occurrence of "?"
-        question_mark_index = link.find("?")
-        # extract the substring before "?"
-        id_string = link[:question_mark_index]
-        # find the last occurrence of "-" before "?"
-        dash_index = id_string.rfind("-") 
-        if dash_index != -1:# if - found, id write
-            id = id_string[dash_index+1:]
-        else:
-            dash_index = id_string.rfind("/")
-            id = id_string[dash_index+1:]        
-        print(f"link id: {id}")
-        return id
-
-    def saveLinksToCsv(self, links, csv_file):
+    def saveJobsDataToCsv(self, jobsDict, csv_file):
         # Check if the CSV file exists: read and append only new links
         flocker = FileLocker()
         ids = list()
@@ -285,15 +153,14 @@ class JobParser:
             with open(csv_file, mode='a', newline='', encoding='utf-8') as file:
                 flocker.lockForWrite(file)
                 writer = csv.writer(file)
-                for i, link in enumerate(links):  # new links loop
-                    if self.extract_link_id(link) not in ids:
+                for i, link in enumerate(jobsDict):  # new links loop
+                    if link["job_id"] not in ids:
                         counter += 1
                         writer.writerow([len(ids)+counter,
                                          self.job_title,
                                          self.location,
-                                        self.extract_link_id(link),
-                                         link["onsite"],
-                                         link["offsite"]])
+                                         link["job_id"],
+                                         link["link"]])
                 flocker.unlock(file)
         # no csv, write new from zero
         else:
@@ -303,14 +170,13 @@ class JobParser:
                 # Write the header row if the file is empty
                 if os.stat(csv_file).st_size == 0:
                     writer.writerow(
-                        ['id', 'keyword', 'location', 'link id', 'internal link', 'external link'])
-                for i, link in enumerate(links):
+                        ['id', 'keyword', 'location', 'job_id', 'link'])
+                for i, link in enumerate(jobsDict):
                     writer.writerow([i+1,
                                      self.job_title,
                                      self.location,
-                                     self.extract_link_id(link),
-                                     link["onsite"],
-                                     link["offsite"]])
+                                     link["job_id"],
+                                     link["link"]])
                 flocker.unlock(file)
         print(f"Links saved to {csv_file}")
 

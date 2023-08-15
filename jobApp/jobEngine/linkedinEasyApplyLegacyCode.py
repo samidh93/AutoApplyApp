@@ -72,7 +72,7 @@ class EasyApplyLinkedin:
 
     def getEasyApplyJobSearchUrlResults(self, pageNum=0, start=0  ):
         self.params['start'] = start
-        print(f"getting jobs starting from {self.params['start']}")
+        print(f"################## getting jobs starting from {self.params['start']} ###############")
         full_url = f"{self.base_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
         print(f"constructed url: {full_url }")
         self.driver.get(full_url)

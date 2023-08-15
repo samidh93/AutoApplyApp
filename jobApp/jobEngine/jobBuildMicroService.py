@@ -7,7 +7,7 @@ class JobBuilderMicroService:
     def __init__(self, service_name="job builder", csv_links="jobApp/data/links.csv", csv_jobs="jobApp/data/jobs.csv"):
         self.name = service_name
         print(f"initialising {self.name} microservice..")
-        self.jobber = JobBuilder(None, "offSite", csv_links, csv_jobs)
+        self.jobber = JobBuilder(None, csv_links, csv_jobs)
 
     def run_service(self):
         print(f"running {self.name} microservice..")

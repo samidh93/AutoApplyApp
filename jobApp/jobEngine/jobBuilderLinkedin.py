@@ -37,10 +37,9 @@ load_dotenv(find_dotenv())
 class JobBuilder:
 
     # TODO Add new classes: EasyApplyJobBuilder, OffsiteJobBuilder
-    def __init__(self, links: list, application_type: str, csv_links='jobApp/data/links.csv',csv_jobs='jobApp/data/jobs.csv'):
+    def __init__(self, links: list, csv_links='jobApp/data/links.csv',csv_jobs='jobApp/data/jobs.csv'):
         self.links = links
         self.jobObjLists = []
-        self.application_type = application_type
         self.requests_counter = 0
         self.csv_file = csv_links
         if csv_links:

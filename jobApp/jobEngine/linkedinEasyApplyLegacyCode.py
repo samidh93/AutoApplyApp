@@ -31,12 +31,14 @@ class EasyApplyLinkedin:
         self.location = data["login"]['location']
         self.job_pos = data["params"]['start']
         self.filter_easy_apply = data["params"]['f_AL']
+        self.start_pos=0
         self.params = {
             'keywords': self.job_title,
             'location': self.location,
-            'position': self.job_pos, # 25 per page
-            'pageNum': self.page_num, # we increment this for next page
-            'f_AL': self.filter_easy_apply # we increment this for next page
+            #'position': self.job_pos, # 25 per page
+            #'pageNum': self.page_num, # we increment this for next page
+            'f_AL': self.filter_easy_apply, # we increment this for next page
+            'start': self.start_pos
         }
 
         self.option = webdriver.ChromeOptions()
@@ -68,8 +70,9 @@ class EasyApplyLinkedin:
         if save_cookies:
             self._save_cookies()
 
-    def getEasyApplyJobSearchUrlResults(self):
-        print(f"getting job from page {self.params['pageNum']}")
+    def getEasyApplyJobSearchUrlResults(self, pageNum=0, start=0  ):
+        self.params['start'] = start
+        print(f"getting jobs starting from {self.params['start']}")
         full_url = f"{self.base_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
         print(f"constructed url: {full_url }")
         self.driver.get(full_url)

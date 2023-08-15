@@ -16,8 +16,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
-from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
+#from jobBuilderLinkedin import JobBuilder
+from jobDataExtractorLinkedin import LinkedinJobDetailsExtractor
 
 class JobParser:
     def __init__(self, linkedin_data, csv_links='jobApp/data/links.csv',  easyApply = False):
@@ -43,7 +44,7 @@ class JobParser:
         self.officialJobLinks = []
         # the bot
         self.bot = EasyApplyLinkedin(
-            'jobApp/secrets/linkedin.json', headless=False)
+            'jobApp/secrets/linkedin.json', headless=True)
         self.csv_file = csv_links
         # pair to store links {"onsite": None, "offsite": None}
         self.links_pair = {"onsite": "None", "offsite": "None"}
@@ -128,8 +129,8 @@ class JobParser:
         self.bot.login_linkedin(True)
         sel_driver = self.bot.getEasyApplyJobSearchUrlResults()
         links = []
+        jobDataExtractor = LinkedinJobDetailsExtractor()
        # find the total amount of results/pages
-        jobsPerPage= 0
         try:
             total_results = sel_driver.find_element(
                 By.CLASS_NAME, "jobs-search-results-list__subtitle")
@@ -141,18 +142,20 @@ class JobParser:
         try:
             list_pages = sel_driver.find_element(
                     By.XPATH, '//ul[contains(@class, "artdeco-pagination__pages--number")]')
-            num_pages_availables_buttons = list_pages.find_elements(By.TAG_NAME, 'li' )
-            last_li = num_pages_availables_buttons[-1]
+            list_pages_availables = list_pages.find_elements(By.TAG_NAME, 'li' )
+            last_li = list_pages_availables[-1]
             last_p = last_li.get_attribute("data-test-pagination-page-btn")
-            print(f"last page: {last_p}")
             pages_availables = int(last_p)
             if page_to_visit > pages_availables:
                 page_to_visit = pages_availables
-            print(f"pages availables: {pages_availables}")
+            print(f"total pages availables: {pages_availables}")
             print(f"total pages to visit: {page_to_visit}")
         except Exception as e:
             print("exception:", e)
-        for page in range(page_to_visit):
+        list_pages_to_iterates = list_pages_availables[1:page_to_visit]
+        jobsPerPage=0
+        for page in range(page_to_visit) : #skip first page, iterate until number of pages to visit
+            # find jobs on page
             jobs_container = sel_driver.find_element(By.CLASS_NAME,"scaffold-layout__list-container")
             li_elements = jobs_container.find_elements(By.CSS_SELECTOR,'li[id^="ember"][class*="jobs-search-results__list-item"]')
             # Print the list of extracted job titles
@@ -161,24 +164,28 @@ class JobParser:
                 try:
                     hover = ActionChains(sel_driver).move_to_element(result)
                     hover.perform()
-                    time.sleep(1)
+                    result.click()
+                   #time.sleep(1)
                     link_element = WebDriverWait(result, 3).until(
                         EC.presence_of_element_located((By.TAG_NAME, 'a')))
                     link_href = link_element.get_attribute('href')
-                    print(f"link_{i} for job {link_href}")
                     links.append(link_href)
                     print("link added to list")
-                    #html_source = self.openLinkNewTabAndGetHtmlSource(sel_driver, link_href)
-                    #if filter_links:
-                    #    pair = self.filterJobList(link_href, html_source)
-                    #    self.links_pair_list.append(pair)
+                    # extract job details
+                    div_element = sel_driver.find_element(By.CSS_SELECTOR,'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
+                    job_title= jobDataExtractor.getJobTitleSelenium(div_element)
+                    company= jobDataExtractor.getCompanySelenium(div_element)
+                    num_applicants= jobDataExtractor.getNumberApplicants(div_element)
+                    published= jobDataExtractor.getPublicationDate(div_element)
+                    links_pair = {"onsite": link_href, "offsite": "None"}
+                    self.links_pair_list.append(links_pair)
                     #if save_html:
                     #    self.html_sources.append(html_source)
                 except Exception as e:
                     print("exception:", e)
-            print(f"found {len(links)} job links on this page")
-            for i, link in enumerate(links):
-                pass
+            jobsPerPage+=25
+            time.sleep(5)
+            sel_driver = self.bot.getEasyApplyJobSearchUrlResults(start=jobsPerPage)
 
         self.saveLinksToCsv(self.links_pair_list, self.csv_file)
         return links, self.html_sources
@@ -257,6 +264,7 @@ class JobParser:
         else:
             dash_index = id_string.rfind("/")
             id = id_string[dash_index+1:]        
+        print(f"link id: {id}")
         return id
 
     def saveLinksToCsv(self, links, csv_file):

@@ -13,6 +13,18 @@ from abc import ABC, abstractmethod
 import csv
 from emailCompanyBuilder import EmailCompanyBuilder
 from fileLocker import FileLocker
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchElementException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.remote.webelement import WebElement
+
 """jbo builder class to create job object list
 
     Returns:
@@ -125,6 +137,52 @@ class JobBuilder:
         self.storeAsCsv(self.csv_jobs)
         return self.jobObjLists
 
+    ####### use selenium ####
+    def getJobTitleSelenium(self, element: WebElement):
+        #find job title 
+        try:
+            title=  element.find_element(By.CSS_SELECTOR,'h2.t-24.t-bold.jobs-unified-top-card__job-title')
+            return title.text
+        except Exception as e:
+            print("exception:", e)
+
+    def getCompanySelenium(self, element: WebElement):
+        #find company title 
+        try:
+            company=  element.find_element(By.CSS_SELECTOR,"a.app-aware-link")
+            return company.text
+        except Exception as e:
+            print("exception:", e)
+
+    def getLocationSelenium(self, element: WebElement):
+        #find job title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            location=  div_element.find_element(By.CSS_SELECTOR,"a")
+            return location.text
+        except Exception as e:
+            print("exception:", e)
+
+    def getNumberApplicants(self, element:WebElement):
+        #find job title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            applicants=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--neutral:nth-of-type(3)')
+            return applicants.text
+        except Exception as e:
+            print("exception:", e)
+
+    def getPublicationDate(self, element:WebElement):
+        #find job title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            date=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--neutral:nth-of-type(1)')
+            return date.text
+        except Exception as e:
+            print("exception:", e)
+
+############# from html ###########
+
     def getJobTitlefromHtml(self, source_html) -> str:
         # Find the element using its class attribute
         try:
@@ -212,6 +270,61 @@ class JobBuilder:
             flocker.unlock(csv_file)
         print(f"{len(self.jobObjLists)} job(s) stored in {file_name}.")
         
+class LinkedinJobDetailsExtractor:
+
+    def __init__(self):
+        pass
+   ####### use selenium ####
+    def getJobTitleSelenium(self, element: WebElement):
+        #find job title 
+        try:
+            #div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            title= element.find_element(By.CSS_SELECTOR,'h2.t-24.t-bold.jobs-unified-top-card__job-title')
+            self.extracted_title = title.text
+            print(f"job title: {self.extracted_title}")
+            return self.extracted_title 
+        except Exception as e:
+            print("exception:", e)
+
+    def getCompanySelenium(self, element: WebElement):
+        #find company title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            company=  div_element.find_element(By.CSS_SELECTOR,"a.app-aware-link")
+            self.extracted_company = company.text
+            return self.extracted_company
+        except Exception as e:
+            print("exception:", e)
+
+    def getLocationSelenium(self, element: WebElement):
+        #find job title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            location=  div_element.find_element(By.CSS_SELECTOR,"a")
+            self.extracted_location = location.text
+            return self.extracted_location
+        except Exception as e:
+            print("exception:", e)
+
+    def getNumberApplicants(self, element:WebElement):
+        #find job title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            applicants=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--neutral:nth-of-type(3)')
+            self.num_applicants = applicants.text
+            return self.num_applicants
+        except Exception as e:
+            print("exception:", e)
+
+    def getPublicationDate(self, element:WebElement):
+        #find job title 
+        try:
+            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-unified-top-card__primary-description')
+            date=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--neutral:nth-of-type(1)')
+            self.publish_date = date.text
+            return self.publish_date
+        except Exception as e:
+            print("exception:", e)
 
 
 if __name__ == '__main__':

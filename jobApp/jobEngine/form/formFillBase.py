@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import json
 import requests
-from linkedinEasyApplyLegacyCode import EasyApplyLinkedin,webdriver
+from linkedinSeleniumBase import EasyApplyLinkedin,webdriver
 from selenium.webdriver.common.by import By
 
 class FormFillBase:

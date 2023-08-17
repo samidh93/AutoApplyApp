@@ -1,5 +1,5 @@
 
-from linkedinEasyApplyLegacyCode import EasyApplyLinkedinLegacy
+from .linkedinSeleniumBase import LinkedinSeleniumBase
 import json
 from urllib.parse import urlparse
 
@@ -23,7 +23,7 @@ class LoginSessionLinkedCreator:
 
     def createLoginSession(self, writeSessionToFile, sessionFile="jobApp/secrets/session.json"):
         """ create a session only for login and start detached"""
-        self.loginSession = EasyApplyLinkedinLegacy(self.linked_data, self.headless)
+        self.loginSession = LinkedinSeleniumBase(self.linked_data, self.headless)
         self.loginSession.login_linkedin()
         self.loginSessionId = self.loginSession.driver.session_id
         self.loginCmdExecutorUrl = self.loginSession.driver.command_executor._url

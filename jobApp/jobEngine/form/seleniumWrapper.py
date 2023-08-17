@@ -1,5 +1,5 @@
 
-from linkedinEasyApplyLegacyCode import EasyApplyLinkedin, webdriver
+from linkedinSeleniumBase import EasyApplyLinkedin, webdriver
 import json
 from urllib.parse import urlparse
 import threading

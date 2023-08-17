@@ -1,4 +1,4 @@
-from linkedin.loginSessionLinkedin import LoginSessionLinkedCreator
+from jobEngine.linkedin.loginSessionLinkedin import LoginSessionLinkedCreator
 
 
 if __name__ == "__main__":

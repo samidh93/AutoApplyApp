@@ -1,5 +1,4 @@
-from applicationBuilderAbstract import ApplicationBuilder
-from jobBuilderLinkedin import JobBuilder, JobParser, Job
+from application.applicationBuilderAbstract import ApplicationBuilder
 from easyApplyApplication import EasyApplyApplication
 
 class EasyApplyApplicationBuilder(ApplicationBuilder):

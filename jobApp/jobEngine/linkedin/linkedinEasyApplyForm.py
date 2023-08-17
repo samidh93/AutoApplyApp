@@ -1,44 +1,31 @@
-from bs4 import BeautifulSoup
-import json
-import requests
-from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-
-from selenium.common.exceptions import NoSuchElementException, ElementClickInterceptedException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
 import os
-import time
 import csv
-from formFillBase import FormFillBase
-from seleniumWrapper import WebScraper
+from loginSessionLinkedin import LoginSessionLinkedCreator
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from seleniumForm import Field, SeleniumFormHandler
 from selenium.webdriver.support.ui import Select
-from candidateProfile import CandidateProfile
+from user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
+from jobsAttachSessionToLoginLinkedin import jobSearchSessionAttachLinkedin
 
+''' handle linkedin easy apply form template'''
 
-''' use linkedin easy apply form template'''
-
-
-class LinkedInEasyApplyForm(SeleniumFormHandler):
-    def __init__(self, candidate_profile: CandidateProfile, url=None, csv_links='jobApp/data/links.csv'):
+class LinkedInEasyApplyFormHandler:
+    def __init__(self, candidate_profile: CandidateProfile, url=None, csv_links='jobApp/data/links.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
         self.links = []
         self.csv_file = csv_links
-        super().__init__(url=url)
         if csv_links:
             print("loading links from file directly")
             self.load_links_from_csv()
-        scraper = WebScraper('jobApp/secrets/linkedin.json', headless=False)
-        bot = scraper.createJobSearchSession()
+        login = jobSearchSessionAttachLinkedin(linkedin_data_file,  headless=False)
+        bot = login.createJobSearchSession()
         self.driver = bot.driver  # pass the new driver to current one
         self.label_elements_map = {}
         self.candidate = candidate_profile
         self.button_apply_clicked = False
-
-        # self.driver.implicitly_wait(20)
 
     def load_links_from_csv(self):
         # load only onsite links
@@ -55,24 +42,12 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
         print(f"onsite apply links count: {len(links)}")
 
     def get_the_url(self, url=None):
-        if url is None:
-            url = self.url
         # navigate to the URL
         try:  # try to open link in browser
-            # Open a new window and switch to it
-            # self.driver.execute_script("window.open('','_blank');")
-            # self.driver.switch_to.window(self.driver.window_handles[1])
-            # print("opening job link in new tab")
-            # self.driver.execute_script("window.open(arguments[0], '_blank');", url)
             self.driver.get(url)
-            # self.status= True
-            # self.driver.switch_to.window(self.driver.window_handles[0])
-            # self.driver.quit()
         except:
             print("can't open link in the browser")
             self.status = False
-
-  
 
     def _find_application_form(self):
       # fill the expected first page template
@@ -136,6 +111,7 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             else:
                 #handle dialog questions
                 self._handle_select_question(label , element)
+
     def _handle_text_question(self, label, element: WebElement ):
         try:
             print("processing text question")
@@ -557,10 +533,6 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             self.get_the_url(link)
             self.clickApplyPage()
         
-        # loop to keep browser from quitting
-        while (1):
-            pass
 
 if __name__ == '__main__':
-    easyApplyForm = LinkedInEasyApplyForm()
-    easyApplyForm.applyForAllLinks()
+    pass

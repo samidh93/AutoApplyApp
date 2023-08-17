@@ -1,6 +1,6 @@
-from applicationDirector import ApplicationDirector
-from candidateProfile import CandidateProfile
-from config import UserConfig, AppConfig
+from application.applicationDirector import ApplicationDirector
+from user.candidateProfile import CandidateProfile
+from config.config import UserConfig, AppConfig
 
 # TODO Move all paths required for a service  to a config file
 

@@ -2,8 +2,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 import re 
 
-class LinkedinJobDetailsExtractor:
-
+class JobDetailsExtractorLinkedin:
     def __init__(self):
         pass
 

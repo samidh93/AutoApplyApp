@@ -1,6 +1,6 @@
-from emailApplicationBuilder import EmailApplicationBuilder
-from easyApplicationBuilder import EasyApplyApplicationBuilder
-from directApplicationBuilder import DirectApplicationBuilder
+from email.emailApplicationBuilder import EmailApplicationBuilder
+from easyApply.easyApplicationBuilder import EasyApplyApplicationBuilder
+from externalApply.directApplicationBuilder import DirectApplicationBuilder
 
 
 class ApplicationDirector:

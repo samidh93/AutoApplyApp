@@ -1,8 +1,5 @@
-import json
 import csv
-import os
-from linkedinEasyApplyLegacyCode import EasyApplyLinkedin
-from fileLocker import FileLocker
+from linkedinSeleniumBase import LinkedinSeleniumBase
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
@@ -10,61 +7,46 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-from jobDataExtractorLinkedin import LinkedinJobDetailsExtractor
-from job import Job
+from jobDataExtractorLinkedin import JobDetailsExtractorLinkedin
+from job.job import Job
 
-class JobParser:
-    def __init__(self, linkedin_data, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal"):
-        """Parameter initialization"""
-        with open(linkedin_data) as config_file:
-            data = json.load(config_file)
-        self.base_url = data["urls"]['search_job_url']
-        self.page_num = data["params"]['pageNum']
-        self.job_title = data["login"]['keywords']
-        self.location = data["login"]['location']
-        self.job_pos = data["params"]['start']
-        self.filter_easy_apply = data["params"]['f_AL']
-        self.params = {
-            'keywords': self.job_title,
-            'location': self.location,
-            'position': self.job_pos,  # 25 per page
-            'pageNum': self.page_num,  # we increment this for next page
-            'f_AL': self.filter_easy_apply  # we increment this for next page
-        }
-        # the bot
-        self.bot = EasyApplyLinkedin('jobApp/secrets/linkedin.json', headless=True)
+class JobScraperLinkedin:
+    def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
+        # the base class
+        self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file=linkedin_data_file, headless=True)
         self.csv_file = csv_file_out
         self.job_details_list = []
         self.application_type = application_type
 
     def createJobsList(self, page_to_visit):
-        # iterate all results and extract each job link
-        self.bot.login_linkedin(True)
-        sel_driver = self.bot.getEasyApplyJobSearchUrlResults()
-        total_jobs = self.getTotalJobsSearchCount(sel_driver)
-        total_pages = self.getAvailablesPages(sel_driver)
+        # login to get easy apply jobs
+        self.linkedinObj.login_linkedin(True)
+        # get the parametrized url search results
+        self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
+        total_jobs = self.getTotalJobsSearchCount(self.driver)
+        total_pages = self.getAvailablesPages(self.driver)
         if page_to_visit > total_pages:
             page_to_visit = total_pages # we can only extract availables opages
         job_index=0
         for _ in range(page_to_visit) : #skip first page, iterate until number of pages to visit
-            job_list = self.getListOfJobsOnPage(sel_driver)
+            job_list = self.getListOfJobsOnPage(self.driver)
             # Print the list of extracted job titles
             print(f"number of jobs on this page: {len(job_list)}")
             for job in job_list:
-                self.moveClickJob(sel_driver, job)
+                self.moveClickJob(self.driver, job)
                 job_index+=1
                 print(f"current job index: {job_index}")
-                jobObj = self.createJobObj(job_index, job, sel_driver)
+                jobObj = self.createJobObj(job_index, job, self.driver)
                 self.job_details_list.append(jobObj.to_dict())
             #time.sleep(1)
-            sel_driver = self.bot.getEasyApplyJobSearchUrlResults(start=job_index)
+            self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
             time.sleep(1)
         # save is not here
         self.writeDataToCsv(self.job_details_list, self.csv_file)
         return self.job_details_list
 
     def createJobObj(self, index: int, job: WebElement, driver: WebElement)->Job:
-        jobDataExtractor = LinkedinJobDetailsExtractor()
+        jobDataExtractor = JobDetailsExtractorLinkedin()
         link = self.getJobLink(job)
         job_id = jobDataExtractor.getJobID(job)
         div_element = driver.find_element(By.CSS_SELECTOR,'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
@@ -82,7 +64,7 @@ class JobParser:
 
     def getJobLink(self, job: WebElement):
         try:
-            link_element = WebDriverWait(job, 1).until(
+            link_element:WebElement = WebDriverWait(job, 1).until(
             EC.presence_of_element_located((By.TAG_NAME, 'a')))
             link_href = link_element.get_attribute('href')
             return link_href
@@ -143,5 +125,4 @@ class JobParser:
 
 
 if __name__ == '__main__':
-
-    jobParserObj = JobParser('jobApp/secrets/linkedin.json')
+    pass

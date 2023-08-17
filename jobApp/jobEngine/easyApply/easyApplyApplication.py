@@ -1,13 +1,9 @@
-from applicationAbstract import Application
-from jobBuilderLinkedin import JobBuilder, JobParser, Job
-from candidateProfile import CandidateProfile, ChatGPT, Resume
-from processHandler import ProcessHandler
-from linkedinEasyApplyForm import LinkedInEasyApplyForm, WebScraper
-import asyncio
-import json
-import os
+from application.applicationAbstract import Application
+from job.job import Job
+from user.candidateProfile import CandidateProfile, ChatGPT, Resume
+from utils.processHandler import ProcessHandler
+from linkedin.linkedinEasyApplyForm import LinkedInEasyApplyFormHandler, WebScraper
 from deprecated import deprecated
-import csv
 import threading
 
 class EasyApplyApplication(Application):
@@ -19,12 +15,8 @@ class EasyApplyApplication(Application):
         self.pid_login = None
         self.login_task_finished = threading.Event()
         self.login_task_killed = threading.Event()
-        # run the login task
-        #self.runLoginTask()
-        # Start the session pairing task -> after login session success 
-        #self.login_task_finished.wait()
         # create the instance, pass the session: pass down the candidate profile object
-        self.easyApplyFormObj = LinkedInEasyApplyForm(candidate_profile=candidate_profile) # the actual logic behind form
+        self.easyApplyFormObj = LinkedInEasyApplyFormHandler(candidate_profile=candidate_profile) # the actual logic behind form
 
     def runLoginTask(self):
         self.loginbot = WebScraper('jobApp/secrets/linkedin.json', headless=False)

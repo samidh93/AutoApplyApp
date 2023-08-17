@@ -8,7 +8,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from .jobDataExtractorLinkedin import JobDetailsExtractorLinkedin
-from job.job import Job
+from ..job.job import Job
 
 class JobScraperLinkedin:
     def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
@@ -20,16 +20,22 @@ class JobScraperLinkedin:
         self.application_type = application_type
 
     def createJobsList(self, page_to_visit):
+        print(f"running job scraper, requested number of pages to parse: {page_to_visit}")
         # login to get easy apply jobs
         self.linkedinObj.login_linkedin(True)
         # get the parametrized url search results
         self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
+        # wait 1 second to fully load results
+        time.sleep(1)
         total_jobs = self.getTotalJobsSearchCount(self.driver)
         total_pages = self.getAvailablesPages(self.driver)
         if page_to_visit > total_pages:
             page_to_visit = total_pages # we can only extract availables opages
+        print(f"number of pages availables to parse: {page_to_visit}")
+
         job_index=0
-        for _ in range(page_to_visit) : #skip first page, iterate until number of pages to visit
+        for p in range(page_to_visit) : #skip first page, iterate until number of pages to visit
+            print(f"visiting page number {p}, remaining pages {page_to_visit-p}")
             job_list = self.getListOfJobsOnPage(self.driver)
             # Print the list of extracted job titles
             print(f"number of jobs on this page: {len(job_list)}")

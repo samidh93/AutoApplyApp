@@ -1,11 +1,11 @@
-from applicationAbstract import Application
-from candidateProfile import CandidateProfile, ChatGPT, Resume
-from jobBuilderLinkedin import JobBuilder, JobParser, Job
-from gmail import Gmail
+from ..application.applicationAbstract import Application
+from ..user.candidateProfile import CandidateProfile
+from ..ai.chatgpt import ChatGPT
+from ..resume.resumeParser import Resume
+from ..job.job import Job
+from ..email.gmail import Gmail
 import json
-import os
 from deprecated import deprecated
-import csv
 
 class EmailApplication(Application):
     def __init__(self, candidate_profile: CandidateProfile, jobs: list[Job], csvJobsFile='jobApp/data/jobs.csv'):

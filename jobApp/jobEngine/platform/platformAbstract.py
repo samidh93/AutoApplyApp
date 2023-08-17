@@ -1,12 +1,12 @@
-from ..email.gmail import Gmail
-from ..user.candidateProfile import CandidateProfile
-from ..job.job import Job
+from gmail import Gmail
+from candidateProfile import CandidateProfile, ChatGPT
+from jobBuilderLinkedin import JobBuilder, JobParser, Job
 import csv
 from abc import ABC, abstractmethod
 import os
-from ..utils.fileLocker import FileLocker
+from fileLocker import FileLocker
 import threading
-from ..config.config import UserConfig, AppConfig
+from config import UserConfig, AppConfig
 
 class Application(ABC):
     def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile=UserConfig.get_jobs_file_path()) -> None:

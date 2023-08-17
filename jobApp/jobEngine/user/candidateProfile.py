@@ -1,18 +1,10 @@
-from resumeParser import Resume
-from chatgpt import ChatGPT
+from ..resume.resumeParser import Resume
+from ..ai.chatgpt import ChatGPT
 import json
-import requests
-from typing import List
-import threading
 from deprecated import deprecated
 
-"""Candidate Profile: contains all informations about applicant like first, last name, number and adress. \
-    as well as experience, education (backgorund in general). These informations need to be fullfilled by the user \
-    aka the applications upon registration. the current method is extracting sections from resume, which of course not \
-    the ideal solution for every resume outthere. we are using openai to extract data from resume, which is a itself a time
-    consuming task for each profile. \
-    Returns:
-        Candidate_profile: an object of type 
+"""
+    Candidate profile, Experiences, Educations, Skills
 """
 class Experience:
     def __init__(self, job_title, company, duration):

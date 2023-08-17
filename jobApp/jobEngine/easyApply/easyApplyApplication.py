@@ -1,8 +1,8 @@
-from application.applicationAbstract import Application
-from job.job import Job
-from user.candidateProfile import CandidateProfile, ChatGPT, Resume
-from utils.processHandler import ProcessHandler
-from linkedin.linkedinEasyApplyForm import LinkedInEasyApplyFormHandler, WebScraper
+from ..application.applicationAbstract import Application
+from ..job.job import Job
+from ..user.candidateProfile import CandidateProfile
+from ..utils.processHandler import ProcessHandler
+from ..linkedin.linkedinEasyApplyForm import LinkedInEasyApplyFormHandler
 from deprecated import deprecated
 import threading
 

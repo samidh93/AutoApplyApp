@@ -1,5 +1,5 @@
-from applicationBuilderAbstract import ApplicationBuilder
-from emailApplication import EmailApplication
+from ..application.applicationBuilderAbstract import ApplicationBuilder
+from .emailApplication import EmailApplication
 
 class EmailApplicationBuilder(ApplicationBuilder):
     def __init__(self):

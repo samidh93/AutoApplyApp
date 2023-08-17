@@ -1,5 +1,5 @@
-from application.applicationBuilderAbstract import ApplicationBuilder
-from easyApplyApplication import EasyApplyApplication
+from ..application.applicationBuilderAbstract import ApplicationBuilder
+from .easyApplyApplication import EasyApplyApplication
 
 class EasyApplyApplicationBuilder(ApplicationBuilder):
     def __init__(self):

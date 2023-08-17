@@ -6,9 +6,9 @@ import csv
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-from user.candidateProfile import CandidateProfile
+from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
-from jobsAttachSessionToLoginLinkedin import jobSearchSessionAttachLinkedin
+from .jobsAttachSessionToLoginLinkedin import jobSearchSessionAttachLinkedin
 
 ''' handle linkedin easy apply form template'''
 

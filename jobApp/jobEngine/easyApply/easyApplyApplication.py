@@ -3,6 +3,7 @@ from ..job.job import Job
 from ..user.candidateProfile import CandidateProfile
 from ..utils.processHandler import ProcessHandler
 from ..linkedin.linkedinEasyApplyForm import LinkedInEasyApplyFormHandler
+from ..linkedin.loginSessionLinkedin import LoginSessionLinkedCreator
 from deprecated import deprecated
 import threading
 
@@ -19,7 +20,7 @@ class EasyApplyApplication(Application):
         self.easyApplyFormObj = LinkedInEasyApplyFormHandler(candidate_profile=candidate_profile) # the actual logic behind form
 
     def runLoginTask(self):
-        self.loginbot = WebScraper('jobApp/secrets/linkedin.json', headless=False)
+        self.loginbot = LoginSessionLinkedCreator('jobApp/secrets/linkedin.json', headless=False)
         # Start task A
         thread_login = threading.Thread(target=self.loginbot.createLoginSession, args=(self.login_task_finished,self.login_task_killed))
         thread_login.start()

@@ -8,6 +8,12 @@ from ..utils.fileLocker import FileLocker
 import threading
 from ..config.config import UserConfig, AppConfig
 
+def print_progress_bar(iteration, total, bar_length=50):
+    percent = "{:.1f}".format(100 * (iteration / float(total)))
+    filled_length = int(bar_length * iteration // total)
+    bar = "#" * filled_length + "-" * (bar_length - filled_length)
+    print(f"Progress: [{bar}] {percent}% Complete", end="\r")
+
 class Application(ABC):
     def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile=UserConfig.get_jobs_file_path()) -> None:
         self.candidate_profile = candidate
@@ -20,12 +26,13 @@ class Application(ABC):
     @abstractmethod
     def ApplyForJob(self, job:Job):
         pass
-    
+
     # add thread for each job application
     def ApplyForAll(self, application_type = "internal" or "external"):
         threads = [threading.Thread] #list of threeads
-        print("applying for jobs from the csv file")
-        for j in self.jobs:
+        print("applying for jobs from the csv file")          
+        for i,j in enumerate(self.jobs):
+            print_progress_bar(i, len(self.jobs)+1)
             if j.applied:
             # we already applied for this job
                 continue
@@ -44,6 +51,7 @@ class Application(ABC):
         #for thread in threads:
         #    print(f"runnig thread")
         #    thread.join(self)   
+        print("\nApplying Task completed!")
         self.update_csv() # after finish, update 
 
     def load_jobs_from_csv(self):

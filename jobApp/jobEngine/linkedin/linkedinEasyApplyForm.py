@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import Select
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .jobsAttachSessionToLoginLinkedin import jobSearchSessionAttachLinkedin
-
+import time
 ''' handle linkedin easy apply form template'''
 
 class LinkedInEasyApplyFormHandler:
@@ -240,12 +240,12 @@ class LinkedInEasyApplyFormHandler:
         try: 
             fieldset_element = element.find_element(By.TAG_NAME, 'fieldset')
             print(f"Fieldset: {fieldset_element.text}")
-
             return fieldset_element
             #print(f"Label: {label}")
         except NoSuchElementException:
             # Handle the case when 'select' element is not found
-            print("fieldset element not found.")       
+            print("fieldset element not found.") 
+
     def _find_span_text(self, element: WebElement):
         try: 
             span_element = element.find_element(By.TAG_NAME, 'span')
@@ -254,7 +254,8 @@ class LinkedInEasyApplyFormHandler:
             #print(f"Label: {label}")
         except NoSuchElementException:
             # Handle the case when 'select' element is not found
-            print("no span element not found.")         
+            print("no span element not found.")   
+
     def _find_input_options_tag(self, element: WebElement, label=None):
         try:
             # Attempt to find the 'input' element inside the 'div' element
@@ -264,6 +265,7 @@ class LinkedInEasyApplyFormHandler:
         except NoSuchElementException:
             # Handle the case when 'input' element is not found
             print("Input elements not found.")
+            
     def _find_label_tag(self, element: WebElement):
         try: 
             label_element = element.find_element(By.TAG_NAME, 'label')
@@ -396,7 +398,7 @@ class LinkedInEasyApplyFormHandler:
             button.click()
             self.nextClicked = True
             return True
-        except NoSuchElementException:
+        except :
             # Handle the case when 'select' element is not found
             print("next button element not found.")
             self.nextClicked = False
@@ -410,7 +412,7 @@ class LinkedInEasyApplyFormHandler:
             button.click()
             self.ReviewClicked = True
             return True
-        except NoSuchElementException:
+        except :
             # Handle the case when 'select' element is not found
             print("Review button element not found.")
             self.ReviewClicked = False
@@ -426,7 +428,7 @@ class LinkedInEasyApplyFormHandler:
             button.click()
             self.SubmitClicked = True
             return True
-        except NoSuchElementException:
+        except :
             # Handle the case when 'select' element is not found
             print("Submit button element not found.")
             self.SubmitClicked = False
@@ -464,7 +466,13 @@ class LinkedInEasyApplyFormHandler:
             # Handle the case when 'select' element is not found
             print("Submit button element not found.")
             return False
-    def _detect_form_page_type(self, form: WebElement):
+    def _detect_form_page_type(self, form: WebElement, start_time=None):
+        if start_time is None:
+            start_time = time.time()  # Record the start time
+        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
+            return False
         # detect if the current page has next, review or submit 
         if self._detectSubmitButtonForm(form): # only submit
             print("page form with submit detected")
@@ -472,11 +480,11 @@ class LinkedInEasyApplyFormHandler:
         elif self._detectReviewButtonForm(form): # recursive one
             print("page form with review detected")
             self._execute_review(form)
-            return self._detect_form_page_type(form)
+            return self._detect_form_page_type(form,start_time)
         elif self._detectNextButtonForm(form): # recursive many
             print("page form with next detected")
             self._execute_next(form)
-            return self._detect_form_page_type(form)
+            return self._detect_form_page_type(form,start_time)
 
 
     ########### each case func ########
@@ -512,25 +520,23 @@ class LinkedInEasyApplyFormHandler:
     ####### Apply Phase #####
     def applyForJob(self, job_link: str) -> bool:
         # return true if job was success, false if job not found, deleted or can't apply
+        # keep track of the time for application, do not exceed max 3 minutes:
+        start_time = time.time() # begin counter
+        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
+            return False
         self.get_the_url(job_link)  # get the url form the job
         self.clickApplyPage()  # try to click apply button: retry when not clicked
         if not self.button_apply_clicked:
-            #time.sleep()
             self.clickApplyPage()
         if not self.button_apply_clicked:
             return False
         # detect form page type: 
         self._find_application_form()  # try to find the form
-        self._detect_form_page_type(self.form)
+        self._detect_form_page_type(self.form, start_time)
         self.button_apply_clicked = False
         return True
-
-    #### apply for all jobs ######
-    def applyForAllLinks(self):
-        for link in self.links:
-            print(f"parsing link: {link}")
-            self.get_the_url(link)
-            self.clickApplyPage()
         
 
 if __name__ == '__main__':

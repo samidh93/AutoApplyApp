@@ -29,7 +29,7 @@ class CandidateProfile:
 
     def __init__(self, resume_path, firstname=None, lastname=None, address=None, email=None, phone_number=None, linkedin=None):
         self.resume = Resume(resume_path)
-        self.resume_text = self.resume.extract_text()
+        #self.resume_text = self.resume.extract_text()
         self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")
         self.experience_list = [Experience]
         self.education_list = [Education]

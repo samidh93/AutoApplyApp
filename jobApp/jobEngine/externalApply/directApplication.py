@@ -1,6 +1,6 @@
-from applicationAbstract import Application
-from jobBuilderLinkedin import JobBuilder, JobParser, Job
-from candidateProfile import CandidateProfile, ChatGPT, Resume
+from ..application.applicationAbstract import Application
+from ..job.job import  Job
+from ..user.candidateProfile import CandidateProfile, ChatGPT, Resume
 import json
 import os
 from deprecated import deprecated

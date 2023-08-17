@@ -1,6 +1,5 @@
-from applicationBuilderAbstract import ApplicationBuilder
-from jobBuilderLinkedin import JobBuilder, JobParser, Job
-from directApplication  import DirectApplication
+from ..application.applicationBuilderAbstract import ApplicationBuilder
+from .directApplication  import DirectApplication
 
 class DirectApplicationBuilder(ApplicationBuilder):
     def __init__(self):

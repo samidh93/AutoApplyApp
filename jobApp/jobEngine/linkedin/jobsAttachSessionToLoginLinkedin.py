@@ -1,5 +1,5 @@
 
-from linkedinSeleniumBase import LinkedinSeleniumBase
+from .linkedinSeleniumBase import LinkedinSeleniumBase
 import json
 from urllib.parse import urlparse
 

@@ -9,7 +9,6 @@ import docx
 class Resume:
     def __init__(self, file_path):
         self.file_path = file_path
-        self.resume_text = self.extract_text()
         ## the section must be defined in higher level apis
         self.sections = ["PROFESSIONAL EXPERIENCE", "EDUCATION", "VOLUNTEER EXPERIENCE", "TRAINING", "ACCOMPLISHMENT", "KEY COMPETENCIES"]
         
@@ -25,12 +24,13 @@ class Resume:
     
     def extract_text(self):
         # Parse the PDF file
-        text = str()
-        with pdfplumber.open(self.file_path) as pdf:
-            for page in pdf.pages:
-                text = text+ page.extract_text()
-        #print(text)
-        return text
+        #text = str()
+        #with pdfplumber.open(self.file_path) as pdf:
+        #    for page in pdf.pages:
+        #        text = text+ page.extract_text()
+        ##print(text)
+        #return text
+        pass
     
     ###### Sections in resume ###
     # general method

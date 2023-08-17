@@ -10,9 +10,9 @@ class easyApplyMicroService:
         self.name = service_name
         print(f"initialising {self.name} microservice..")
         candidate = CandidateProfile(resume_path=UserConfig.get_resume_path("sami-dhiab-resume-one.pdf"), 
-                                     firstname="Sami", lastname="Dhiab", 
-                                     email= "sami.dhiab.x@gmail.com",  
-                                     phone_number="176666994604")
+                                     firstname="Zayneb", lastname="Dhiab", 
+                                     email= "dhiebzayneb89@gmail.com",  
+                                     phone_number="20094923")
         appDirector = ApplicationDirector()
         self.easyapp= appDirector.construct_application(candidate_profile=candidate, jobs=csv_jobs, application_type='Easy Apply')
 

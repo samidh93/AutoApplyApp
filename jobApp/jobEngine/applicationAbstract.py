@@ -29,9 +29,9 @@ class Application(ABC):
             if j.applied:
             # we already applied for this job
                 continue
-            print(f"application filter type: {application_type}, current job application type: {j.application_type}")
+            #print(f"application filter type: {application_type}, current job application type: {j.application_type}")
             if application_type == j.application_type: # apply for the same type
-                print(f"creating thread for easy  apply job with: {j.id}")
+                print(f"################ applying for job number {j.id} ##################")
                 #thread = threading.Thread(target=self.ApplyForJob, args=(j,))
                 #thread.daemon = True
                 #thread.start()

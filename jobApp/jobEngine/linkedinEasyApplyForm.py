@@ -390,8 +390,9 @@ class LinkedInEasyApplyForm(SeleniumFormHandler):
             # Print the inner text of the element.
             print(f"page header: {h3_element.text}")
             return h3_element.text
-        except NoSuchElementException:
+        except:
             print("no header found")
+            return "NA"
     ####### Click Buttons Pages #########
     def clickApplyPage(self):
         # click on the easy apply button, skip if already applied to the position

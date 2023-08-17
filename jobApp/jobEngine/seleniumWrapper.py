@@ -44,8 +44,6 @@ class WebScraper:
             login_task_finished.set()
             if login_task_killed:
                 break
-
-
         return self.loginSession
 
     def createJobSearchSession(self, attachToLoginSessionFromFile=True, SessionFile="jobApp/secrets/session.json") -> EasyApplyLinkedin:

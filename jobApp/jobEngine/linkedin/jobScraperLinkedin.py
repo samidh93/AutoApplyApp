@@ -1,5 +1,5 @@
 import csv
-from linkedinSeleniumBase import LinkedinSeleniumBase
+from .linkedinSeleniumBase import LinkedinSeleniumBase
 import time
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
@@ -7,13 +7,14 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
-from jobDataExtractorLinkedin import JobDetailsExtractorLinkedin
+from .jobDataExtractorLinkedin import JobDetailsExtractorLinkedin
 from job.job import Job
 
 class JobScraperLinkedin:
     def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
         # the base class
         self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file=linkedin_data_file, headless=True)
+        self.job_location = self.linkedinObj.location
         self.csv_file = csv_file_out
         self.job_details_list = []
         self.application_type = application_type
@@ -58,7 +59,7 @@ class JobScraperLinkedin:
         emails = jobDataExtractor.getCompanyEmails(div_element)
         poster_name = jobDataExtractor.getHiringManagerName(div_element)
         applied = False
-        job = Job(id=index,  job_id=job_id,  link=link, job_title=job_title, job_location= self.location, company_name=company,num_applicants= num_applicants, posted_date=published,
+        job = Job(id=index,  job_id=job_id,  link=link, job_title=job_title, job_location= self.job_location, company_name=company,num_applicants= num_applicants, posted_date=published,
                  job_description=job_description, company_emails=emails, job_poster_name=poster_name, application_type=self.application_type, applied=applied )
         return job
 

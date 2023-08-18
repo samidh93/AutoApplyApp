@@ -519,14 +519,17 @@ class LinkedInEasyApplyFormHandler:
 
     ####### Apply Phase #####
     def applyForJob(self, job_link: str) -> bool:
-        # return true if job was success, false if job not found, deleted or can't apply
         # keep track of the time for application, do not exceed max 3 minutes:
         start_time = time.time() # begin counter
         elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
         if elapsed_time >= 180:  # 180 seconds = 3 minutes
-            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
+            print("Time limit (3 minutes) per application exceeded. Returning from applyForJob.")
             return False
+        # open job url
         self.get_the_url(job_link)  # get the url form the job
+        # return true if job was success or already applied, false if job not found, deleted or can't apply
+        if self.applicationSubmitted():
+            return True
         self.clickApplyPage()  # try to click apply button: retry when not clicked
         if not self.button_apply_clicked:
             self.clickApplyPage()
@@ -534,10 +537,37 @@ class LinkedInEasyApplyFormHandler:
             return False
         # detect form page type: 
         self._find_application_form()  # try to find the form
-        self._detect_form_page_type(self.form, start_time)
+        if not self._detect_form_page_type(self.form, start_time):
+            return False
         self.button_apply_clicked = False
         return True
-        
+    
+    def applicationSubmitted(self)->bool :
+        # click on the easy apply button, skip if already applied to the position
+        try:
+            # Wait for the timeline entries to load
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'post-apply-timeline__entity')))
+            timeline_entries = self.driver.find_elements(By.CLASS_NAME, 'post-apply-timeline__entity')
+            for entry in timeline_entries:
+                activity_text = entry.find_element(By.CLASS_NAME, 'full-width').text.strip()
+                if activity_text == 'Application submitted':
+                    print("application already submitted, skipping ..")
+                    time.sleep(1)
+                    return True
+        except:
+            return False
+
+    def is_applications_closed(self):
+        try:
+            # Wait for the error element to load
+            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
+            error_element = self.driver.find_element(By.CLASS_NAME, 'jobs-details-top-card__apply-error')
+            error_message = error_element.find_element(By.CLASS_NAME, 'artdeco-inline-feedback__message').text.strip()
+            if "No longer accepting applications" in error_message:
+                print("application closed, no longer accepting applicants")
+                return True
+        except:
+            return False
 
 if __name__ == '__main__':
     pass

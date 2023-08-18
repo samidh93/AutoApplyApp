@@ -38,7 +38,7 @@ class Application(ABC):
                 continue
             #print(f"application filter type: {application_type}, current job application type: {j.application_type}")
             if application_type == j.application_type: # apply for the same type
-                print(f"################ applying for job number {j.id} ##################")
+                print(f"\n################ applying for job number {j.id} ##################\n")
                 #thread = threading.Thread(target=self.ApplyForJob, args=(j,))
                 #thread.daemon = True
                 #thread.start()

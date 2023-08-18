@@ -23,9 +23,5 @@ class ApplicationDirector:
 
 if __name__ == '__main__':
 
-    from candidateProfile import CandidateProfile
-    candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', firstname="zayneb", lastname="dhieb", email="dhiebzayneb89@gmail.com", phone_number="+21620094923")
-    appDirector = ApplicationDirector()
-    emailapp= appDirector.construct_application(candidate_profile=candidate, jobs='jobApp/data/jobs.csv', application_type='Email')
-    emailapp.ApplyForAll()
+    pass
     

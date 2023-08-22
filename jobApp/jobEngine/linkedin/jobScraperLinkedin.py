@@ -13,7 +13,7 @@ from ..job.job import Job
 class JobScraperLinkedin:
     def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
         # the base class
-        self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file=linkedin_data_file, headless=True)
+        self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file=linkedin_data_file, headless=False)
         self.job_location = self.linkedinObj.location
         self.csv_file = csv_file_out
         self.job_details_list = []
@@ -23,6 +23,7 @@ class JobScraperLinkedin:
         print(f"running job scraper, requested number of pages to parse: {page_to_visit}")
         # login to get easy apply jobs
         self.linkedinObj.login_linkedin(True)
+        time.sleep(100)
         # get the parametrized url search results
         self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
         # wait 1 second to fully load results

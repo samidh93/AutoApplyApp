@@ -23,7 +23,6 @@ class JobScraperLinkedin:
         print(f"running job scraper, requested number of pages to parse: {page_to_visit}")
         # login to get easy apply jobs
         self.linkedinObj.login_linkedin(True)
-        time.sleep(100)
         # get the parametrized url search results
         self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
         # wait 1 second to fully load results

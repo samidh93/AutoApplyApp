@@ -1,24 +1,41 @@
 import requests
 import json
 import os, sys
-from dotenv import load_dotenv, find_dotenv
 
 # Step 1: Send a GET request to LinkedIn's authorization endpoint
-def getCode():
-    response = requests.get('https://www.linkedin.com/oauth/v2/authorization',
-        params={
-            'response_type': 'code',
-            'client_id': client_id,
-            'redirect_uri': callback_url,
-            'state': 'foobar',
-            'scope': 'r_liteprofile r_emailaddress w_member_social'
-        }
-    )
-    print(response.json())
-    # Step 2: Parse the authorization code from the redirect URL
-    authorization_code = callback_url.split('=')[1]
+def getCode(client_id, callback_url, scopes):
+    # Construct the URL with the necessary parameters
+    auth_url = 'https://www.linkedin.com/oauth/v2/authorization'
+    params = {
+        'response_type': 'code',
+        'client_id': client_id,
+        'redirect_uri': callback_url,
+        'state': 'foobar',
+        'scope': ' '.join(scopes)  # Join multiple scopes with a space
+    }
 
-def getToken(authorization_code: str, client_id: str, client_secret: str, callback_url: str)-> str:
+    try:
+        response = requests.get(auth_url, params=params)
+        print(response)
+        # Check if the request was successful (status code 200)
+        if response.status_code == 200:
+            # Step 2: Parse the authorization code from the redirect URL
+            callback_params = response.url.split('?')[1]
+            query_params = dict(param.split('=') for param in callback_params.split('&'))
+            authorization_code = query_params.get('code')
+
+            if authorization_code:
+                print(f"Authorization code: {authorization_code}")
+            else:
+                print("Authorization code not found in the callback URL.")
+        else:
+            print(f"Request to LinkedIn's authorization endpoint failed with status code: {response.status_code}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred while making the GET request: {e}")
+
+
+def getToken(code: str, client_id: str, client_secret: str, callback_url: str)-> str:
 # Step 3: Send a POST request to LinkedIn's access token endpoint
     response = requests.post('https://www.linkedin.com/oauth/v2/accessToken',
         headers={
@@ -26,7 +43,7 @@ def getToken(authorization_code: str, client_id: str, client_secret: str, callba
         },
         data={
             'grant_type': 'authorization_code',
-            'code': authorization_code,
+            'code': code,
             'client_id': client_id,
             'client_secret': client_secret,
             'redirect_uri': callback_url
@@ -70,15 +87,12 @@ def testTokenJobSearch(token: str):
     print(response.json())
 
 if __name__ == '__main__':
-    load_dotenv(find_dotenv())
-
-    client_id = os.getenv("CLIENT_ID")
-    client_secret = os.getenv("CLIENT_SECRET")
-    callback_url= os.getenv("OAUTH2_REDIRECT_URL")
-    access_token = os.getenv("ACCESS_TOKEN")
-    authorization_code = os.getenv("authorization_code")
-    print(client_id)
-    #access_token = os.getenv("ACCESS_TOKEN")
-    #token = getToken(authorization_code, client_id, client_secret, callback_url)
-    #testToken(access_token)
-    testTokenJobSearch(access_token)
+    clientId = '78rfyafkruvy7p'
+    redirectUri = 'https://samidhiabx.wixsite.com/easyapplyhub/_functions/linkedincallback' 
+    scopes = {'openid', 'profile', 'email'}
+    clientSecret = 'loNi9ZU7nofWv4sz'
+    code = "AQRtPyGJ5F7dHPzvE5VH23jzyJkcFjy4kHwEm0UoDsI72B6cpgbN2zI2Spm0otzVAgT3ys6Obd1gKhx47Wop2HvXeMiXwh2pDjFtYX5YFEKosMS2gt6n6E1YhDIRdixLo1H-ZiqLWAnBSSOQtA2z2ShCvsXM5XqlkKnMXFNhcES0TThPtnoysq_4k0gCuOB-xt6ZZ5FXJCbiXh9UIyk"
+    #token = getToken(code,clientId,clientSecret,redirectUri  )
+    token = "AQXwXfVvjlAdkfxFXiT5LwvI7UvuFuhmxs9EQuyRT8KFA5FH_vdSNYVaNG0DRvvOE1O3sdELZW1fE88zwMW_6kooeHdFt-HLVOFyQbmTdrjlpmv4rXXl7X-yXZku-baEAWcx8d_56fF93MquZPtC77ZOcbYCVIlFUqdmvBzy1_EgLJ-vOh-7Tm4OUXF7R0QeyKkLBaCQ3GyIud7YuJ4-k42ewyioNYPU_c0ESGDLMLbtCD5AxpLVn2skXg-2b9dBbmbvmArDZ53pDzT1DERRCclH04gvVrJm-0dYdYmcSlAkJogddEsFxF8THRTHiayHAJi8LGretnBVoarBaXZbDhB00LRCeg"
+    testTokenJobSearch(token)
+    

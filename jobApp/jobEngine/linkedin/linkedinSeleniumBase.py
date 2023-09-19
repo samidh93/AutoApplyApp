@@ -60,10 +60,13 @@ class LinkedinSeleniumBase:
             login_pass.clear()
             login_pass.send_keys(self.password)
             login_pass.send_keys(Keys.RETURN)
+            if save_cookies:
+                self._save_cookies()
+            return True
         except Exception as e:
             print("exception:", e)
-        if save_cookies:
-            self._save_cookies()
+            return False
+
 
     def getEasyApplyJobSearchUrlResults(self, pageNum=0, start=0  ):
         self.params['start'] = start

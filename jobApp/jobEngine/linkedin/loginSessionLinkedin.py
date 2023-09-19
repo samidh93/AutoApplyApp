@@ -20,7 +20,11 @@ class LoginSessionLinkedCreator:
         self.searchCmdExecutorUrl = None
         self.server_port= None
 
-
+    def attemptLogin(self) ->bool:
+        """ attempt a login with provided credentials"""
+        self.loginSession = LinkedinSeleniumBase(self.linked_data, self.headless)
+        return self.loginSession.login_linkedin()   
+      
     def createLoginSession(self, writeSessionToFile, sessionFile="jobApp/secrets/session.json"):
         """ create a session only for login and start detached"""
         self.loginSession = LinkedinSeleniumBase(self.linked_data, self.headless)

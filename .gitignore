@@ -1,4 +1,3 @@
-
-
-jobApp/jsApp/node_modules/
-__pycache__
+# Ignore virtual environment
+venv/
+.vscode/

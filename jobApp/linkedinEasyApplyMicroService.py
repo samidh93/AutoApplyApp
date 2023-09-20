@@ -20,7 +20,6 @@ class easyApplyMicroService:
         print(f"running {self.name} microservice..")
         self.easyapp.ApplyForAll()
 
-if __name__ == '__main__':
-
-    service = easyApplyMicroService()
-    service.run_service()
+#if __name__ == '__main__':
+#    service = easyApplyMicroService()
+#    service.run_service()

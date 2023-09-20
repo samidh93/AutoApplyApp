@@ -1,5 +1,5 @@
-from jobApp.jobScraperLinkedinMicroService import JobScraperLinkedinMicroService
-from jobApp.linkedinEasyApplyMicroService import easyApplyMicroService
+#from jobApp.jobScraperLinkedinMicroService import JobScraperLinkedinMicroService
+#from jobApp.linkedinEasyApplyMicroService import easyApplyMicroService
 from jobApp.loginSessionLinkedinMicroService import  LoginSessionLinkedCreator
 
 class appCreatorLinkedin:
@@ -11,3 +11,9 @@ class appCreatorLinkedin:
             self.linkedSessionCreatorService.attemptLogin()
         except Exception as e:
             print("error occured during login: ", e)
+
+
+if __name__ == "__main__":
+
+    loginbot = LoginSessionLinkedCreator('jobApp/secrets/linkedin.json', headless=False)
+    bot = loginbot.createLoginSession(True)

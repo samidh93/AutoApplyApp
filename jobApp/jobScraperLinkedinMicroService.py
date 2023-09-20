@@ -13,7 +13,6 @@ class JobScraperLinkedinMicroService:
         print(f"running {self.name} microservice..")
         jobsLinks = self.jobParserObj.createJobsList(self.num_pages)
 
-if __name__ == '__main__':
-
-    jlink = JobScraperLinkedinMicroService()
-    jlink.run_service()
+#if __name__ == '__main__':
+#    jlink = JobScraperLinkedinMicroService()
+#    jlink.run_service()

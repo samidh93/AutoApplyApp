@@ -4,7 +4,7 @@ from jobApp.loginSessionLinkedinMicroService import  LoginSessionLinkedCreator
 
 class appCreatorLinkedin:
     def __init__(self, linkedinConfigFile) -> None:
-        self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile, headless=False)
+        self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile)
 
     def tryCredentialsLinkedin(self):
         try:
@@ -14,6 +14,6 @@ class appCreatorLinkedin:
 
 
 if __name__ == "__main__":
-
-    loginbot = LoginSessionLinkedCreator('jobApp/secrets/linkedin.json', headless=False)
+    
+    loginbot = LoginSessionLinkedCreator('jobApp/secrets/linkedin.json')
     bot = loginbot.createLoginSession(True)

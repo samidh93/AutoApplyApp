@@ -8,33 +8,22 @@ import json
 """ Base class with base configuration for linkedin login, search and selenium driver"""
 
 class LinkedinSeleniumBase:
+    # Better design: create a class to interpret incoming data as json and only pass the json object to the constructor
+    def __init__(self, linkedin_data, driver_config_file='jobApp/secrets/config.json'):
+        self._load_driver_params_from_file(driver_config_file) # for config selenium driver 
+        self._load_urls_params_from_file(driver_config_file)
+        self.driver = self._create_selenium_driver(headless=self.headless, detached=self.detached)
+        self._load_linkedin_parameters(linkedin_data)
 
-    def __init__(self, linkedin_data_file, headless=False, detached=False):
-        self._load_linked_parameters_from_file(linkedin_data_file)
-        self.driver = self._create_selenium_driver(headless=headless, detached=detached)
-    
-    def _load_linked_parameters_from_file(self, config_in):
+
+    def _load_driver_params_from_file(self, config_in):
         with open(config_in) as config_file:
             data = json.load(config_file)
-        self.email = data["login"]['email'][0]
-        self.password = data["login"]['password'][0]
-        self.keywords = data["login"]['keywords']
-        self.location = data["login"]['location']
-        self.chromedriver = data["login"]['driver_path']
-        # params
-        self.base_url = data["urls"]['search_job_url']
-        self.page_num = data["params"]['pageNum']
-        self.job_title= data["login"]['keywords']
-        self.location = data["login"]['location']
-        self.job_pos = data["params"]['start']
-        self.filter_easy_apply = data["params"]['f_AL']
-        self.start_pos=0
-        self.params = {
-            'keywords': self.job_title,
-            'location': self.location,
-            'f_AL': self.filter_easy_apply, # we increment this for next page
-            'start': self.start_pos
-        }
+         # driver
+        self.chromedriver = data["driver"]['driver_path']
+        self.headless = data["driver"]['headless']
+        self.detached = data["driver"]['detached']
+
     def _create_selenium_driver(self, headless, detached, implicit_wait=5 ):
         option = webdriver.ChromeOptions()
         if headless:
@@ -45,13 +34,98 @@ class LinkedinSeleniumBase:
         driver = webdriver.Chrome(service=s, options=option)
         driver.implicitly_wait(implicit_wait)
         return driver
+    
+    def _load_urls_params_from_file(self, config_in):
+        with open(config_in) as config_file:
+            data = json.load(config_file)
+        # urls
+        self.login_url = data["urls"]['linkedin_login_url']
+        self.job_search_url = data["urls"]['linkedin_jobsearch_url']
+
+    def _load_linked_parameters_as_json(self, json_in):
+        data = json.load(json_in)
+        # user
+        self.email = data["user"]['email']
+        self.password = data["user"]['password']
+        # in case only login data are passed
+        try:
+            # search-params
+            self.page_num = data["search_params"]['pageNum']
+            self.job_title= data["search_params"]['keywords']
+            self.location = data["search_params"]['location']
+            self.job_pos = data["search_params"]['start']
+            self.filter_easy_apply = data["search_params"]['f_AL']
+            self.start_pos=0
+            self.params = {
+                'keywords': self.job_title,
+                'location': self.location,
+                'f_AL': self.filter_easy_apply,
+                'start': self.start_pos
+            }
+        except Exception as E:
+            print("missing data error: ", E)
+            pass
+    def _load_linked_parameters_from_file(self, config_in):
+        with open(config_in) as config_file:
+            data = json.load(config_file)
+        # user
+        self.email = data["user"]['email']
+        self.password = data["user"]['password']
+        # search-params
+        self.page_num = data["search_params"]['pageNum']
+        self.job_title= data["search_params"]['keywords']
+        self.location = data["search_params"]['location']
+        self.job_pos = data["search_params"]['start']
+        self.filter_easy_apply = data["search_params"]['f_AL']
+        self.start_pos=0
+        self.params = {
+            'keywords': self.job_title,
+            'location': self.location,
+            'f_AL': self.filter_easy_apply,
+            'start': self.start_pos
+        }
+    # better version
+    def _load_linkedin_parameters(self, source):
+        if isinstance(source, str):
+            # If source is a string, assume it's a file path
+            try:
+                with open(source, 'r') as file:
+                    json_data = json.load(file)
+            except FileNotFoundError:
+                raise FileNotFoundError("File not found")
+        elif isinstance(source, dict):
+            # If source is a dictionary, assume it's a JSON object
+            json_data = source
+        else:
+            raise ValueError("Invalid source type")
+
+        # User data
+        user_data = json_data.get("user", {})
+        self.email = user_data.get('email', None)
+        self.password = user_data.get('password', None)
+
+        # Search parameters
+        search_params = json_data.get("search_params", {})
+        self.page_num = search_params.get('pageNum', None)
+        self.job_title = search_params.get('keywords', None)
+        self.location = search_params.get('location', None)
+        self.job_pos = search_params.get('start', None)
+        self.filter_easy_apply = search_params.get('f_AL', None)
+        self.start_pos=0
+        # Create params dictionary
+        self.params = {
+            'keywords': self.job_title,
+            'location': self.location,
+            'f_AL': self.filter_easy_apply,
+            'start': self.start_pos
+        }
 
 
     def login_linkedin(self, save_cookies=False):
         """This function logs into your personal LinkedIn profile"""
         # go to the LinkedIn login url
         try: 
-            self.driver.get("https://www.linkedin.com/login")
+            self.driver.get(self.login_url)
             # introduce email and password and hit enter
             login_email = self.driver.find_element(By.NAME, 'session_key')
             login_email.clear()
@@ -64,7 +138,7 @@ class LinkedinSeleniumBase:
                 self._save_cookies()
             return True
         except Exception as e:
-            print("exception:", e)
+            print("login exception:", e)
             return False
 
 

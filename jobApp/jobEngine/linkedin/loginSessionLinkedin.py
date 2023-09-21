@@ -8,10 +8,8 @@ from urllib.parse import urlparse
     and keep the browser alive
 '''
 class LoginSessionLinkedCreator:
-    def __init__(self, linkedin_data, headless=False, detached= False):
+    def __init__(self, linkedin_data):
         self.linked_data = linkedin_data
-        self.headless = headless
-        self.detached = detached
         self.loginSession = None
         self.loginSessionId = None
         self.loginCmdExecutorUrl = None
@@ -22,12 +20,12 @@ class LoginSessionLinkedCreator:
 
     def attemptLogin(self) ->bool:
         """ attempt a login with provided credentials"""
-        self.loginSession = LinkedinSeleniumBase(self.linked_data, self.headless)
+        self.loginSession = LinkedinSeleniumBase(self.linked_data)
         return self.loginSession.login_linkedin()   
       
     def createLoginSession(self, writeSessionToFile, sessionFile="jobApp/secrets/session.json"):
         """ create a session only for login and start detached"""
-        self.loginSession = LinkedinSeleniumBase(self.linked_data, self.headless)
+        self.loginSession = LinkedinSeleniumBase(self.linked_data)
         self.loginSession.login_linkedin()
         self.loginSessionId = self.loginSession.driver.session_id
         self.loginCmdExecutorUrl = self.loginSession.driver.command_executor._url

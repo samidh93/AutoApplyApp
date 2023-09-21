@@ -4,8 +4,13 @@ from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 import json
-
+import time
+import logging
+logger = logging.getLogger(__name__)
 """ Base class with base configuration for linkedin login, search and selenium driver"""
+
+class LoginException(Exception):
+    pass
 
 class LinkedinSeleniumBase:
     # Better design: create a class to interpret incoming data as json and only pass the json object to the constructor
@@ -134,12 +139,17 @@ class LinkedinSeleniumBase:
             login_pass.clear()
             login_pass.send_keys(self.password)
             login_pass.send_keys(Keys.RETURN)
+            #time.
+            current_url = self.driver.current_url
+            expected_redirect_url = "https://www.linkedin.com/feed/?trk=guest_homepage-basic_nav-header-signin"
+            if current_url != expected_redirect_url:
+                raise LoginException(f"login attempt failed, redirection not as expected url")
             if save_cookies:
-                self._save_cookies()
-            return True
-        except Exception as e:
-            print("login exception:", e)
-            return False
+                    self._save_cookies()
+        except LoginException as e:
+            logger.error(f"{e}")
+            self.driver.quit()
+            raise # reraise the exception to the caller
 
 
     def getEasyApplyJobSearchUrlResults(self, pageNum=0, start=0  ):

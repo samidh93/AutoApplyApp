@@ -1,4 +1,4 @@
-from .jobEngine.linkedin.loginSessionLinkedin import LoginSessionLinkedCreator
+from .jobEngine.linkedin.loginSessionLinkedin import LoginSessionLinkedCreator, LoginException
 
 class wrapper(LoginSessionLinkedCreator):
     pass

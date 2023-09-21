@@ -1,8 +1,9 @@
 
-from .linkedinSeleniumBase import LinkedinSeleniumBase
+from .linkedinSeleniumBase import LinkedinSeleniumBase, LoginException
 import json
 from urllib.parse import urlparse
-
+import logging
+logger = logging.getLogger(__name__)
 '''
     create a linked login session, save driver session in a file
     and keep the browser alive
@@ -20,8 +21,13 @@ class LoginSessionLinkedCreator:
 
     def attemptLogin(self) ->bool:
         """ attempt a login with provided credentials"""
-        self.loginSession = LinkedinSeleniumBase(self.linked_data)
-        return self.loginSession.login_linkedin()   
+        try:
+            self.loginSession = LinkedinSeleniumBase(self.linked_data)
+            self.loginSession.login_linkedin()   
+        except LoginException as E:
+            logger.error(f"exception: {E}")
+            raise
+            
       
     def createLoginSession(self, writeSessionToFile, sessionFile="jobApp/secrets/session.json"):
         """ create a session only for login and start detached"""

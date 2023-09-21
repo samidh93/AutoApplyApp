@@ -3,20 +3,15 @@ from pydantic import BaseModel
 import asyncio
 
 
-if __name__ == "__main__":
-
-    app = FastAPI()
-
-    class Item(BaseModel):
-        _id: str
-        _owner: str
-        title: str
-        email: str
-        password: str
-
-    @app.post("/create-item/")
-    async def create_item(item: Item):
-        # For demonstration purposes, we'll simulate a delay
-        await asyncio.sleep(2)  # Simulate a 2-second delay
-
-        return {"message": "Item created successfully", "data": item.model_dump()}
+app = FastAPI()
+class Item(BaseModel):
+    _id: str
+    _owner: str
+    title: str
+    email: str
+    password: str
+@app.post("/create-item/")
+async def create_item(item: Item):
+    # For demonstration purposes, we'll simulate a delay
+    await asyncio.sleep(2)  # Simulate a 2-second delay
+    return {"message": "Item created successfully", "data": item.model_dump()}

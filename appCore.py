@@ -14,6 +14,12 @@ class appCreatorLinkedin:
         except LoginException as E:
             logger.error(f"exception: {E}")
             raise
+    def getJobsCount(self):
+        try:
+            self.linkedSessionCreatorService.attemptLogin()
+        except Exception as E:
+            logger.error(f"exception: {E}")
+            raise    
 
 
 if __name__ == "__main__":

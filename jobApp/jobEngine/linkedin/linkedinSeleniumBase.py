@@ -6,6 +6,9 @@ from selenium.webdriver.chrome.service import Service
 import json
 import time
 import logging
+from urllib.parse import urlparse
+
+
 logger = logging.getLogger(__name__)
 """ Base class with base configuration for linkedin login, search and selenium driver"""
 
@@ -141,8 +144,8 @@ class LinkedinSeleniumBase:
             login_pass.send_keys(Keys.RETURN)
             #time.
             current_url = self.driver.current_url
-            expected_redirect_url = "https://www.linkedin.com/feed/?trk=guest_homepage-basic_nav-header-signin"
-            if current_url != expected_redirect_url:
+            baseRedirectUrl = "https://www.linkedin.com/feed/?trk=guest_homepage-basic_nav-header-signin"
+            if not self.is_url_subset(current_url, baseRedirectUrl):
                 raise LoginException(f"login attempt failed, redirection not as expected url")
             if save_cookies:
                     self._save_cookies()
@@ -189,7 +192,17 @@ class LinkedinSeleniumBase:
         # Refresh the page to apply the cookie
         self.driver.refresh()
 
- 
+    def is_url_subset(self, url, base_url):
+        # Parse the URLs
+        parsed_url = urlparse(url)
+        parsed_base_url = urlparse(base_url)
+
+        # Compare the scheme and domain
+        if parsed_url.scheme != parsed_base_url.scheme or parsed_url.netloc != parsed_base_url.netloc:
+            return False
+
+        # Check if the path of 'url' starts with the path of 'base_url'
+        return parsed_url.path.startswith(parsed_base_url.path)
 
 if __name__ == '__main__':
     pass

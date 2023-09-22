@@ -19,7 +19,7 @@ def get_job_count(jobs: JobSearch):
         jobsQueryApp = appCreatorLinkedin(jobs_query)
         # jobsQueryApp.tryCredentialsLinkedin()
         return JobCountResponse(
-            message="Users Credentials tested successfully",
+            message="jobs params tested successfully",
             data=jobs_query,
             status="ok"
         )

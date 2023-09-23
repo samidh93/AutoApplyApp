@@ -13,12 +13,15 @@ from ..job.job import Job
 class JobScraperLinkedin:
     def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
         # the base class
-        self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file=linkedin_data_file, headless=False)
+        self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file)
         self.job_location = self.linkedinObj.location
         self.csv_file = csv_file_out
         self.job_details_list = []
         self.application_type = application_type
 
+    def getJobCountFound(self):
+        return self.total_jobs
+    
     def createJobsList(self, page_to_visit):
         print(f"running job scraper, requested number of pages to parse: {page_to_visit}")
         # login to get easy apply jobs
@@ -27,7 +30,7 @@ class JobScraperLinkedin:
         self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
         # wait 1 second to fully load results
         time.sleep(1)
-        total_jobs = self.getTotalJobsSearchCount(self.driver)
+        self.total_jobs = self.getTotalJobsSearchCount(self.driver)
         total_pages = self.getAvailablesPages(self.driver)
         if page_to_visit > total_pages:
             page_to_visit = total_pages # we can only extract availables opages

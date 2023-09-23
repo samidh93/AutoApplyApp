@@ -1,6 +1,6 @@
-from jobEngine.application.applicationDirector import ApplicationDirector
-from jobEngine.user.candidateProfile import CandidateProfile
-from jobEngine.config.config import UserConfig, AppConfig
+from .jobEngine.application.applicationDirector import ApplicationDirector
+from .jobEngine.user.candidateProfile import CandidateProfile
+from .jobEngine.config.config import UserConfig, AppConfig
 
 # TODO Move all paths required for a service  to a config file
 

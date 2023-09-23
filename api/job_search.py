@@ -17,12 +17,15 @@ def get_job_count(jobs: JobSearch):
             }
         }
         jobsQueryApp = appCreatorLinkedin(jobs_query)
-        # jobsQueryApp.tryCredentialsLinkedin()
-        return JobCountResponse(
-            message="jobs params tested successfully",
-            data=jobs_query,
-            status="ok"
-        )
+        joblist, jobCount = jobsQueryApp.getJobsCount()
+        if jobCount != 0:
+            return JobCountResponse(
+                message="jobs count returned successfully",
+                data=str(jobCount),
+                status="ok"
+            )
+        else:
+            raise HTTPException(status_code=400, detail="no jobs found")
     except LoginException as loginError:
         logging.error("loginError occurred: %s", loginError)
         raise HTTPException(status_code=400, detail=str(loginError))

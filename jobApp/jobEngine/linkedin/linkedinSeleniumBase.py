@@ -17,11 +17,11 @@ class LoginException(Exception):
 
 class LinkedinSeleniumBase:
     # Better design: create a class to interpret incoming data as json and only pass the json object to the constructor
-    def __init__(self, linkedin_data, driver_config_file='jobApp/secrets/config.json'):
+    def __init__(self, linkedin_data, driver_config_file='jobApp/secrets/config.json', default_linkedin_config = 'jobApp/secrets/sample_linkedin_user.json'):
         self._load_driver_params_from_file(driver_config_file) # for config selenium driver 
         self._load_urls_params_from_file(driver_config_file)
         self.driver = self._create_selenium_driver(headless=self.headless, detached=self.detached)
-        self._load_linkedin_parameters(linkedin_data)
+        self._load_linkedin_parameters(linkedin_data, default_linkedin_config)
 
 
     def _load_driver_params_from_file(self, config_in):
@@ -47,53 +47,21 @@ class LinkedinSeleniumBase:
         with open(config_in) as config_file:
             data = json.load(config_file)
         # urls
+        self.base_url = data["urls"]['linkedin_base_url']
         self.login_url = data["urls"]['linkedin_login_url']
         self.job_search_url = data["urls"]['linkedin_jobsearch_url']
 
-    def _load_linked_parameters_as_json(self, json_in):
-        data = json.load(json_in)
-        # user
-        self.email = data["user"]['email']
-        self.password = data["user"]['password']
-        # in case only login data are passed
-        try:
-            # search-params
-            self.page_num = data["search_params"]['pageNum']
-            self.job_title= data["search_params"]['keywords']
-            self.location = data["search_params"]['location']
-            self.job_pos = data["search_params"]['start']
-            self.filter_easy_apply = data["search_params"]['f_AL']
-            self.start_pos=0
-            self.params = {
-                'keywords': self.job_title,
-                'location': self.location,
-                'f_AL': self.filter_easy_apply,
-                'start': self.start_pos
-            }
-        except Exception as E:
-            print("missing data error: ", E)
-            pass
-    def _load_linked_parameters_from_file(self, config_in):
-        with open(config_in) as config_file:
-            data = json.load(config_file)
-        # user
-        self.email = data["user"]['email']
-        self.password = data["user"]['password']
-        # search-params
-        self.page_num = data["search_params"]['pageNum']
-        self.job_title= data["search_params"]['keywords']
-        self.location = data["search_params"]['location']
-        self.job_pos = data["search_params"]['start']
-        self.filter_easy_apply = data["search_params"]['f_AL']
-        self.start_pos=0
-        self.params = {
-            'keywords': self.job_title,
-            'location': self.location,
-            'f_AL': self.filter_easy_apply,
-            'start': self.start_pos
-        }
     # better version
-    def _load_linkedin_parameters(self, source):
+    def _load_linkedin_parameters(self, source, defaultUser):
+        # load default user (bypass credentials for debug)
+        if isinstance(defaultUser, str): 
+            # If source is a string, assume it's a file path
+            try:
+                with open(defaultUser, 'r') as file:
+                    default_user_json = json.load(file)
+            except FileNotFoundError:
+                raise FileNotFoundError("default user File not found")    
+        # load actual user data   
         if isinstance(source, str):
             # If source is a string, assume it's a file path
             try:
@@ -106,19 +74,18 @@ class LinkedinSeleniumBase:
             json_data = source
         else:
             raise ValueError("Invalid source type")
-
         # User data
-        user_data = json_data.get("user", {})
-        self.email = user_data.get('email', None)
-        self.password = user_data.get('password', None)
+        user_data = json_data.get("user", default_user_json.get("user"))
+        self.email = user_data.get('email', default_user_json.get("email"))
+        self.password = user_data.get('password', default_user_json.get("password"))
 
         # Search parameters
-        search_params = json_data.get("search_params", {})
-        self.page_num = search_params.get('pageNum', None)
-        self.job_title = search_params.get('keywords', None)
-        self.location = search_params.get('location', None)
-        self.job_pos = search_params.get('start', None)
-        self.filter_easy_apply = search_params.get('f_AL', None)
+        search_params = json_data.get("search_params", default_user_json.get("search_params"))
+        self.page_num = search_params.get('pageNum', default_user_json.get("pageNum"))
+        self.job_title = search_params.get('job', default_user_json.get("job"))
+        self.location = search_params.get('location', default_user_json.get("location"))
+        self.job_pos = search_params.get('start', default_user_json.get("start"))
+        self.filter_easy_apply = search_params.get('f_AL', default_user_json.get("f_AL"))
         self.start_pos=0
         # Create params dictionary
         self.params = {
@@ -127,7 +94,6 @@ class LinkedinSeleniumBase:
             'f_AL': self.filter_easy_apply,
             'start': self.start_pos
         }
-
 
     def login_linkedin(self, save_cookies=False):
         """This function logs into your personal LinkedIn profile"""
@@ -158,7 +124,7 @@ class LinkedinSeleniumBase:
     def getEasyApplyJobSearchUrlResults(self, pageNum=0, start=0  ):
         self.params['start'] = start
         print(f"################## getting jobs starting from {self.params['start']} ###############")
-        full_url = f"{self.base_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
+        full_url = f"{self.job_search_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
         print(f"constructed url: {full_url }")
         self.driver.get(full_url)
         return self.driver

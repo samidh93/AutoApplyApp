@@ -20,6 +20,13 @@ class JobScraperLinkedin:
         self.application_type = application_type
 
     def getJobCountFound(self):
+        # login to get easy apply jobs
+        self.linkedinObj.login_linkedin(True)
+        # get the parametrized url search results
+        self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
+        # wait 1 second to fully load results
+        time.sleep(1)
+        self.total_jobs = self.getTotalJobsSearchCount(self.driver)
         return self.total_jobs
     
     def createJobsList(self, page_to_visit):
@@ -49,6 +56,7 @@ class JobScraperLinkedin:
                 jobObj = self.createJobObj(job_index, job, self.driver)
                 self.job_details_list.append(jobObj.to_dict())
             #time.sleep(1)
+            # next page
             self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
             time.sleep(1)
         # save is not here

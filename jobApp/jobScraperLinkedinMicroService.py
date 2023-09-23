@@ -12,8 +12,12 @@ class JobScraperLinkedinMicroService:
     def run_service(self):
         print(f"running {self.name} microservice..")
         self.jobsLinks = self.jobParserObj.createJobsList(self.num_pages) # run collector and return list of jobs
+        return self.jobsLinks
+
+    def run_job_count_service(self):
+        print(f"running job_count microservice..")
         self.jobsCountFound = self.jobParserObj.getJobCountFound() # return the total (optional for testing)
-        return self.jobsLinks, self.jobsCountFound
+        return self.jobsCountFound
 
 #if __name__ == '__main__':
 #    jlink = JobScraperLinkedinMicroService()

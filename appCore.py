@@ -17,9 +17,9 @@ class appCreatorLinkedin:
             raise
     def getJobsCount(self):
         try:
-           jobList, jobCount =  self.linkedinJobCollector.run_service()
+           jobCount =  self.linkedinJobCollector.run_job_count_service()
            print("number jobs found: ", jobCount)
-           return jobList, jobCount
+           return jobCount
         except Exception as E:
             logger.error(f"exception: {str(E)}")
             raise    
@@ -32,6 +32,6 @@ if __name__ == "__main__":
                 "location": "berlin"
             }
         }
-    testapp = appCreatorLinkedin(linkedin_data=jobs_query)
-    joblist, jobcount = testapp.getJobsCount()
+    testapp = appCreatorLinkedin(jobs_query)
+    jobcount = testapp.getJobsCount()
     print("job count found: ", jobcount)

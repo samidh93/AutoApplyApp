@@ -17,7 +17,7 @@ def get_job_count(jobs: JobSearch):
             }
         }
         jobsQueryApp = appCreatorLinkedin(jobs_query)
-        joblist, jobCount = jobsQueryApp.getJobsCount()
+        jobCount = jobsQueryApp.getJobsCount()
         if jobCount != 0:
             return JobCountResponse(
                 message="jobs count returned successfully",

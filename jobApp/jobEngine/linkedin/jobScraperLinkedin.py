@@ -10,11 +10,12 @@ from selenium.webdriver.support import expected_conditions as EC
 from .jobDataExtractorLinkedin import JobDetailsExtractorLinkedin
 from ..job.job import Job
 import threading
-
+import os
 class JobScraperLinkedin:
     def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
         # the base class
         self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file)
+        self.job_title = self.linkedinObj.job_title
         self.job_location = self.linkedinObj.location
         self.csv_file = csv_file_out
         self.job_details_list = []
@@ -29,7 +30,18 @@ class JobScraperLinkedin:
         time.sleep(1)
         self.total_jobs = self.getTotalJobsSearchCount(self.driver)
         return self.total_jobs
-    
+
+    def replace_spaces_and_commas_with_underscores(self, input_string):
+        # Replace spaces and commas with underscores
+        modified_string = input_string.replace(' ', '_').replace(',', '_')
+        return modified_string
+    def createFileJobLocation(self):
+        csv_file_out_without_extension = self.csv_file[:-4]
+        job_title = self.replace_spaces_and_commas_with_underscores(self.job_title)
+        location = self.replace_spaces_and_commas_with_underscores(self.job_location)
+        csv_extension = ".csv"
+        file = csv_file_out_without_extension+job_title+location+csv_extension
+        return file
     def saveJobsList(self,page_to_visit):
         total_pages = self.getAvailablesPages(self.driver) or 1
         if page_to_visit > total_pages:
@@ -47,7 +59,7 @@ class JobScraperLinkedin:
                 print(f"current job index: {job_index}")
                 jobObj = self.createJobObj(job_index, job, self.driver)
                 self.job_details_list.append(jobObj.to_dict())
-                self.writeJobToCsv(jobObj.to_dict(),self.csv_file )
+                self.writeJobToCsv(jobObj.to_dict(),self.createFileJobLocation() )
             #time.sleep(1)
             # next page
             self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
@@ -64,6 +76,7 @@ class JobScraperLinkedin:
         thread2 = threading.Thread(target=self.saveJobsList,args=[page_to_visit], daemon=True)
         thread2.start()
 
+    @DeprecationWarning
     def createJobsList(self, page_to_visit):
         print(f"running job scraper, requested number of pages to parse: {page_to_visit}")
         # login to get easy apply jobs
@@ -176,13 +189,18 @@ class JobScraperLinkedin:
         print(f"CSV file '{Csv_file_out}' created successfully.")
 
     def writeJobToCsv(self, Job, Csv_file_out):
-        # Write the dictionary to the CSV file
+        # Check if the file exists
+        file_exists = os.path.exists(Csv_file_out)
+
+        # Open the CSV file in append mode
         with open(Csv_file_out, 'a', newline='') as file:
             fieldnames = Job.keys()
             writer = csv.DictWriter(file, fieldnames=fieldnames)
-            # Check if the file is empty, and if so, write the header
-            if file.tell() == 0:
+
+            # If the file doesn't exist, write the header row
+            if not file_exists:
                 writer.writeheader()  # Write the header row
+
             writer.writerow(Job)  # Write the data row
             print(f"CSV file '{Csv_file_out}' updated successfully.")
 

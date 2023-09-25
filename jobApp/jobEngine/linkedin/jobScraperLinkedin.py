@@ -27,12 +27,13 @@ class JobScraperLinkedin:
         # get the parametrized url search results
         self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
         # wait 1 second to fully load results
-        time.sleep(1)
+        #time.sleep(1)
         self.total_jobs = self.getTotalJobsSearchCount(self.driver)
         return self.total_jobs
 
     def replace_spaces_and_commas_with_underscores(self, input_string):
         # Replace spaces and commas with underscores
+        modified_string = ""
         if " " in  input_string:
             modified_string = input_string.replace(' ', '_')
         if "," in input_string:
@@ -63,10 +64,9 @@ class JobScraperLinkedin:
                 jobObj = self.createJobObj(job_index, job, self.driver)
                 self.job_details_list.append(jobObj.to_dict())
                 self.writeJobToCsv(jobObj.to_dict(),self.createFileJobLocation() )
-            #time.sleep(1)
-            # next page
-            self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
-            time.sleep(1)
+                if job_index % 25 ==0:
+                    self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
+                    #time.sleep(1)
         return self.job_details_list
     
     def collectJobsThreads(self, page_to_visit):

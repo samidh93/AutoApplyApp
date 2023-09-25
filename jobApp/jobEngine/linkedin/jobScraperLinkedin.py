@@ -31,7 +31,7 @@ class JobScraperLinkedin:
         return self.total_jobs
     
     def saveJobsList(self,page_to_visit):
-        total_pages = self.getAvailablesPages(self.driver)
+        total_pages = self.getAvailablesPages(self.driver) or 1
         if page_to_visit > total_pages:
             page_to_visit = total_pages # we can only extract availables opages
         print(f"number of pages availables to parse: {page_to_visit}")
@@ -47,12 +47,11 @@ class JobScraperLinkedin:
                 print(f"current job index: {job_index}")
                 jobObj = self.createJobObj(job_index, job, self.driver)
                 self.job_details_list.append(jobObj.to_dict())
+                self.writeJobToCsv(jobObj.to_dict(),self.csv_file )
             #time.sleep(1)
             # next page
             self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
             time.sleep(1)
-        # save is not here
-        self.writeDataToCsv(self.job_details_list, self.csv_file)
         return self.job_details_list
     
     def collectJobsThreads(self, page_to_visit):
@@ -62,7 +61,7 @@ class JobScraperLinkedin:
         # Wait for the first thread to finish
         thread1.join()
         # Create and start the second thread (background thread)
-        thread2 = threading.Thread(target=self.saveJobsList,args=page_to_visit, daemon=True)
+        thread2 = threading.Thread(target=self.saveJobsList,args=[page_to_visit], daemon=True)
         thread2.start()
 
     def createJobsList(self, page_to_visit):
@@ -176,6 +175,16 @@ class JobScraperLinkedin:
             writer.writerows(Data_in)  # Write the data rows
         print(f"CSV file '{Csv_file_out}' created successfully.")
 
+    def writeJobToCsv(self, Job, Csv_file_out):
+        # Write the dictionary to the CSV file
+        with open(Csv_file_out, 'a', newline='') as file:
+            fieldnames = Job.keys()
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            # Check if the file is empty, and if so, write the header
+            if file.tell() == 0:
+                writer.writeheader()  # Write the header row
+            writer.writerow(Job)  # Write the data row
+            print(f"CSV file '{Csv_file_out}' updated successfully.")
 
 if __name__ == '__main__':
     pass

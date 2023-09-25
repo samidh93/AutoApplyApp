@@ -81,11 +81,11 @@ class LinkedinSeleniumBase:
 
         # Search parameters
         search_params = json_data.get("search_params", default_user_json.get("search_params"))
-        self.page_num = search_params.get('pageNum', default_user_json.get("pageNum"))
-        self.job_title = search_params.get('job', default_user_json.get("job"))
-        self.location = search_params.get('location', default_user_json.get("location"))
-        self.job_pos = search_params.get('start', default_user_json.get("start"))
-        self.filter_easy_apply = search_params.get('f_AL', default_user_json.get("f_AL"))
+        self.job_title = search_params.get('job', default_user_json["search_params"]["job"])
+        self.location = search_params.get('location', default_user_json["search_params"]["location"])
+        self.page_num = search_params.get('pageNum', default_user_json["search_params"]["pageNum"])
+        self.job_pos = search_params.get('start' , default_user_json["search_params"]["start"])
+        self.filter_easy_apply = search_params.get('f_AL', default_user_json["search_params"]["f_AL"])
         self.start_pos=0
         # Create params dictionary
         self.params = {

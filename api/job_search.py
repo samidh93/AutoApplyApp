@@ -17,11 +17,12 @@ def get_job_count(jobs: JobSearch):
             }
         }
         jobsQueryApp = appCreatorLinkedin(jobs_query)
-        jobCount = jobsQueryApp.getJobsCount()
+        # use threaded context 
+        jobCount = jobsQueryApp.collectJobs()
         if jobCount != 0:
             return JobCountResponse(
                 message="jobs count returned successfully",
-                data=str(jobCount),
+                data={"job_count": jobCount},  # Wrap the jobCount in a dictionary
                 status="ok"
             )
         else:

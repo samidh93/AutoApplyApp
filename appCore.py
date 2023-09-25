@@ -23,7 +23,14 @@ class appCreatorLinkedin:
         except Exception as E:
             logger.error(f"exception: {str(E)}")
             raise    
-
+    def collectJobs(self):
+        try:
+           jobCount =  self.linkedinJobCollector.run_collect_jobs_service()
+           print("number jobs found: ", jobCount)
+           return jobCount
+        except Exception as E:
+            logger.error(f"exception: {str(E)}")
+            raise    
 
 if __name__ == "__main__":
     jobs_query = {

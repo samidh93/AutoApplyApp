@@ -9,6 +9,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from .jobDataExtractorLinkedin import JobDetailsExtractorLinkedin
 from ..job.job import Job
+import threading
 
 class JobScraperLinkedin:
     def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type = "internal" or "external"):
@@ -29,6 +30,41 @@ class JobScraperLinkedin:
         self.total_jobs = self.getTotalJobsSearchCount(self.driver)
         return self.total_jobs
     
+    def saveJobsList(self,page_to_visit):
+        total_pages = self.getAvailablesPages(self.driver)
+        if page_to_visit > total_pages:
+            page_to_visit = total_pages # we can only extract availables opages
+        print(f"number of pages availables to parse: {page_to_visit}")
+        job_index=0
+        for p in range(page_to_visit) : #skip first page, iterate until number of pages to visit
+            print(f"visiting page number {p}, remaining pages {page_to_visit-p}")
+            job_list = self.getListOfJobsOnPage(self.driver)
+            # Print the list of extracted job titles
+            print(f"number of jobs on this page: {len(job_list)}")
+            for job in job_list:
+                self.moveClickJob(self.driver, job)
+                job_index+=1
+                print(f"current job index: {job_index}")
+                jobObj = self.createJobObj(job_index, job, self.driver)
+                self.job_details_list.append(jobObj.to_dict())
+            #time.sleep(1)
+            # next page
+            self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
+            time.sleep(1)
+        # save is not here
+        self.writeDataToCsv(self.job_details_list, self.csv_file)
+        return self.job_details_list
+    
+    def collectJobsThreads(self, page_to_visit):
+        # Create and start the first thread
+        thread1 = threading.Thread(target=self.getJobCountFound)
+        thread1.start()
+        # Wait for the first thread to finish
+        thread1.join()
+        # Create and start the second thread (background thread)
+        thread2 = threading.Thread(target=self.saveJobsList,args=page_to_visit, daemon=True)
+        thread2.start()
+
     def createJobsList(self, page_to_visit):
         print(f"running job scraper, requested number of pages to parse: {page_to_visit}")
         # login to get easy apply jobs
@@ -42,7 +78,6 @@ class JobScraperLinkedin:
         if page_to_visit > total_pages:
             page_to_visit = total_pages # we can only extract availables opages
         print(f"number of pages availables to parse: {page_to_visit}")
-
         job_index=0
         for p in range(page_to_visit) : #skip first page, iterate until number of pages to visit
             print(f"visiting page number {p}, remaining pages {page_to_visit-p}")

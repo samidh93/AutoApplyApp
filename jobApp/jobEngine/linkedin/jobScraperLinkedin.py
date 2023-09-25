@@ -33,14 +33,17 @@ class JobScraperLinkedin:
 
     def replace_spaces_and_commas_with_underscores(self, input_string):
         # Replace spaces and commas with underscores
-        modified_string = input_string.replace(' ', '_').replace(',', '_')
+        if " " in  input_string:
+            modified_string = input_string.replace(' ', '_')
+        if "," in input_string:
+            modified_string = input_string.replace(',', '_')
         return modified_string
     def createFileJobLocation(self):
         csv_file_out_without_extension = self.csv_file[:-4]
         job_title = self.replace_spaces_and_commas_with_underscores(self.job_title)
         location = self.replace_spaces_and_commas_with_underscores(self.job_location)
         csv_extension = ".csv"
-        file = csv_file_out_without_extension+job_title+location+csv_extension
+        file = csv_file_out_without_extension+"_"+job_title+"_"+location+csv_extension # maybe owner id is needed here
         return file
     def saveJobsList(self,page_to_visit):
         total_pages = self.getAvailablesPages(self.driver) or 1

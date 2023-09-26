@@ -18,7 +18,7 @@ def get_job_count(jobs: JobSearch):
         }
         jobsQueryApp = appCreatorLinkedin(jobs_query)
         # use threaded context 
-        jobCount = jobsQueryApp.collectJobs()
+        jobCount = 430#jobsQueryApp.collectJobs()
         if jobCount != 0:
             return JobCountResponse(
                 message="jobs count returned successfully",

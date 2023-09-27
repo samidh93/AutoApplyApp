@@ -8,7 +8,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
-from .jobsAttachSessionToLoginLinkedin import jobSearchSessionAttachLinkedin
+from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinkedin
 import time
 ''' handle linkedin easy apply form template'''
 
@@ -19,8 +19,8 @@ class LinkedInEasyApplyFormHandler:
         if csv_links:
             print("loading links from file directly")
             self.load_links_from_csv()
-        login = jobSearchSessionAttachLinkedin(linkedin_data_file,  headless=False)
-        bot = login.createJobSearchSession()
+        login = JobSearchRequestSessionAttachLinkedin(linkedin_data_file,  headless=False)
+        bot = login.createJobSearchRequestSession()
         self.driver = bot.driver  # pass the new driver to current one
         self.label_elements_map = {}
         self.candidate = candidate_profile

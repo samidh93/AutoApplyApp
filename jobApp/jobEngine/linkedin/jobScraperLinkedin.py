@@ -17,6 +17,9 @@ class JobScraperLinkedin:
         self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file)
         self.job_title = self.linkedinObj.job_title
         self.job_location = self.linkedinObj.location
+        self.owner_id = self.linkedinObj.owner_id
+        self.created_date = self.linkedinObj.created_date
+        self.field_id = self.linkedinObj.field_id
         self.csv_file = csv_file_out
         self.job_details_list = []
         self.application_type = application_type
@@ -25,7 +28,7 @@ class JobScraperLinkedin:
         # login to get easy apply jobs
         self.linkedinObj.login_linkedin(True)
         # get the parametrized url search results
-        self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
+        self.driver = self.linkedinObj.getEasyApplyJobSearchRequestUrlResults()
         # wait 1 second to fully load results
         #time.sleep(1)
         self.total_jobs = self.getTotalJobsSearchCount(self.driver)
@@ -44,7 +47,7 @@ class JobScraperLinkedin:
         job_title = self.replace_spaces_and_commas_with_underscores(self.job_title)
         location = self.replace_spaces_and_commas_with_underscores(self.job_location)
         csv_extension = ".csv"
-        file = csv_file_out_without_extension+"_"+job_title+"_"+location+csv_extension # maybe owner id is needed here
+        file = csv_file_out_without_extension+"_"+job_title+"_"+location+"_"+self.field_id+"_"+csv_extension # maybe owner id is needed here
         return file
     def saveJobsList(self,page_to_visit):
         total_pages = self.getAvailablesPages(self.driver) or 1
@@ -65,7 +68,7 @@ class JobScraperLinkedin:
                 self.job_details_list.append(jobObj.to_dict())
                 self.writeJobToCsv(jobObj.to_dict(),self.createFileJobLocation() )
                 if job_index % 25 ==0:
-                    self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
+                    self.driver = self.linkedinObj.getEasyApplyJobSearchRequestUrlResults(start=job_index)
                     #time.sleep(1)
         return self.job_details_list
     
@@ -85,7 +88,7 @@ class JobScraperLinkedin:
         # login to get easy apply jobs
         self.linkedinObj.login_linkedin(True)
         # get the parametrized url search results
-        self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults()
+        self.driver = self.linkedinObj.getEasyApplyJobSearchRequestUrlResults()
         # wait 1 second to fully load results
         time.sleep(1)
         self.total_jobs = self.getTotalJobsSearchCount(self.driver)
@@ -107,7 +110,7 @@ class JobScraperLinkedin:
                 self.job_details_list.append(jobObj.to_dict())
             #time.sleep(1)
             # next page
-            self.driver = self.linkedinObj.getEasyApplyJobSearchUrlResults(start=job_index)
+            self.driver = self.linkedinObj.getEasyApplyJobSearchRequestUrlResults(start=job_index)
             time.sleep(1)
         # save is not here
         self.writeDataToCsv(self.job_details_list, self.csv_file)

@@ -61,7 +61,7 @@ def testToken(token: str):
     )
     print(response.json())
 
-def testTokenJobSearch(token: str):
+def testTokenJobSearchRequest(token: str):
     # Set the access token
     access_token = token
     # Set the API endpoint
@@ -94,5 +94,5 @@ if __name__ == '__main__':
     code = "AQRtPyGJ5F7dHPzvE5VH23jzyJkcFjy4kHwEm0UoDsI72B6cpgbN2zI2Spm0otzVAgT3ys6Obd1gKhx47Wop2HvXeMiXwh2pDjFtYX5YFEKosMS2gt6n6E1YhDIRdixLo1H-ZiqLWAnBSSOQtA2z2ShCvsXM5XqlkKnMXFNhcES0TThPtnoysq_4k0gCuOB-xt6ZZ5FXJCbiXh9UIyk"
     #token = getToken(code,clientId,clientSecret,redirectUri  )
     token = "AQXwXfVvjlAdkfxFXiT5LwvI7UvuFuhmxs9EQuyRT8KFA5FH_vdSNYVaNG0DRvvOE1O3sdELZW1fE88zwMW_6kooeHdFt-HLVOFyQbmTdrjlpmv4rXXl7X-yXZku-baEAWcx8d_56fF93MquZPtC77ZOcbYCVIlFUqdmvBzy1_EgLJ-vOh-7Tm4OUXF7R0QeyKkLBaCQ3GyIud7YuJ4-k42ewyioNYPU_c0ESGDLMLbtCD5AxpLVn2skXg-2b9dBbmbvmArDZ53pDzT1DERRCclH04gvVrJm-0dYdYmcSlAkJogddEsFxF8THRTHiayHAJi8LGretnBVoarBaXZbDhB00LRCeg"
-    testTokenJobSearch(token)
+    testTokenJobSearchRequest(token)
     

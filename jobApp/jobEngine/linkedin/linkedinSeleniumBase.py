@@ -49,7 +49,7 @@ class LinkedinSeleniumBase:
         # urls
         self.base_url = data["urls"]['linkedin_base_url']
         self.login_url = data["urls"]['linkedin_login_url']
-        self.job_search_url = data["urls"]['linkedin_jobsearch_url']
+        self.job_search_url = data["urls"]['linkedin_JobSearchRequest_url']
 
     # better version
     def _load_linkedin_parameters(self, source, defaultUser):
@@ -78,7 +78,6 @@ class LinkedinSeleniumBase:
         user_data = json_data.get("user", default_user_json.get("user"))
         self.email = user_data.get('email', default_user_json.get("email"))
         self.password = user_data.get('password', default_user_json.get("password"))
-
         # Search parameters
         search_params = json_data.get("search_params", default_user_json.get("search_params"))
         self.job_title = search_params.get('job', default_user_json["search_params"]["job"])
@@ -87,6 +86,10 @@ class LinkedinSeleniumBase:
         self.job_pos = search_params.get('start' , default_user_json["search_params"]["start"])
         self.filter_easy_apply = search_params.get('f_AL', default_user_json["search_params"]["f_AL"])
         self.start_pos=0
+        # IMPORTANT ID
+        self.owner_id = search_params.get('owner_id', default_user_json.get("owner_id"))
+        self.created_date = search_params.get('created_date', default_user_json.get("create_date"))
+        self.field_id = search_params.get('id', default_user_json.get("id"))
         # Create params dictionary
         self.params = {
             'keywords': self.job_title,
@@ -121,7 +124,7 @@ class LinkedinSeleniumBase:
             raise # reraise the exception to the caller
 
 
-    def getEasyApplyJobSearchUrlResults(self, pageNum=0, start=0  ):
+    def getEasyApplyJobSearchRequestUrlResults(self, pageNum=0, start=0  ):
         self.params['start'] = start
         print(f"################## getting jobs starting from {self.params['start']} ###############")
         full_url = f"{self.job_search_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"

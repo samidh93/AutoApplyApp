@@ -27,7 +27,7 @@ class Skills:
 ## create more dynamic classes based on sections in resume 
 class CandidateProfile:
 
-    def __init__(self, resume_path, firstname=None, lastname=None, address=None, email=None, phone_number=None, linkedin=None):
+    def __init__(self, resume_path, firstname=None, lastname=None, address=None, email=None, phone_number=None, linkedin=None, limit = None):
         self.resume = Resume(resume_path)
         #self.resume_text = self.resume.extract_text()
         self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")

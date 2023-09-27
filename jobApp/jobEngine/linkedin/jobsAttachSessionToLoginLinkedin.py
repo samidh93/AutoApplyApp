@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 '''
     attach a driver session to a previous created session from a file
 '''
-class jobSearchSessionAttachLinkedin:
+class JobSearchRequestSessionAttachLinkedin:
     def __init__(self, linkedin_data, headless=False, detached= False):
         self.linked_data = linkedin_data
         self.headless = headless
@@ -19,7 +19,7 @@ class jobSearchSessionAttachLinkedin:
         self.searchCmdExecutorUrl = None
         self.server_port= None
 
-    def createJobSearchSession(self, attachToLoginSessionFromFile=True, SessionFile="jobApp/secrets/session.json"):
+    def createJobSearchRequestSession(self, attachToLoginSessionFromFile=True, SessionFile="jobApp/secrets/session.json"):
      """ create a session only for job search and attach to the login session"""
      if attachToLoginSessionFromFile:
          print("attach session using json file session data")

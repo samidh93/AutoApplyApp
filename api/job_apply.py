@@ -1,27 +1,27 @@
 # api/job_search.py
 from fastapi import APIRouter, HTTPException
-from models.request_models import JobSearchRequest
-from models.response_models import JobSearchResponse
+from models.request_models import ApplyRequest
+from models.response_models import ApplyResponse
+
 from appCore import appCreatorLinkedin, LoginException
 import logging
 
 router = APIRouter()
 
-@router.post("/api/getJobCount/")
-def get_job_count(jobs: JobSearchRequest):
+@router.post("/api/apply/")
+def apply(job: ApplyRequest):
     try:
-        jobs_query = {
-            "search_params": {
-                "job": jobs.job,
-                "location": jobs.location
+        applyReq = {
+            "candidate": {
+                "limit": job.limit,
             }
         }
-        jobsQueryApp = appCreatorLinkedin(jobs_query)
+        jobsQueryApp = appCreatorLinkedin(applyReq)
         # use threaded context 
         jobCount = 430#jobsQueryApp.collectJobs()
         logging.info(f"jobs count {jobCount}")
         if jobCount != 0:
-            return JobSearchResponse(
+            return ApplyResponse(
                 message="jobs count returned successfully",
                 data={"job_count": jobCount},  # Wrap the jobCount in a dictionary
                 status="ok"

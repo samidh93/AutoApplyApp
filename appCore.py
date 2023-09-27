@@ -8,7 +8,8 @@ class appCreatorLinkedin:
     def __init__(self, linkedinConfigFile) -> None:
         self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile)
         self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
-
+        self.linkedinJobApply = easyApplyMicroService(linkedinConfig=linkedinConfigFile)
+    
     def tryCredentialsLinkedin(self):
         try:
             self.linkedSessionCreatorService.attemptLogin()
@@ -31,6 +32,15 @@ class appCreatorLinkedin:
         except Exception as E:
             logger.error(f"exception: {str(E)}")
             raise    
+    def applyJobs(self):
+        try:
+           jobCount =  self.linkedinJobApply.run_service()
+           print("number jobs found: ", jobCount)
+           return jobCount
+        except Exception as E:
+            logger.error(f"exception: {str(E)}")
+            raise    
+
 
 if __name__ == "__main__":
     jobs_query = {

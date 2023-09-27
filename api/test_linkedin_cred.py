@@ -1,14 +1,15 @@
 # api/job_search.py
 from fastapi import APIRouter, HTTPException
-from models.request_models import LinkedinCred
+from models.request_models import PlatformCredRequest
 from appCore import appCreatorLinkedin, LoginException
+from models.response_models import PlatformCredResponse
 import logging
 
 router = APIRouter()
 
 
-@router.post("/api/testLinkedinCred/")
-def testLinkedinCred(userCred: LinkedinCred):
+@router.post("/api/testPlatformCredRequest/")
+def testPlatformCredRequest(userCred: PlatformCredRequest):
     try:
         linkedinLoginData = {
             "user":{
@@ -16,9 +17,13 @@ def testLinkedinCred(userCred: LinkedinCred):
                 "password":userCred.model_dump().get("password")
             }
         }
-        linkedinCredApp = appCreatorLinkedin(linkedinLoginData)
-        linkedinCredApp.tryCredentialsLinkedin()
-        return {"message": "Users Credentials tested successfully", "data": userCred.model_dump(), "status": "ok"}
+        PlatformCredRequestApp = appCreatorLinkedin(linkedinLoginData)
+        PlatformCredRequestApp.tryCredentialsLinkedin()
+        return PlatformCredResponse(
+                message="Users Credentials verified successfully",
+                data={"data": userCred.model_dump()}, 
+                status="ok"
+            )
         #raise CustomException("login failed")
     except LoginException as loginError:
         logging.error("loginError occurred: %s", loginError)

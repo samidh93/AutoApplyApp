@@ -34,7 +34,7 @@ class JobScraperLinkedin:
         self.total_jobs = self.getTotalJobsSearchCount(self.driver)
         return self.total_jobs
 
-    def replace_spaces_and_commas_with_underscores(self, input_string):
+    def replace_spaces_and_commas_with_underscores(self, input_string:str):
         # Replace spaces and commas with underscores
         modified_string = ""
         if " " in  input_string:
@@ -42,6 +42,7 @@ class JobScraperLinkedin:
         if "," in input_string:
             modified_string = input_string.replace(',', '_')
         return modified_string
+    
     def createFileJobLocation(self):
         csv_file_out_without_extension = self.csv_file[:-4]
         job_title = self.replace_spaces_and_commas_with_underscores(self.job_title)

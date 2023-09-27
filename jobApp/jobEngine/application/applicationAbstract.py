@@ -28,7 +28,7 @@ class Application(ABC):
         pass
 
     # add thread for each job application
-    def ApplyForAll(self, application_type = "internal" or "external"):
+    def ApplyForAll(self, application_type = "internal" or "external", application_limit=10):
         threads = [threading.Thread] #list of threeads
         print("applying for jobs from the csv file")          
         for i,j in enumerate(self.jobs):

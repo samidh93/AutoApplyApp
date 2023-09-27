@@ -16,13 +16,11 @@ class LoginException(Exception):
     pass
 
 class LinkedinSeleniumBase:
-    # Better design: create a class to interpret incoming data as json and only pass the json object to the constructor
     def __init__(self, linkedin_data, driver_config_file='jobApp/secrets/config.json', default_linkedin_config = 'jobApp/secrets/sample_linkedin_user.json'):
         self._load_driver_params_from_file(driver_config_file) # for config selenium driver 
         self._load_urls_params_from_file(driver_config_file)
         self.driver = self._create_selenium_driver(headless=self.headless, detached=self.detached)
         self._load_linkedin_parameters(linkedin_data, default_linkedin_config)
-
 
     def _load_driver_params_from_file(self, config_in):
         with open(config_in) as config_file:
@@ -52,13 +50,13 @@ class LinkedinSeleniumBase:
         self.job_search_url = data["urls"]['linkedin_JobSearchRequest_url']
 
     # better version
-    def _load_linkedin_parameters(self, source, defaultUser):
+    def parseIncomingDataAsJson(self, source, defaultUser):
         # load default user (bypass credentials for debug)
         if isinstance(defaultUser, str): 
             # If source is a string, assume it's a file path
             try:
                 with open(defaultUser, 'r') as file:
-                    default_user_json = json.load(file)
+                    default_user_json:dict = json.load(file)
             except FileNotFoundError:
                 raise FileNotFoundError("default user File not found")    
         # load actual user data   
@@ -66,30 +64,36 @@ class LinkedinSeleniumBase:
             # If source is a string, assume it's a file path
             try:
                 with open(source, 'r') as file:
-                    json_data = json.load(file)
+                    incomingJsondata = json.load(file)
             except FileNotFoundError:
                 raise FileNotFoundError("File not found")
         elif isinstance(source, dict):
             # If source is a dictionary, assume it's a JSON object
-            json_data = source
+            incomingJsondata = source
         else:
             raise ValueError("Invalid source type")
+        return incomingJsondata, default_user_json
+    
+    def _load_linkedin_parameters(self, source, defaultUser):
+        # load incoming req data
+        incomingJsondata, default_user_json = self.parseIncomingDataAsJson(source, defaultUser)
         # User data
-        user_data = json_data.get("user", default_user_json.get("user"))
+        user_data:dict = incomingJsondata.get("user", default_user_json.get("user"))
         self.email = user_data.get('email', default_user_json.get("email"))
         self.password = user_data.get('password', default_user_json.get("password"))
+        # IMPORTANT ID
+        self.owner_id = user_data.get('_owner', default_user_json.get("owner_id"))
+        self.created_date = user_data.get('created_date', default_user_json.get("created_date"))
+        self.field_id = user_data.get('field_id', default_user_json.get("id"))
         # Search parameters
-        search_params = json_data.get("search_params", default_user_json.get("search_params"))
+        search_params:dict = incomingJsondata.get("search_params", default_user_json.get("search_params"))
         self.job_title = search_params.get('job', default_user_json["search_params"]["job"])
         self.location = search_params.get('location', default_user_json["search_params"]["location"])
+        # internal params
+        self.start_pos=0
         self.page_num = search_params.get('pageNum', default_user_json["search_params"]["pageNum"])
         self.job_pos = search_params.get('start' , default_user_json["search_params"]["start"])
         self.filter_easy_apply = search_params.get('f_AL', default_user_json["search_params"]["f_AL"])
-        self.start_pos=0
-        # IMPORTANT ID
-        self.owner_id = search_params.get('owner_id', default_user_json.get("owner_id"))
-        self.created_date = search_params.get('created_date', default_user_json.get("create_date"))
-        self.field_id = search_params.get('id', default_user_json.get("id"))
         # Create params dictionary
         self.params = {
             'keywords': self.job_title,

@@ -10,7 +10,15 @@ router = APIRouter()
 @router.post("/api/getJobCount/")
 def get_job_count(jobs: JobSearchRequest):
     try:
+        logging.info(f"request body: {jobs}")
         jobs_query = {
+            "user":{
+                "email": jobs.model_dump().get("email"),
+                "password": jobs.model_dump().get("password"),
+                "_owner": jobs.model_dump().get("_owner"),
+                "field_id": jobs.model_dump().get("field_id"),
+                "created_date": jobs.model_dump().get("created_date"),
+            },
             "search_params": {
                 "job": jobs.job,
                 "location": jobs.location
@@ -18,7 +26,7 @@ def get_job_count(jobs: JobSearchRequest):
         }
         jobsQueryApp = appCreatorLinkedin(jobs_query)
         # use threaded context 
-        jobCount = 430#jobsQueryApp.collectJobs()
+        jobCount = jobsQueryApp.collectJobs()
         logging.info(f"jobs count {jobCount}")
         if jobCount != 0:
             return JobSearchResponse(

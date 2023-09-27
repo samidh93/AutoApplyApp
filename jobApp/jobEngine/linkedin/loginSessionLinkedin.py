@@ -24,6 +24,7 @@ class LoginSessionLinkedCreator:
         try:
             self.loginSession = LinkedinSeleniumBase(self.linked_data)
             self.loginSession.login_linkedin()   
+            return True
         except LoginException as E:
             logger.error(f"exception: {E}")
             raise

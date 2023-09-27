@@ -15,56 +15,38 @@ class easyApplyMicroService:
         appDirector = ApplicationDirector()
         self.easyapp= appDirector.construct_application(candidate_profile=candidate, jobs=csv_jobs_file, application_type='Easy Apply')
     
+    def run_service(self):
+        print(f"running {self.name} microservice..")
+        self.easyapp.ApplyForAll()
+
+    ######## utility code: place under another utils module #####
     def createCandidatePofile(self, incomingData):
-        # load actual user data   
-        if isinstance(incomingData, str):
-            # If incomingData is a string, assume it's a file path
-            try:
-                with open(incomingData, 'r') as file:
-                    json_data = json.load(file)
-            except FileNotFoundError:
-                raise FileNotFoundError("File not found")
-        elif isinstance(incomingData, dict):
-            # If incomingData is a dictionary, assume it's a JSON object
-            json_data = incomingData
-        else:
-            raise ValueError("Invalid incomingData type")
+        json_data = self.loadIncomingDataAsJson(incomingData)
         # User data
+        user_data:dict = json_data.get('user')
+        email = user_data.get("email")
+        self.field_id = user_data.get('field_id')
+        # candidate data
         candidate_data:dict = json_data.get("candidate")
-        email = candidate_data.get('email')
         firstname = candidate_data.get('firstname')
         lastname = candidate_data.get('lastname')
         resume = candidate_data.get('resume')
         phone_number = candidate_data.get('phone_number')
         limit = candidate_data.get('limit')
         return CandidateProfile(resume_path=resume, 
-                                     firstname=firstname, lastname=lastname, 
+                                     firstname=firstname, 
+                                     lastname=lastname, 
                                      email= email,  
-                                     phone_number=phone_number, limit=limit )
+                                     phone_number=phone_number, 
+                                     limit=limit )
     
     def recreateJobsFile(self, incomingData, csv_path:str):
-        # load actual user data   
-        if isinstance(incomingData, str):
-            # If incomingData is a string, assume it's a file path
-            try:
-                with open(incomingData, 'r') as file:
-                    json_data = json.load(file)
-            except FileNotFoundError:
-                raise FileNotFoundError("File not found")
-        elif isinstance(incomingData, dict):
-            # If incomingData is a dictionary, assume it's a JSON object
-            json_data = incomingData
-        else:
-            raise ValueError("Invalid incomingData type")
+        json_data = self.loadIncomingDataAsJson(incomingData)
         # User data
         job:dict = json_data.get("job")
-        platform = job.get('platform')
         job_title = job.get('job_title')
         location = job.get('location')
-        owner_id = job.get('owner_id')
-        created_date = job.get('created_date')
-        field_id = job.get('field_id')
-        return self.createFileJobLocation(csv_path=csv_path, job_title=job_title, job_location=location, field_id=field_id)
+        return self.createFileJobLocation(csv_path=csv_path, job_title=job_title, job_location=location, field_id=self.field_id)
     
     def replace_spaces_and_commas_with_underscores(self, input_string:str):
         # Replace spaces and commas with underscores
@@ -82,10 +64,23 @@ class easyApplyMicroService:
         file = csv_path+"_"+job_title+"_"+location+"_"+field_id+"_"+csv_extension # maybe owner id is needed here
         return file
 
+    def loadIncomingDataAsJson(self, incomingData):
+        # load actual user data   
+        if isinstance(incomingData, str):
+            # If incomingData is a string, assume it's a file path
+            try:
+                with open(incomingData, 'r') as file:
+                    json_data = json.load(file)
+            except FileNotFoundError:
+                raise FileNotFoundError("File not found")
+        elif isinstance(incomingData, dict):
+            # If incomingData is a dictionary, assume it's a JSON object
+            json_data = incomingData
+        else:
+            raise ValueError("Invalid incomingData type")
+        return json_data
 
-    def run_service(self):
-        print(f"running {self.name} microservice..")
-        self.easyapp.ApplyForAll()
+
 
 #if __name__ == '__main__':
 #    service = easyApplyMicroService()

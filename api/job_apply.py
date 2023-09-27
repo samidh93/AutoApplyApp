@@ -11,12 +11,29 @@ router = APIRouter()
 @router.post("/api/apply/")
 def apply(job: ApplyRequest):
     try:
+        logging.info(f"request body: {job}")
         applyReq = {
-            "candidate": {
-                "limit": job.limit,
+            "user":{
+                "email": job.model_dump().get("email"),
+                "password": job.model_dump().get("password"),
+                "_owner": job.model_dump().get("_owner"),
+                "field_id": job.model_dump().get("field_id"),
+                "created_date": job.model_dump().get("created_date"),
+            },
+            "search_params": {
+                "job": job.job,
+                "location": job.location
+            },
+            "candidate":{
+                "firstname": job.model_dump().get("firstname"),
+                "lastname": job.model_dump().get("lastname"), 
+                "resume": job.model_dump().get("resume"),
+                "phone": job.model_dump().get("phone"),
+                "limit": job.model_dump().get("limit"),
             }
+            # extended with more params such salary and experience
         }
-        jobsQueryApp = appCreatorLinkedin(applyReq)
+        #jobsQueryApp = appCreatorLinkedin(applyReq)
         # use threaded context 
         jobCount = 430#jobsQueryApp.collectJobs()
         logging.info(f"jobs count {jobCount}")

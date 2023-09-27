@@ -11,19 +11,31 @@ router = APIRouter()
 @router.post("/api/testPlatformCredRequest/")
 def testPlatformCredRequest(userCred: PlatformCredRequest):
     try:
+        logging.info(f"request body: {userCred}")
+
         linkedinLoginData = {
             "user":{
-                "email":userCred.model_dump().get("email"),
-                "password":userCred.model_dump().get("password")
+                "email": userCred.model_dump().get("email"),
+                "password": userCred.model_dump().get("password"),
+                "_owner": userCred.model_dump().get("_owner"),
+                "field_id": userCred.model_dump().get("field_id"),
+                "created_date": userCred.model_dump().get("created_date"),
             }
         }
         PlatformCredRequestApp = appCreatorLinkedin(linkedinLoginData)
-        PlatformCredRequestApp.tryCredentialsLinkedin()
-        return PlatformCredResponse(
-                message="Users Credentials verified successfully",
-                data={"data": userCred.model_dump()}, 
-                status="ok"
-            )
+        verified = PlatformCredRequestApp.tryCredentialsLinkedin()
+        if verified:
+            return PlatformCredResponse(
+                    message="Users Credentials verified successfully",
+                    data={"data": "verified"}, 
+                    status="ok"
+                )
+        else:
+            return PlatformCredResponse(
+                    message="Users Credentials could not be verified",
+                    data={"data": "not verified"}, 
+                    status="error"
+                )   
         #raise CustomException("login failed")
     except LoginException as loginError:
         logging.error("loginError occurred: %s", loginError)

@@ -3,11 +3,11 @@ import glob
 
 class BaseConfig:
     config_path = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.abspath(os.path.join(config_path, "../data"))
-    secrets_path = os.path.abspath(os.path.join(config_path, "../secrets"))
+    data_path = os.path.abspath(os.path.join(config_path, "../../data/"))
+    secrets_path = os.path.abspath(os.path.join(config_path, "../../secrets/"))
     @staticmethod
     def print_paths():
-        print("config Path:", BaseConfig.config_path)
+        print("config base Path:", BaseConfig.config_path)
         print("Data Path:", BaseConfig.data_path)
         print("secrets Path:", BaseConfig.secrets_path)
 
@@ -20,7 +20,7 @@ class BaseConfig:
     @staticmethod
     def get_config_path():
         return BaseConfig.config_path
-
+    
 class UserConfig(BaseConfig):
     resume_paths = glob.glob(os.path.join(BaseConfig.data_path, "*resume*.pdf"))
     cover_paths = glob.glob(os.path.join(BaseConfig.data_path, "*cover*.pdf"))
@@ -46,9 +46,14 @@ class UserConfig(BaseConfig):
         return UserConfig.links_file_path
 
     @staticmethod
-    def get_jobs_file_path():
-        return UserConfig.jobs_file_path
-
+    def get_jobs_file_path(job_title:str, job_location:str, field_id:str):
+        print("Jobs File Path:", UserConfig.jobs_file_path)
+        print(f"searching jobs file with pattern [{job_title} , {job_location}, {field_id}] in {BaseConfig.data_path}")
+        for job_file in UserConfig.jobs_file_path:
+            if job_title.replace(" ", "_").replace(",","_") in job_file and job_location.replace(" ", "_").replace(",","_") in job_file and field_id.replace(" ", "_").replace(",","_") in job_file:
+                print("find jobs file: ", job_file)
+                return job_file
+        return None
     @staticmethod
     def get_resume_path(resume_name):
         for resume_path in UserConfig.resume_paths:
@@ -56,9 +61,9 @@ class UserConfig(BaseConfig):
                 return resume_path
         return None
     @staticmethod
-    def get_cover_path(resume_name):
+    def get_cover_path(cover_name):
         for cover_path in UserConfig.cover_paths:
-            if resume_name in cover_path:
+            if cover_name in cover_path:
                 return cover_path
         return None
     
@@ -94,5 +99,9 @@ class AppConfig(BaseConfig):
     
 
 if __name__ == "__main__":
-    config = BaseConfig()
-    config.print_paths()
+    #baseconfig = BaseConfig()
+    #baseconfig.print_paths()
+    userconfig = UserConfig()
+    file = userconfig.get_jobs_file_path("project manager", "Germany", "sss")
+    print("file path returned: ", file)
+    

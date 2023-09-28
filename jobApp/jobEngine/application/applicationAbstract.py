@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 import os
 from ..utils.fileLocker import FileLocker
 import threading
-from ..config.config import UserConfig, AppConfig
+from ..config.config import BaseConfig, UserConfig, AppConfig
 
 def print_progress_bar(iteration, total, bar_length=50):
     percent = "{:.1f}".format(100 * (iteration / float(total)))
@@ -15,13 +15,10 @@ def print_progress_bar(iteration, total, bar_length=50):
     print(f"Progress: [{bar}] {percent}% Complete", end="\r")
 
 class Application(ABC):
-    def __init__(self, candidate: CandidateProfile, jobOffers:list[Job], csvJobsFile=UserConfig.get_jobs_file_path()) -> None:
+    def __init__(self, candidate: CandidateProfile, csvJobsFile=BaseConfig.get_data_path()) -> None:
         self.candidate_profile = candidate
-        self.jobs = jobOffers
         self.csv_file = csvJobsFile
-        if csvJobsFile:
-            print("loading jobs from file directly")
-            self.load_jobs_from_csv()
+        self.jobs = self.load_jobs_from_csv()
 
     @abstractmethod
     def ApplyForJob(self, job:Job):

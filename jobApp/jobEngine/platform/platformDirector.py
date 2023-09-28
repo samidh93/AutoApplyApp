@@ -18,7 +18,7 @@ class ApplicationDirector:
             raise ValueError('Invalid application type')
 
         self.builder.set_candidate_profile(candidate_profile)
-        self.builder.set_jobs(jobs)
+        self.builder.set_jobs_file(jobs)
         return self.builder.build_application()
 
 if __name__ == '__main__':

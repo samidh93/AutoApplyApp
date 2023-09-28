@@ -33,7 +33,7 @@ def apply(job: ApplyRequest):
             }
             # extended with more params such salary and experience
         }
-        #jobsQueryApp = appCreatorLinkedin(applyReq)
+        jobsQueryApp = appCreatorLinkedin(applyReq)
         # use threaded context 
         jobCount = 430#jobsQueryApp.collectJobs()
         logging.info(f"jobs count {jobCount}")

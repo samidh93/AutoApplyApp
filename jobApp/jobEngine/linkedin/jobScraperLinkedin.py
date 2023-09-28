@@ -48,7 +48,7 @@ class JobScraperLinkedin:
         job_title = self.replace_spaces_and_commas_with_underscores(self.job_title)
         location = self.replace_spaces_and_commas_with_underscores(self.job_location)
         csv_extension = ".csv"
-        file = csv_file_out_without_extension+"_"+job_title+"_"+location+"_"+self.field_id+"_"+csv_extension # maybe owner id is needed here
+        file = csv_file_out_without_extension+"_"+job_title+"_"+location+"_"+self.field_id+csv_extension # maybe owner id is needed here
         return file
     def saveJobsList(self,page_to_visit):
         total_pages = self.getAvailablesPages(self.driver) or 1

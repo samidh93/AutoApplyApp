@@ -13,7 +13,7 @@ import time
 ''' handle linkedin easy apply form template'''
 
 class LinkedInEasyApplyFormHandler:
-    def __init__(self, candidate_profile: CandidateProfile, url=None, csv_links='jobApp/data/links.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
+    def __init__(self, candidate_profile: CandidateProfile, csv_links='jobApp/data/links.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
         self.links = []
         self.csv_file = csv_links
         if csv_links:

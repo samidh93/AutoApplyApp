@@ -7,7 +7,7 @@ class ApplicationBuilder(ABC):
         pass
 
     @abstractmethod
-    def set_jobs(self, jobs):
+    def set_jobs_file(self, jobsFile):
         pass
 
     @abstractmethod

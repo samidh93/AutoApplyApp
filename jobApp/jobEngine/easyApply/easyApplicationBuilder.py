@@ -9,11 +9,11 @@ class EasyApplyApplicationBuilder(ApplicationBuilder):
     def set_candidate_profile(self, profile):
         self.candidate_profile = profile
 
-    def set_jobs(self, jobs):
-        self.jobs = jobs
+    def set_jobs_file(self, jobsFile):
+        self.jobsFile = jobsFile
 
     def build_application(self):
-        return EasyApplyApplication(self.candidate_profile, self.jobs)
+        return EasyApplyApplication(candidate_profile = self.candidate_profile, csvJobsFile= self.jobsFile)
 
 
 

@@ -9,8 +9,8 @@ class EmailApplicationBuilder(ApplicationBuilder):
     def set_candidate_profile(self, profile):
         self.candidate_profile = profile
 
-    def set_jobs(self, jobs):
-        self.jobs = jobs
+    def set_jobs_file(self, jobsFile):
+        self.jobs = jobsFile
 
     def build_application(self):
         return EmailApplication(self.candidate_profile, self.jobs)

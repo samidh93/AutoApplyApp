@@ -8,16 +8,15 @@ from deprecated import deprecated
 import threading
 
 class EasyApplyApplication(Application):
-    def __init__(self, candidate_profile: CandidateProfile, jobs: list[Job], csvJobsFile='jobApp/data/jobs.csv'):
+    def __init__(self, candidate_profile: CandidateProfile,  csvJobsFile='jobApp/data/jobs.csv'):
         self.candidate_profile = candidate_profile
-        self.jobs = jobs
         self.type = 'Easy Apply'
-        super().__init__(candidate=candidate_profile, jobOffers=jobs ,csvJobsFile=csvJobsFile)
+        super().__init__(candidate=candidate_profile, csvJobsFile=csvJobsFile)
         self.pid_login = None
         self.login_task_finished = threading.Event()
         self.login_task_killed = threading.Event()
         # create the instance, pass the session: pass down the candidate profile object
-        self.easyApplyFormObj = LinkedInEasyApplyFormHandler(candidate_profile=candidate_profile) # the actual logic behind form
+        self.easyApplyFormObj = LinkedInEasyApplyFormHandler(candidate_profile=candidate_profile, csv_links=csvJobsFile ) # the actual logic behind form
 
     def runLoginTask(self):
         self.loginbot = LoginSessionLinkedCreator('jobApp/secrets/linkedin.json', headless=False)

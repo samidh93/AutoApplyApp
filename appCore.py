@@ -6,9 +6,9 @@ logger = logging.getLogger(__name__)
 
 class appCreatorLinkedin:
     def __init__(self, linkedinConfigFile) -> None:
-        self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile)
-        self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
-        #self.linkedinJobApply = easyApplyMicroService(linkedinConfig=linkedinConfigFile)
+        #self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile)
+        #self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
+        self.linkedinJobApply = easyApplyMicroService(linkedinConfig=linkedinConfigFile)
     
     def tryCredentialsLinkedin(self):
         try:
@@ -36,12 +36,25 @@ class appCreatorLinkedin:
 
 
 if __name__ == "__main__":
-    jobs_query = {
+    applyReq = {
+            "user":{
+                "email": "email",
+                "password": "password",
+                "_owner": "_owner",
+                "field_id": "id",
+                "created_date": "created_date",
+            },
             "search_params": {
-                "job": "scrum master",
-                "location": "berlin"
+                "job": "project manager",
+                "location": "Germany",
+            },
+            "candidate":{
+                "firstname": "firstname",
+                "lastname": "lastname", 
+                "resume": "resume",
+                "phone": "phone",
+                "limit": "limit",
             }
+            # extended with more params such salary and experience
         }
-    testapp = appCreatorLinkedin(jobs_query)
-    jobcount = testapp.getJobsCount()
-    print("job count found: ", jobcount)
+    testapp = appCreatorLinkedin(applyReq)

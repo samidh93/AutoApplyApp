@@ -27,7 +27,8 @@ class Application(ABC):
     # add thread for each job application
     def ApplyForAll(self, application_type = "internal" or "external", application_limit=10):
         threads = [threading.Thread] #list of threeads
-        print("applying for jobs from the csv file")          
+        print("applying for jobs from the csv file") 
+        print("candidate applications limit: ", application_limit)         
         for i,j in enumerate(self.jobs):
             print_progress_bar(i, len(self.jobs)+1)
             if j.applied:
@@ -74,9 +75,11 @@ class Application(ABC):
                         application_type=row["application_type"],
                         applied=row["applied"] == "True"
                     )
+                    print("job title: ",job.job_title)
                     jobs.append(job)
                 flocker.unlock(file)
-        self.jobs = jobs
+        return jobs
+
 
     def update_csv(self):
         flocker = FileLocker()

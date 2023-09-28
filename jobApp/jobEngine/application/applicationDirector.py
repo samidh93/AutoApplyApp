@@ -12,7 +12,6 @@ class ApplicationDirector:
         self.linkedinConfig = linkedinConfig
         self.candidate = self.createCandidatePofile(linkedinConfig)
         self.csv_jobs_file = self.deductUserInCsvJobs(linkedinConfig)
-        return self.construct_application(candidate_profile=self.candidate, jobsFile=self.csv_jobs_file,application_type=application_type, linkedinData=linkedinConfig  )
     
     def construct_application(self,  application_type= 'Email' or 'Easy Apply' or 'Direct'):
         if application_type == 'Email':

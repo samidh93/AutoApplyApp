@@ -75,7 +75,6 @@ class Application(ABC):
                         application_type=row["application_type"],
                         applied=row["applied"] == "True"
                     )
-                    print("job title: ",job.job_title)
                     jobs.append(job)
                 flocker.unlock(file)
         return jobs

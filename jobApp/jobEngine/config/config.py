@@ -47,8 +47,8 @@ class UserConfig(BaseConfig):
 
     @staticmethod
     def get_jobs_file_path(job_title:str, job_location:str, field_id:str):
-        print("Jobs File Path:", UserConfig.jobs_file_path)
-        print(f"searching jobs file with pattern [{job_title} , {job_location}, {field_id}] in {BaseConfig.data_path}")
+        #print("Jobs File Path:", UserConfig.jobs_file_path)
+        #print(f"searching jobs file with pattern [{job_title} , {job_location}, {field_id}] in {BaseConfig.data_path}")
         for job_file in UserConfig.jobs_file_path:
             if job_title.replace(" ", "_").replace(",","_") in job_file and job_location.replace(" ", "_").replace(",","_") in job_file and field_id.replace(" ", "_").replace(",","_") in job_file:
                 print("find jobs file: ", job_file)

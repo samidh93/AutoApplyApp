@@ -72,7 +72,7 @@ class ApplicationDirector:
         return file
 
     def loadIncomingDataAsJson(self, incomingData):
-        print("incoming Data: ", incomingData)
+        #print("incoming Data: ", incomingData)
         # load actual user data   
         if isinstance(incomingData, str):
             # If incomingData is a string, assume it's a file path

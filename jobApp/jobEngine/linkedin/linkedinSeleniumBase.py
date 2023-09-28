@@ -30,7 +30,7 @@ class LinkedinSeleniumBase:
         self.headless = data["driver"]['headless']
         self.detached = data["driver"]['detached']
 
-    def _create_selenium_driver(self, headless, detached, implicit_wait=30 ):
+    def _create_selenium_driver(self, headless, detached, implicit_wait=5 ):
         option = webdriver.ChromeOptions()
         if headless:
             option.add_argument("--headless=new")

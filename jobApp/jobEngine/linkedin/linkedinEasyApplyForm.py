@@ -1,15 +1,15 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
-import os
-import csv
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
+import os
+import csv
+import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinkedin
-import time
 from .linkedinSeleniumBase import LinkedinSeleniumBase
 
 ''' handle linkedin easy apply form template'''
@@ -89,7 +89,7 @@ class LinkedInEasyApplyFormHandler:
     def _send_user_documents(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         for label, element in elements_dict.items():
             if label == 'Upload resume':
-                self.send_value(element, user.resume.file_path)
+                self.send_value(element, user.resume)
             elif label == "Upload cover letter": # ignore cover letter: need specification later
                 pass
             else:
@@ -258,52 +258,7 @@ class LinkedInEasyApplyFormHandler:
             # Handle the case when 'select' element is not found
             print("no span element not found.")   
 
-    def _find_input_options_tag(self, element: WebElement, label=None):
-        try:
-            # Attempt to find the 'input' element inside the 'div' element
-            input_elements = element.find_elements(By.TAG_NAME, 'input')
-            #print(f"Input Value: {value}")
-            return input_elements
-        except NoSuchElementException:
-            # Handle the case when 'input' element is not found
-            print("Input elements not found.")
-            
-    def _find_label_tag(self, element: WebElement):
-        try: 
-            label_element = element.find_element(By.TAG_NAME, 'label')
-            label = label_element.text.strip()
-            return label
-            #print(f"Label: {label}")
-        except NoSuchElementException:
-            # Handle the case when 'select' element is not found
-            print("no label element not found.")       
-
-    def _find_input_tag(self, element: WebElement, label=None):
-        try:
-            # Attempt to find the 'input' element inside the 'div' element
-            input_element = element.find_element(By.TAG_NAME, 'input')
-            value = input_element.get_attribute('value').strip()
-            #print(f"Input Value: {value}")
-            return input_element
-        except NoSuchElementException:
-            # Handle the case when 'input' element is not found
-            print("Input element not found.")
-
-    def _find_select_tag(self, element: WebElement, label=None):
-        try:
-             # Attempt to find the 'select' element inside the 'div' element
-             select_element = element.find_element(By.TAG_NAME, 'select')
-             # Create a Select object
-             select = Select(select_element)
-             # assign label with select element object
-             selected_option = select.options
-             return select_element
-             # outside function
-             self.label_elements_map[label] = select_element
-        except NoSuchElementException:
-             # Handle the case when 'select' element is not found
-             print("Select element not found.")
-
+ 
     def fillFormPage(self):
         header = self._find_header(self.form)
         if header == "Contact info" or header == "Kontaktinfo":
@@ -318,6 +273,7 @@ class LinkedInEasyApplyFormHandler:
             #self.label_elements_map.clear()
         else:
             print("page header no recognized")
+
     def _fill_contact_info(self, form: WebElement):
         #self._find_application_form()  # try to find the form
         try:
@@ -378,7 +334,7 @@ class LinkedInEasyApplyFormHandler:
         try:
             print("try clicking button easy apply")
             # Wait for the button element to be clickable
-            button = WebDriverWait(self.driver, 10).until(
+            button = WebDriverWait(self.driver, 1).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )
@@ -423,8 +379,8 @@ class LinkedInEasyApplyFormHandler:
         # click the submit page button
         # Find the button using its aria-label attribute
         try:
-            wait = WebDriverWait(self.driver, 10)
-            button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
+            wait = WebDriverWait(self.driver, 1)
+            button:WebElement = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
             # Scroll to the button to ensure it's in view
             self.driver.execute_script("arguments[0].scrollIntoView();", button)
             button.click()
@@ -459,7 +415,7 @@ class LinkedInEasyApplyFormHandler:
         try:
             #button = form.find_element(By.XPATH, "//span[text()='Submit application']")
             # Wait for the button to be clickable or visible
-            wait = WebDriverWait(self.driver, 10)
+            wait = WebDriverWait(self.driver, 1)
             button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
             # Scroll to the button to ensure it's in view
             self.driver.execute_script("arguments[0].scrollIntoView();", button)
@@ -548,13 +504,13 @@ class LinkedInEasyApplyFormHandler:
         # click on the easy apply button, skip if already applied to the position
         try:
             # Wait for the timeline entries to load
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'post-apply-timeline__entity')))
+            WebDriverWait(self.driver, 1).until(EC.presence_of_element_located((By.CLASS_NAME, 'post-apply-timeline__entity')))
             timeline_entries = self.driver.find_elements(By.CLASS_NAME, 'post-apply-timeline__entity')
             for entry in timeline_entries:
                 activity_text = entry.find_element(By.CLASS_NAME, 'full-width').text.strip()
                 if activity_text == 'Application submitted':
                     print("application already submitted, skipping ..")
-                    time.sleep(1)
+                    #time.sleep(1)
                     return True
         except:
             return False
@@ -562,7 +518,7 @@ class LinkedInEasyApplyFormHandler:
     def is_applications_closed(self):
         try:
             # Wait for the error element to load
-            WebDriverWait(self.driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
+            WebDriverWait(self.driver, 1).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
             error_element = self.driver.find_element(By.CLASS_NAME, 'jobs-details-top-card__apply-error')
             error_message = error_element.find_element(By.CLASS_NAME, 'artdeco-inline-feedback__message').text.strip()
             if "No longer accepting applications" in error_message:

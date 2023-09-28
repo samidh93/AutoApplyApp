@@ -51,7 +51,7 @@ class Application(ABC):
         print("\nApplying Task completed!")
         self.update_csv() # after finish, update 
 
-    def load_jobs_from_csv(self):
+    def load_jobs_from_csv(self)->list[Job]:
         flocker = FileLocker()
         jobs = [] #list of jobs
         if os.path.isfile(self.csv_file):

@@ -38,8 +38,8 @@ class appCreatorLinkedin:
 if __name__ == "__main__":
     applyReq = {
             "user":{
-                "email": "email",
-                "password": "password",
+                "email": "dhiebzayneb89@gmail.com",
+                "password": "8862468@",
                 "_owner": "_owner",
                 "field_id": "id",
                 "created_date": "created_date",

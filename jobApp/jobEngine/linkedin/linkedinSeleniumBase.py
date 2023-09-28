@@ -30,7 +30,7 @@ class LinkedinSeleniumBase:
         self.headless = data["driver"]['headless']
         self.detached = data["driver"]['detached']
 
-    def _create_selenium_driver(self, headless, detached, implicit_wait=5 ):
+    def _create_selenium_driver(self, headless, detached, implicit_wait=30 ):
         option = webdriver.ChromeOptions()
         if headless:
             option.add_argument("--headless=new")
@@ -122,6 +122,8 @@ class LinkedinSeleniumBase:
                 raise LoginException(f"login attempt failed, redirection not as expected url")
             if save_cookies:
                     self._save_cookies()
+            return self.driver
+
         except LoginException as e:
             logger.error(f"{e}")
             self.driver.quit()

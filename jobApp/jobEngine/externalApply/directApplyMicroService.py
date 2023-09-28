@@ -22,7 +22,7 @@ class directApplyMicroService:
 if __name__ == '__main__':
     import sys
     args = sys.argv
-    csv_links = ""
+    csv_jobs = ""
     csv_jobs = ""
     # get the csv links
     if args[1] :

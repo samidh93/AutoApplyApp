@@ -20,7 +20,7 @@ class Field:
 
 
 class SeleniumFormHandler(FormFillBase):
-    def __init__(self, form_json_template='jobApp/secrets/form.json', url=None, csv_links='jobApp/data/links.csv'):
+    def __init__(self, form_json_template='jobApp/secrets/form.json', url=None, csv_jobs='jobApp/data/links.csv'):
         super().__init__(form_json_template, url)
         # Set up credentials and API client
         # os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'jobApp/secrets/credentials_sami.json'
@@ -53,8 +53,8 @@ class SeleniumFormHandler(FormFillBase):
             "bio": CoverCreator(candidate_infos=data)()
         }
         self.links = []
-        self.csv_file = csv_links
-        if csv_links:
+        self.csv_file = csv_jobs
+        if csv_jobs:
             print("loading links from file directly")
             self.load_links_from_csv()
 

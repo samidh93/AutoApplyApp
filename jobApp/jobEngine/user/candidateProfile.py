@@ -41,6 +41,7 @@ class CandidateProfile:
         self.phone_number = phone_number
         self.linkedin = linkedin
         self.phone_code = "Germany (+49)"
+        self.applications_limit = limit
 
         # test cases
         self.set_expected_salary("50000")

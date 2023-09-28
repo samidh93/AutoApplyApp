@@ -10,18 +10,20 @@ from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinkedin
 import time
+from .linkedinSeleniumBase import LinkedinSeleniumBase
+
 ''' handle linkedin easy apply form template'''
 
 class LinkedInEasyApplyFormHandler:
-    def __init__(self, candidate_profile: CandidateProfile, csv_links='jobApp/data/links.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
-        self.links = []
-        self.csv_file = csv_links
-        if csv_links:
-            print("loading links from file directly")
-            self.load_links_from_csv()
-        login = JobSearchRequestSessionAttachLinkedin(linkedin_data_file,  headless=False)
-        bot = login.createJobSearchRequestSession()
-        self.driver = bot.driver  # pass the new driver to current one
+    def __init__(self, candidate_profile: CandidateProfile, csv_jobs='jobApp/data/jobs.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
+        self.csv_file = csv_jobs
+        self.links = self.load_links_from_csv()
+        # only for debugging, split login and apply in sesssions, keep login session open
+        #login = JobSearchRequestSessionAttachLinkedin(linkedin_data_file)
+        #bot = login.createJobSearchRequestSession()
+        #self.driver = bot.driver  # pass the new driver to current one
+        self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file)
+        self.driver = self.linkedinObj.login_linkedin()
         self.label_elements_map = {}
         self.candidate = candidate_profile
         self.button_apply_clicked = False
@@ -30,13 +32,13 @@ class LinkedInEasyApplyFormHandler:
         # load only onsite links
         links = []  # list of intern lists
         if os.path.isfile(self.csv_file):
+            print("loading links from input jobs file: ", self.csv_file)
             # Read
             with open(self.csv_file, mode='r', newline='', encoding='utf-8') as file:
                 reader = csv.reader(file)
                 next(reader)  # Skip header row
                 for i, row in enumerate(reader):
-                    if row[5] == "None":  # append only easy apply links
-                        links.append(row[4])  # intern links
+                    links.append(row[2])  # intern links
         self.links = links
         print(f"onsite apply links count: {len(links)}")
 

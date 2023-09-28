@@ -12,8 +12,11 @@ class EasyApplyApplicationBuilder(ApplicationBuilder):
     def set_jobs_file(self, jobsFile):
         self.jobsFile = jobsFile
 
+    def set_linkedin_data(self, linkedinData):
+        self.linkedinData = linkedinData
+
     def build_application(self):
-        return EasyApplyApplication(candidate_profile = self.candidate_profile, csvJobsFile= self.jobsFile)
+        return EasyApplyApplication(candidate_profile = self.candidate_profile, csvJobsFile= self.jobsFile, linkedinData=self.linkedinData)
 
 
 

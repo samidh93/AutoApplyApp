@@ -7,10 +7,8 @@ from urllib.parse import urlparse
     attach a driver session to a previous created session from a file
 '''
 class JobSearchRequestSessionAttachLinkedin:
-    def __init__(self, linkedin_data, headless=False, detached= False):
+    def __init__(self, linkedin_data):
         self.linked_data = linkedin_data
-        self.headless = headless
-        self.detached = detached
         self.loginSession = None
         self.loginSessionId = None
         self.loginCmdExecutorUrl = None
@@ -30,7 +28,7 @@ class JobSearchRequestSessionAttachLinkedin:
          print(f"json session id {temp}")
          print(f"json server port : {self.server_port}")
          # Create a new Chrome driver and attach it to the existing session
-         self.searchSession = LinkedinSeleniumBase(self.linked_data, self.headless)
+         self.searchSession = LinkedinSeleniumBase(self.linked_data)
          self.searchSession.close_session()
          self.searchSession.driver.session_id  = data["session"]["id"]
          self.searchSession.driver.command_executor._url  = data["session"]["cmdExecutor"]

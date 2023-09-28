@@ -8,7 +8,7 @@ from deprecated import deprecated
 import threading
 
 class EasyApplyApplication(Application):
-    def __init__(self, candidate_profile: CandidateProfile,  csvJobsFile='jobApp/data/jobs.csv'):
+    def __init__(self, candidate_profile: CandidateProfile,  csvJobsFile='jobApp/data/jobs.csv', linkedinData=None):
         self.candidate_profile = candidate_profile
         self.type = 'Easy Apply'
         super().__init__(candidate=candidate_profile, csvJobsFile=csvJobsFile)
@@ -16,7 +16,7 @@ class EasyApplyApplication(Application):
         self.login_task_finished = threading.Event()
         self.login_task_killed = threading.Event()
         # create the instance, pass the session: pass down the candidate profile object
-        self.easyApplyFormObj = LinkedInEasyApplyFormHandler(candidate_profile=candidate_profile, csv_links=csvJobsFile ) # the actual logic behind form
+        self.easyApplyFormObj = LinkedInEasyApplyFormHandler(candidate_profile=candidate_profile, csv_jobs=csvJobsFile , linkedin_data_file=linkedinData) # the actual logic behind form
 
     def runLoginTask(self):
         self.loginbot = LoginSessionLinkedCreator('jobApp/secrets/linkedin.json', headless=False)
@@ -51,7 +51,7 @@ class EasyApplyApplication(Application):
             print(f"set job applied {job.applied}")      
 
     def ApplyForAll(self):
-        return super().ApplyForAll("internal")
+        return super().ApplyForAll("internal", application_limit=self.candidate_profile.applications_limit)
 
 if __name__ == '__main__':
     candidate = CandidateProfile(resume_path='jobApp/data/zayneb_dhieb_resume_english.pdf', 

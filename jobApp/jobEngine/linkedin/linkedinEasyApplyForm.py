@@ -1,4 +1,5 @@
 from selenium.webdriver.common.by import By
+from selenium import webdriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -28,6 +29,69 @@ class LinkedInEasyApplyFormHandler:
         self.candidate = candidate_profile
         self.button_apply_clicked = False
 
+   ####### Apply Phase #####
+    def applyForJob(self, job_link: str) -> bool:
+        # keep track of the time for application, do not exceed max 3 minutes:
+        start_time = time.time() # begin counter
+        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) per application exceeded. Returning from applyForJob.")
+            return False
+        # open job url
+        self.get_the_url(job_link)  # get the url form the job
+        # return true if job was success or already applied, false if job not found, deleted or can't apply
+        if self.applicationSubmitted():
+            return True
+        self.clickApplyPage()  # try to click apply button: retry when not clicked
+        if not self.button_apply_clicked:
+            self.clickApplyPage()
+        if not self.button_apply_clicked:
+            return False
+        # detect form page type: 
+        self._find_application_form()  # try to find the form
+        if not self._detect_form_page_type(self.form, start_time):
+            return False
+        self.button_apply_clicked = False
+        return True
+
+    ########## fill form page ###########
+    def fillFormPage(self):
+        header = self._find_header(self.form)
+        if header == "Contact info" or header == "Kontaktinfo":
+            return self._fill_contact_info(self.form)
+            #self.label_elements_map.clear()
+        elif header == "Resume" or header == "Lebenslauf":
+            return self._fill_resume(self.form)
+            #self.label_elements_map.clear()
+        elif header == "Additional" or header == "Additional Questions" or header == "Weitere Fragen":
+            print("filling additional questions")
+            return self._fill_additionals(self.form)
+            #self.label_elements_map.clear()
+        else:
+            print("page header no recognized")
+
+ ########### Detect PAge #############
+    def _detect_form_page_type(self, form: WebElement, start_time=None):
+        if start_time is None:
+            start_time = time.time()  # Record the start time
+        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
+            return False
+        # detect if the current page has next, review or submit 
+        if self._detectSubmitButtonForm(form): # only submit
+            print("page form with submit detected")
+            return self._execute_submit(form)
+        elif self._detectReviewButtonForm(form): # recursive one
+            print("page form with review detected")
+            self._execute_review(form)
+            return self._detect_form_page_type(form,start_time)
+        elif self._detectNextButtonForm(form): # recursive many
+            print("page form with next detected")
+            self._execute_next(form)
+            return self._detect_form_page_type(form,start_time)
+
+    ###### load links from csv file ########
     def load_links_from_csv(self):
         # load only onsite links
         links = []  # list of intern lists
@@ -73,84 +137,6 @@ class LinkedInEasyApplyFormHandler:
         except:
             print("no page found")
 
-#########################################################################
-
-    def send_value(self, element: WebElement, value: str):
-        element_type = element.get_attribute("type")
-        if element_type == "file":
-            print(f"sending file path: {value}")
-            element.send_keys(value)
-        elif element_type == "text":
-            element.clear()
-            element.send_keys(value)
-        else:
-            print("input type not recognized")
-
-    def click_option(self, element: WebElement, value: str):
-        element_type = element.get_attribute("type")
-        if element_type == "radio":
-            for elem in element:
-                if elem == value:
-                    elem.click()
-        elif element_type == "checkbox":
-            for elem in element:
-                if elem == value:
-                    elem.click()
-
-    def select_option(self, select_element, user_value):
-        select = Select(select_element)
-        if isinstance(select.options, Iterable):
-            if user_value in select.options:
-                select.select_by_visible_text(user_value)
-            else:  # return first option to bypass error; needed to be corrected
-                select.select_by_visible_text(
-                    select.first_selected_option.accessible_name)
-            return
-        else:
-            select.select_by_visible_text(select.first_selected_option.text)
-
-
-    def _createDictFromFormDiv(self, divs:  list[WebElement]):
-        # Iterate over the divs and extract the label and corresponding input/select values
-        for div in divs:
-            fieldset = self._find_fieldset_tag(div)
-            if fieldset is not None:
-                # we have a set of fields (dialog or checkbox)
-                span_text = self._find_span_text(fieldset)
-                inputs_elems = self._find_input_options_tag(fieldset, span_text.text)
-                print(f"added field element with label: {span_text}")
-                self.label_elements_map[span_text.text] = inputs_elems
-            # search for label w
-            else:
-                label = self._find_label_tag(div)
-                if label is not None:
-                    input_elem = self._find_input_tag(div, label)
-                    # text field
-                    if input_elem is not None:
-                        print(f"added input element with label: {label}")
-                        self.label_elements_map[label] = input_elem
-                    # search for select options
-                    else:
-                        select_elem = self._find_select_tag(div, label)     
-                        if select_elem is not None:
-                            print(f"added select element with label: {label}")
-                            self.label_elements_map[label] = select_elem
-
-    ########## fill form page ###########
-    def fillFormPage(self):
-        header = self._find_header(self.form)
-        if header == "Contact info" or header == "Kontaktinfo":
-            return self._fill_contact_info(self.form)
-            #self.label_elements_map.clear()
-        elif header == "Resume" or header == "Lebenslauf":
-            return self._fill_resume(self.form)
-            #self.label_elements_map.clear()
-        elif header == "Additional" or header == "Additional Questions" or header == "Weitere Fragen":
-            print("filling additional questions")
-            return self._fill_additionals(self.form)
-            #self.label_elements_map.clear()
-        else:
-            print("page header no recognized")
 
     ####### Click Button Apply #########
     def clickApplyPage(self):
@@ -171,52 +157,8 @@ class LinkedInEasyApplyFormHandler:
             print('easy apply job button is not found, skipping')
             self.status = False
 
-    ########### Detect PAge #############
-    def _detect_form_page_type(self, form: WebElement, start_time=None):
-        if start_time is None:
-            start_time = time.time()  # Record the start time
-        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        if elapsed_time >= 180:  # 180 seconds = 3 minutes
-            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
-            return False
-        # detect if the current page has next, review or submit 
-        if self._detectSubmitButtonForm(form): # only submit
-            print("page form with submit detected")
-            return self._execute_submit(form)
-        elif self._detectReviewButtonForm(form): # recursive one
-            print("page form with review detected")
-            self._execute_review(form)
-            return self._detect_form_page_type(form,start_time)
-        elif self._detectNextButtonForm(form): # recursive many
-            print("page form with next detected")
-            self._execute_next(form)
-            return self._detect_form_page_type(form,start_time)
-
-    ####### Apply Phase #####
-    def applyForJob(self, job_link: str) -> bool:
-        # keep track of the time for application, do not exceed max 3 minutes:
-        start_time = time.time() # begin counter
-        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        if elapsed_time >= 180:  # 180 seconds = 3 minutes
-            print("Time limit (3 minutes) per application exceeded. Returning from applyForJob.")
-            return False
-        # open job url
-        self.get_the_url(job_link)  # get the url form the job
-        # return true if job was success or already applied, false if job not found, deleted or can't apply
-        if self.applicationSubmitted():
-            return True
-        self.clickApplyPage()  # try to click apply button: retry when not clicked
-        if not self.button_apply_clicked:
-            self.clickApplyPage()
-        if not self.button_apply_clicked:
-            return False
-        # detect form page type: 
-        self._find_application_form()  # try to find the form
-        if not self._detect_form_page_type(self.form, start_time):
-            return False
-        self.button_apply_clicked = False
-        return True
-    
+   
+####### helper functions ########
     def applicationSubmitted(self)->bool :
         # click on the easy apply button, skip if already applied to the position
         try:

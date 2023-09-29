@@ -16,6 +16,15 @@ class FormNextButtonHandler():
     def __init__(self) -> None:
         pass
 
+    def _detectNextButtonForm(self, form: WebElement):
+        # Find the button using its aria-label attribute
+        try:
+            button = form.find_element(By.XPATH, "//span[text()='Next']")
+            return True
+        except :            
+            # Handle the case when 'next' element is not found
+            print("next button element not found.")
+            return False
 
     def _clickNextPage(self, form: WebElement):
         # click the next page button
@@ -45,12 +54,4 @@ class FormNextButtonHandler():
         # return button clicker
         return self._clickNextPage(form)
 
-    def _detectNextButtonForm(self, form: WebElement):
-        # Find the button using its aria-label attribute
-        try:
-            button = form.find_element(By.XPATH, "//span[text()='Next']")
-            return True
-        except :            
-            # Handle the case when 'next' element is not found
-            print("next button element not found.")
-            return False
+

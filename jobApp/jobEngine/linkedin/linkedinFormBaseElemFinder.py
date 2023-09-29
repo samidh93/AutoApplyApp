@@ -9,6 +9,7 @@ import csv
 import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
+from googletrans import Translator
 
 
 class LinkedinFormBaseFinder:
@@ -21,6 +22,7 @@ class LinkedinFormBaseFinder:
             h3_element = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold')
             # Print the inner text of the element.
             print(f"page header: {h3_element.text}")
+
             return h3_element.text
         except:
             print("no header found")
@@ -90,11 +92,10 @@ class LinkedinFormBaseFinder:
             print("no span element not found.")   
 
 
-    def _find_divs_selection_grouping(self) -> list[WebElement]:
-        if self.form != None:  # if form is found
+    def _find_divs_selection_grouping(self, form:WebElement) -> list[WebElement]:
             try:
                 # Find the div with class "jobs-easy-apply-form-section__grouping"
-                divs = self.form.find_elements(
+                divs = form.find_elements(
                     By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
                 print("found divs with selection grouping")
                 return divs

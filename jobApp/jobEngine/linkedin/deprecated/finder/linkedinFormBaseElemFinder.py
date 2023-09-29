@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import Select
 import os
 import csv
 import time
-from ..user.candidateProfile import CandidateProfile
+from ...user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
 
@@ -90,7 +90,6 @@ class LinkedinFormBaseFinder:
         except NoSuchElementException:
             # Handle the case when 'select' element is not found
             print("no span element not found.")   
-
 
     def _find_divs_selection_grouping(self, form:WebElement) -> list[WebElement]:
             try:

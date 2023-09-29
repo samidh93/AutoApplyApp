@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import Select
 import os
 import csv
 import time
-from ..user.candidateProfile import CandidateProfile
+from ...user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 
 

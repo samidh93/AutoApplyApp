@@ -42,6 +42,7 @@ class LinkedInEasyApplyFormHandler:
         self.links = links
         print(f"onsite apply links count: {len(links)}")
 
+    ###### get url in browser #######
     def get_the_url(self, url=None):
         # navigate to the URL
         try:  # try to open link in browser
@@ -50,6 +51,7 @@ class LinkedInEasyApplyFormHandler:
             print("can't open link in the browser")
             self.status = False
 
+    ###### find application form #########
     def _find_application_form(self):
       # fill the expected first page template
         try:
@@ -70,94 +72,9 @@ class LinkedInEasyApplyFormHandler:
                 print('Div element not found')
         except:
             print("no page found")
-    #### user details section ######
-    def _send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
-        for label, element in elements_dict.items():
-            if label == 'First name':
-                self.send_value(element, user.firstname)
-            elif label == 'Last name':
-                self.send_value(element, user.lastname)
-            elif 'Phone country code' in label:
-                self.select_option(element, user.phone_code)
-            elif label == 'Mobile phone number':
-                self.send_value(element, user.phone_number)
-            elif 'Email address' in label:
-                self.select_option(element, user.email)
-            else:
-                raise ValueError("Unsupported label: {}".format(label))
 
-    def _send_user_documents(self, user: CandidateProfile, elements_dict: dict[WebElement]):
-        for label, element in elements_dict.items():
-            if label == 'Upload resume':
-                self.send_value(element, user.resume)
-            elif label == "Upload cover letter": # ignore cover letter: need specification later
-                pass
-            else:
-                raise ValueError("Unsupported label: {}".format(label))
+#########################################################################
 
-    def _send_user_answers(self, user: CandidateProfile, elements_dict: dict[WebElement]):
-        # try to answer most form questions
-        for label, element in elements_dict.items():
-            if isinstance(element, list):
-                print("The element is of type list.")
-                if element[0].get_attribute("type") == "radio":
-                    #handle dialog questions
-                    self._handle_dialog_question(label , element)
-                elif element[0].get_attribute("type") == "checkbox":
-                    #handle dialog questions
-                    self._handle_checkbox_question(label , element)
-            elif element.get_attribute("type") == "text":
-                # handle text based questions
-                self._handle_text_question(label, element)
-            else:
-                #handle dialog questions
-                self._handle_select_question(label , element)
-
-    def _handle_text_question(self, label, element: WebElement ):
-        try:
-            print("processing text question")
-            if "salary" in label:
-                self.send_value(element, self.candidate.salary)
-            if "Erfahrung" or "Experience" in label:
-                self.send_value(element, self.candidate.years_exp)
-        except:
-            pass 
-    def _handle_dialog_question(self, label, element: WebElement ):
-        try:
-            print("processing dialog question")
-            input_options = element.find_elements(By.TAG_NAME, "input")
-            for opt in input_options:
-                print("option: ", opt)
-                if opt.get_attribute("value") == "Yes":
-                    opt.click()
-        except:
-            pass 
-    def _handle_select_question(self, label, element: WebElement ):
-        try:
-            print("processing select question")
-            dropdown = Select(element)
-            # Get the number of options in the dropdown
-            options_count = len(dropdown.options)
-            # Calculate the index of the middle option
-            middle_index = options_count // 2
-            # Select the option in the middle by index
-            dropdown.select_by_index(options_count-1)
-        except:
-            pass 
-    def _handle_checkbox_question(self, label , elements: WebElement):
-        try:
-            print("checkbox question")
-            options_count = len(elements)
-            middle_index = options_count // 2
-            # random value in the middle
-            checkbox = elements[options_count-1]
-            # Find the associated label using its attributes (for or id) or relationship (preceding-sibling, following-sibling, etc.)
-            label = checkbox.find_element(By.XPATH, "//label[@for='" + checkbox.get_attribute("id") + "']")
-            if not label.is_selected():
-                label.click()  # Click the label to interact with the checkbox
-                print("Label clicked successfully.")
-        except Exception as e:
-            print("An error occurred:", e)
     def send_value(self, element: WebElement, value: str):
         element_type = element.get_attribute("type")
         if element_type == "file":
@@ -192,25 +109,6 @@ class LinkedInEasyApplyFormHandler:
         else:
             select.select_by_visible_text(select.first_selected_option.text)
 
-    def _find_divs_document_upload(self) -> list[WebElement]:
-        if self.form != None:  # if form is found
-            try:
-                div_elements = self.form.find_elements(
-                    By.XPATH, "//div[contains(@class, 'js-jobs-document-upload__container') and contains(@class, 'display-flex') and contains(@class, 'flex-wrap')]")
-                return div_elements
-            except NoSuchElementException:
-                print("No upload elements found")
-
-    def _find_divs_selection_grouping(self) -> list[WebElement]:
-        if self.form != None:  # if form is found
-            try:
-                # Find the div with class "jobs-easy-apply-form-section__grouping"
-                divs = self.form.find_elements(
-                    By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
-                print("found divs with selection grouping")
-                return divs
-            except NoSuchElementException:
-                print("No div elements found")
 
     def _createDictFromFormDiv(self, divs:  list[WebElement]):
         # Iterate over the divs and extract the label and corresponding input/select values
@@ -238,27 +136,7 @@ class LinkedInEasyApplyFormHandler:
                             print(f"added select element with label: {label}")
                             self.label_elements_map[label] = select_elem
 
-    def _find_fieldset_tag(self, element: WebElement):
-        try: 
-            fieldset_element = element.find_element(By.TAG_NAME, 'fieldset')
-            print(f"Fieldset: {fieldset_element.text}")
-            return fieldset_element
-            #print(f"Label: {label}")
-        except NoSuchElementException:
-            # Handle the case when 'select' element is not found
-            print("fieldset element not found.") 
-
-    def _find_span_text(self, element: WebElement):
-        try: 
-            span_element = element.find_element(By.TAG_NAME, 'span')
-            span_element.text.strip()
-            return span_element
-            #print(f"Label: {label}")
-        except NoSuchElementException:
-            # Handle the case when 'select' element is not found
-            print("no span element not found.")   
-
- 
+    ########## fill form page ###########
     def fillFormPage(self):
         header = self._find_header(self.form)
         if header == "Contact info" or header == "Kontaktinfo":
@@ -274,61 +152,7 @@ class LinkedInEasyApplyFormHandler:
         else:
             print("page header no recognized")
 
-    def _fill_contact_info(self, form: WebElement):
-        #self._find_application_form()  # try to find the form
-        try:
-            divs = self._find_divs_selection_grouping()
-            if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                self._createDictFromFormDiv(divs)
-                # fill the form with candidate data
-                self._send_user_contact_infos(self.candidate, self.label_elements_map)
-                # click next buttton
-                self.label_elements_map.clear()
-        except:
-            print("no contact infos to fill")
-    ###
-    def _fill_resume(self, form: WebElement):
-        self.label_elements_map.clear()
-        try:
-            divs = self._find_divs_document_upload()
-            if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                self._createDictFromFormDiv(divs)
-                # fill the form with candidate data
-                self._send_user_documents(self.candidate, self.label_elements_map)
-                # click next buttton
-                self.label_elements_map.clear()
-
-        except:
-            print("no resume to fill")
-    
-    ####
-    def _fill_additionals(self, form: WebElement):
-        #self._find_application_form()  # try to find the form
-        try:
-            divs = self._find_divs_selection_grouping()
-            if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                self._createDictFromFormDiv(divs)
-                # fill the form with candidate data
-                self._send_user_answers(self.candidate, self.label_elements_map)
-                # click next buttton
-                self.label_elements_map.clear()
-        except Exception as e:
-            print("catched error while filling additional questions", e)
-    ######## find hear ####
-    def _find_header(self, form: WebElement):
-        try:
-            # Find the <h3> element with class "t-16 t-bold".
-            h3_element = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold')
-            # Print the inner text of the element.
-            print(f"page header: {h3_element.text}")
-            return h3_element.text
-        except:
-            print("no header found")
-            return "NA"
-    ####### Click Buttons Pages #########
+    ####### Click Button Apply #########
     def clickApplyPage(self):
         # click on the easy apply button, skip if already applied to the position
         try:
@@ -347,83 +171,7 @@ class LinkedInEasyApplyFormHandler:
             print('easy apply job button is not found, skipping')
             self.status = False
 
-    def _clickNextPage(self, form: WebElement):
-        # click the next page button
-        # Find the button using its aria-label attribute
-        try:
-            button = form.find_element(By.XPATH, "//span[text()='Next']")
-            # Click the button
-            button.click()
-            self.nextClicked = True
-            return True
-        except :
-            # Handle the case when 'select' element is not found
-            print("next button element not found.")
-            self.nextClicked = False
-            return False
-    def _clickReviewPage(self, form: WebElement):
-        # click the review page button
-        # Find the button using its aria-label attribute
-        try:
-            button = form.find_element(By.XPATH, "//span[text()='Review']")
-            # Click the button
-            button.click()
-            self.ReviewClicked = True
-            return True
-        except :
-            # Handle the case when 'select' element is not found
-            print("Review button element not found.")
-            self.ReviewClicked = False
-            return False
-    def _clickSubmitPage(self, form: WebElement):
-        # click the submit page button
-        # Find the button using its aria-label attribute
-        try:
-            wait = WebDriverWait(self.driver, 1)
-            button:WebElement = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
-            # Scroll to the button to ensure it's in view
-            self.driver.execute_script("arguments[0].scrollIntoView();", button)
-            button.click()
-            self.SubmitClicked = True
-            return True
-        except :
-            # Handle the case when 'select' element is not found
-            print("Submit button element not found.")
-            self.SubmitClicked = False
-            return False
     ########### Detect PAge #############
-    def _detectNextButtonForm(self, form: WebElement):
-        # Find the button using its aria-label attribute
-        try:
-            button = form.find_element(By.XPATH, "//span[text()='Next']")
-            return True
-        except :            
-            # Handle the case when 'next' element is not found
-            print("next button element not found.")
-            return False
-    def _detectReviewButtonForm(self, form: WebElement):
-        # Find the button using its aria-label attribute
-        try:
-            button = form.find_element(By.XPATH, "//span[text()='Review']")
-            return True
-        except :
-            # Handle the case when 'select' element is not found
-            print("Review button element not found.")
-            return False
-    def _detectSubmitButtonForm(self, form: WebElement):
-        # Find the button using its aria-label attribute
-        try:
-            #button = form.find_element(By.XPATH, "//span[text()='Submit application']")
-            # Wait for the button to be clickable or visible
-            wait = WebDriverWait(self.driver, 1)
-            button = wait.until(EC.element_to_be_clickable((By.XPATH, "//span[text()='Submit application']")))
-            # Scroll to the button to ensure it's in view
-            self.driver.execute_script("arguments[0].scrollIntoView();", button)
-            return True
-        except :
-            # Handle the case when 'select' element is not found
-            print("Submit button element not found.")
-            return False
     def _detect_form_page_type(self, form: WebElement, start_time=None):
         if start_time is None:
             start_time = time.time()  # Record the start time
@@ -443,37 +191,6 @@ class LinkedInEasyApplyFormHandler:
             print("page form with next detected")
             self._execute_next(form)
             return self._detect_form_page_type(form,start_time)
-
-
-    ########### each case func ########
-    def _execute_submit(self, form:WebElement):
-        # on page submit execute
-        return self._clickSubmitPage(form)
-    def _execute_review(self, form:WebElement):
-        current_header = self._find_header(form)
-        # click review, if header is same, try filling the page if is not filled
-        self._clickReviewPage(form)
-        last_header = self._find_header(form)
-        if last_header != current_header:
-            # we skipped page
-            return
-            # on page review execute
-        self.fillFormPage()
-        # return button clicker
-        return self._clickReviewPage(form)
-
-    def _execute_next(self, form:WebElement): # this 90% of the cases 
-        current_header = self._find_header(form)
-        # click review, if header is same, try filling the page if is not filled
-        self._clickNextPage(form)
-        last_header = self._find_header(form)
-        if last_header != current_header:
-            # we skipped page
-            return
-        # on page next execute
-        self.fillFormPage()
-        # return button clicker
-        return self._clickNextPage(form)
 
     ####### Apply Phase #####
     def applyForJob(self, job_link: str) -> bool:

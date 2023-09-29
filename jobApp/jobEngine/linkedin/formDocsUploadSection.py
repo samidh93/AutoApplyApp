@@ -12,35 +12,38 @@ from collections.abc import Iterable
 from .linkedinFormBaseElemFinder import LinkedinFormBaseFinder
 ''' handle linkedin easy apply form Contact info'''
 
-class FormContactInfoHandler():
+class FormDocumentHandler():
     def __init__(self) -> None:
         pass
 
-    def _fill_contact_info(self, form: WebElement):
-        #self._find_application_form()  # try to find the form
+    def _fill_resume(self, form: WebElement):
+        self.label_elements_map.clear()
         try:
-            divs = self._find_divs_selection_grouping()
+            divs = self._find_divs_document_upload()
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
                 self._createDictFromFormDiv(divs)
                 # fill the form with candidate data
-                self._send_user_contact_infos(self.candidate, self.label_elements_map)
+                self._send_user_documents(self.candidate, self.label_elements_map)
                 # click next buttton
                 self.label_elements_map.clear()
         except:
-            print("no contact infos to fill")
+            print("no resume to fill")
 
-    def _send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
+    def _send_user_documents(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         for label, element in elements_dict.items():
-            if label == 'First name':
-                self.send_value(element, user.firstname)
-            elif label == 'Last name':
-                self.send_value(element, user.lastname)
-            elif 'Phone country code' in label:
-                self.select_option(element, user.phone_code)
-            elif label == 'Mobile phone number':
-                self.send_value(element, user.phone_number)
-            elif 'Email address' in label:
-                self.select_option(element, user.email)
+            if label == 'Upload resume':
+                self.send_value(element, user.resume)
+            elif label == "Upload cover letter": # ignore cover letter: need specification later
+                pass
             else:
                 raise ValueError("Unsupported label: {}".format(label))
+
+    def _find_divs_document_upload(self) -> list[WebElement]:
+        if self.form != None:  # if form is found
+            try:
+                div_elements = self.form.find_elements(
+                    By.XPATH, "//div[contains(@class, 'js-jobs-document-upload__container') and contains(@class, 'display-flex') and contains(@class, 'flex-wrap')]")
+                return div_elements
+            except NoSuchElementException:
+                print("No upload elements found")

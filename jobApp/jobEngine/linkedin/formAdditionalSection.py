@@ -12,11 +12,11 @@ from collections.abc import Iterable
 from .linkedinFormBaseElemFinder import LinkedinFormBaseFinder
 ''' handle linkedin easy apply form Contact info'''
 
-class FormContactInfoHandler():
+class FormAdditionalHandler():
     def __init__(self) -> None:
         pass
 
-    def _fill_contact_info(self, form: WebElement):
+    def _fill_additionals(self, form: WebElement):
         #self._find_application_form()  # try to find the form
         try:
             divs = self._find_divs_selection_grouping()
@@ -24,23 +24,26 @@ class FormContactInfoHandler():
                 # create the key,value pair for each element on the form
                 self._createDictFromFormDiv(divs)
                 # fill the form with candidate data
-                self._send_user_contact_infos(self.candidate, self.label_elements_map)
+                self._send_user_answers(self.candidate, self.label_elements_map)
                 # click next buttton
                 self.label_elements_map.clear()
-        except:
-            print("no contact infos to fill")
+        except Exception as e:
+            print("catched error while filling additional questions", e)
 
-    def _send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
+    def _send_user_answers(self, user: CandidateProfile, elements_dict: dict[WebElement]):
+        # try to answer most form questions
         for label, element in elements_dict.items():
-            if label == 'First name':
-                self.send_value(element, user.firstname)
-            elif label == 'Last name':
-                self.send_value(element, user.lastname)
-            elif 'Phone country code' in label:
-                self.select_option(element, user.phone_code)
-            elif label == 'Mobile phone number':
-                self.send_value(element, user.phone_number)
-            elif 'Email address' in label:
-                self.select_option(element, user.email)
+            if isinstance(element, list):
+                print("The element is of type list.")
+                if element[0].get_attribute("type") == "radio":
+                    #handle dialog questions
+                    self._handle_dialog_question(label , element)
+                elif element[0].get_attribute("type") == "checkbox":
+                    #handle dialog questions
+                    self._handle_checkbox_question(label , element)
+            elif element.get_attribute("type") == "text":
+                # handle text based questions
+                self._handle_text_question(label, element)
             else:
-                raise ValueError("Unsupported label: {}".format(label))
+                #handle dialog questions
+                self._handle_select_question(label , element)

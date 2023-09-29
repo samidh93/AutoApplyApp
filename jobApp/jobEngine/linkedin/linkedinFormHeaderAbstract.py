@@ -12,7 +12,7 @@ import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
-from .linkedinDivsAbstract import DivsDocumentUpload
+from .linkedinDivsAbstract import DivsDocumentUpload, DivsSelectionGrouping
 # Abstract base class for headers
 
 
@@ -44,16 +44,16 @@ class ContactInfoHeader(Header):
 
     def fill(self, data:CandidateProfile):
         try:
-            DivHandler = DivsDocumentUpload()
+            DivHandler = DivsSelectionGrouping()
             divs = DivHandler.find() # return divs 
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
                 dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
-                DivHandler.send_user_documents(
+                DivHandler.send_user_contact_infos(
                     data, dict_Elems)
         except:
-            print("no resume to fill")
+            print("no contact infos to fill")
 
 class ResumeHeader(Header):
     header = "Resume"

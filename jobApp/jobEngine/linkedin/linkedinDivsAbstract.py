@@ -53,6 +53,22 @@ class DivsSelectionGrouping(Divs):
                 if label is not None:
                     label_elements_map.update(LabelElement().handle(label))
         return label_elements_map
+    
+    def send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
+        googleTranslator = Translator()
+        for label, element in elements_dict.items():
+            if googleTranslator.translate(label.text, dest='en').text == 'First name':
+                LinkedinUtils.send_value(element, user.firstname)
+            elif googleTranslator.translate(label.text, dest='en').text == 'Last name':
+                LinkedinUtils.send_value(element, user.lastname)
+            elif 'Phone country code' in label:
+                LinkedinUtils.select_option(element, user.phone_code)
+            elif label == 'Mobile phone number':
+                LinkedinUtils.send_value(element, user.phone_number)
+            elif 'Email address' in label:
+                LinkedinUtils.select_option(element, user.email)
+            else:
+                raise ValueError("Unsupported label: {}".format(label))
 
 # Concrete Divs classes
 

@@ -18,7 +18,7 @@ class LinkedinUtils:
     def __init__(self) -> None:
         pass
     @staticmethod
-    def send_value(self, element: WebElement, value: str):
+    def send_value( element: WebElement, value: str):
         element_type = element.get_attribute("type")
         if element_type == "file":
             print(f"sending file path: {value}")
@@ -29,7 +29,7 @@ class LinkedinUtils:
         else:
             print("input type not recognized")
     @staticmethod
-    def click_option(self, element: WebElement, value: str):
+    def click_option( element: WebElement, value: str):
         element_type = element.get_attribute("type")
         if element_type == "radio":
             for elem in element:
@@ -40,7 +40,7 @@ class LinkedinUtils:
                 if elem == value:
                     elem.click()
     @staticmethod
-    def select_option(self, select_element, user_value):
+    def select_option( select_element, user_value):
         select = Select(select_element)
         if isinstance(select.options, Iterable):
             if user_value in select.options:

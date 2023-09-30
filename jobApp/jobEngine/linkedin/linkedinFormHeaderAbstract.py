@@ -22,7 +22,7 @@ class Header(ABC):
         pass
 
     @abstractmethod
-    def fill(self, data:CandidateProfile):
+    def fill(self,form, data:CandidateProfile):
         pass
 
 # Concrete header classes
@@ -37,15 +37,16 @@ class ContactInfoHeader(Header):
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
             googleTranslator = Translator()
             if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
             print(f"no {self.header} header found")
             return False
 
-    def fill(self, data:CandidateProfile):
+    def fill(self,form, data:CandidateProfile):
         try:
             DivHandler = DivsSelectionGrouping()
-            divs = DivHandler.find() # return divs 
+            divs = DivHandler.find(form) # return divs 
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
                 dict_Elems = DivHandler.createDictFromDivs(divs)
@@ -63,15 +64,16 @@ class ResumeHeader(Header):
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
             googleTranslator = Translator()
             if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
             print(f"no {self.header} header found")
             return False
 
-    def fill(self, data:CandidateProfile):
+    def fill(self,form, data:CandidateProfile):
         try:
             DivHandler = DivsDocumentUpload()
-            divs = DivHandler.find() # return divs 
+            divs = DivHandler.find(form) # return divs 
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
                 dict_Elems = DivHandler.createDictFromDivs(divs)
@@ -91,12 +93,13 @@ class AdditionalQuestionsHeader(Header):
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
             googleTranslator = Translator()
             if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
             print(f"no {self.header} header found")
             return False
 
-    def fill(self, data:CandidateProfile):
+    def fill(self,form, data:CandidateProfile):
         # Logic to fill in Additional Info data:CandidateProfile
         pass
 
@@ -106,7 +109,7 @@ class UnkownHeader(Header):
         # Logic to detect the Additional Info header's web element
         pass
 
-    def fill(self, data:CandidateProfile):
+    def fill(self,form, data:CandidateProfile):
         # Logic to fill in Additional Info data:CandidateProfile
         pass
 

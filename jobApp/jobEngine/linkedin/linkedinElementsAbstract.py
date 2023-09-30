@@ -24,24 +24,30 @@ class LabelElement(Element):
     def find(self, element: WebElement):
         try:
             label_element = element.find_element(By.TAG_NAME, 'label')
-            label = label_element.text.strip()
-            return label
+            labelText = label_element.text.strip()
+            print("label:", labelText)
+            return label_element
         except NoSuchElementException:
             print("no label element not found.")
 
-    def handle(self, element: WebElement):
+    def handle(self, div:WebElement, element: WebElement):
         label_elements_map = {}
-        input_elem = InputElement.find(element)
-        # text field
-        if input_elem is not None:
-            print(f"added input element with label: {element}")
-            label_elements_map[element] = input_elem
-            # search for select options
-        else:
-            select_elem = SelectElement.find(element)
-            if select_elem is not None:
-                print(f"added select element with label: {element}")
-                label_elements_map[element] = select_elem
+        inputObj = InputElement()
+        selectObj = SelectElement()
+        try:
+            input_elem = inputObj.find(div)
+            # text field
+            if input_elem is not None:
+                print(f"added input element with label: {element.text}")
+                label_elements_map[element] = input_elem
+                # search for select options
+            else:
+                select_elem = selectObj.find(div)
+                if select_elem is not None:
+                    print(f"added select element with label: {element.text}")
+                    label_elements_map[element] = select_elem
+        except:
+            print("input element not handled")
         return label_elements_map
 
 class InputElement(Element):
@@ -50,10 +56,10 @@ class InputElement(Element):
             # Attempt to find the 'input' element inside the 'element' element
             input_element = element.find_element(By.TAG_NAME, 'input')
             value = input_element.get_attribute('value').strip()
+            print("input value: ", value)
             return input_element
         except NoSuchElementException:
             print("Input element not found.")
-
 
 class InputOptionsElements(Element):
     def find(self, element: WebElement):

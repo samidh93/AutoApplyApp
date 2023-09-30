@@ -12,7 +12,7 @@ from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinkedin
 from .linkedinSeleniumBase import LinkedinSeleniumBase
-
+from .linkedinFormButtonAbstract import ButtonFactory, Button
 ''' handle linkedin easy apply form template'''
 
 class LinkedInEasyApplyFormHandler:
@@ -42,34 +42,39 @@ class LinkedInEasyApplyFormHandler:
         # return true if job was success or already applied, false if job not found, deleted or can't apply
         if self.applicationSubmitted():
             return True
+        #if self.is_applications_closed(): # we need new variable to check if applications closed: either by number of applicants or anything else 
+        #    return False
         self.clickApplyPage()  # try to click apply button: retry when not clicked
         if not self.button_apply_clicked:
             self.clickApplyPage()
         if not self.button_apply_clicked:
             return False
         # detect form page type: 
-        self._find_application_form()  # try to find the form
-        if not self._detect_form_page_type(self.form, start_time):
+        form = self._find_application_form()  # try to find the form
+        ###### Algorithm Form Application #########
+        ###### see the picture in Readme file ######
+        #if not self._detect_form_page_type(self.form, start_time):
+        #    return False
+        #self.button_apply_clicked = False
+        #return True
+        self.handleFormPage(form, start_time)
+ ########### Detect PAge #############
+    def handleFormPage(self, form: WebElement, start_time=None):
+        if start_time is None:
+            start_time = time.time()  # Record the start time
+        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
             return False
-        self.button_apply_clicked = False
-        return True
-
-    ########## fill form page ###########
-    def fillFormPage(self):
-        header = self._find_header(self.form)
-        if header == "Contact info" or header == "Kontaktinfo":
-            return self._fill_contact_info(self.form)
-            #self.label_elements_map.clear()
-        elif header == "Resume" or header == "Lebenslauf":
-            return self._fill_resume(self.form)
-            #self.label_elements_map.clear()
-        elif header == "Additional" or header == "Additional Questions" or header == "Weitere Fragen":
-            print("filling additional questions")
-            return self._fill_additionals(self.form)
-            #self.label_elements_map.clear()
-        else:
-            print("page header no recognized")
-
+        buttonfactory = ButtonFactory()
+        try:
+            button:Button = buttonfactory.create_button(form, self.driver, self.candidate)
+            button.fillSection(form)
+            button.click()
+            return self.handleFormPage(form, start_time)
+        except ValueError as E:
+            print("error: ", str(E))
+ 
  ########### Detect PAge #############
     def _detect_form_page_type(self, form: WebElement, start_time=None):
         if start_time is None:
@@ -90,6 +95,22 @@ class LinkedInEasyApplyFormHandler:
             print("page form with next detected")
             self._execute_next(form)
             return self._detect_form_page_type(form,start_time)
+        
+    ########## fill form page ###########
+    def fillFormPage(self):
+        header = self._find_header(self.form)
+        if header == "Contact info" or header == "Kontaktinfo":
+            return self._fill_contact_info(self.form)
+            #self.label_elements_map.clear()
+        elif header == "Resume" or header == "Lebenslauf":
+            return self._fill_resume(self.form)
+            #self.label_elements_map.clear()
+        elif header == "Additional" or header == "Additional Questions" or header == "Weitere Fragen":
+            print("filling additional questions")
+            return self._fill_additionals(self.form)
+            #self.label_elements_map.clear()
+        else:
+            print("page header no recognized")
 
     ###### load links from csv file ########
     def load_links_from_csv(self):
@@ -128,6 +149,7 @@ class LinkedInEasyApplyFormHandler:
                 if form_element:
                     #print(f"form_element found: form object {form_element}")
                     self.form = form_element  # pass the form to parent
+                    return form_element
                 else:
                     # The form element was not found within the div
                     print('Form element not found')
@@ -144,7 +166,7 @@ class LinkedInEasyApplyFormHandler:
         try:
             print("try clicking button easy apply")
             # Wait for the button element to be clickable
-            button = WebDriverWait(self.driver, 1).until(
+            button:WebElement = WebDriverWait(self.driver, 1).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )

@@ -44,31 +44,45 @@ class DivsSelectionGrouping(Divs):
     def createDictFromDivs(self, divs):
         # Iterate over the divs and extract the label and corresponding input/select values
         label_elements_map = {}
+        field = FieldsetElement()
+        label = LabelElement()
         for div in divs:
-            fieldset = FieldsetElement.find(div)
-            if fieldset is not None:
-                label_elements_map.update( FieldsetElement.handle(fieldset))
-            else:
-                label = LabelElement().find(div)
-                if label is not None:
-                    label_elements_map.update(LabelElement().handle(label))
+            try:
+                print("processing form fields")
+                fieldset = field.find(div)
+                if fieldset is not None:
+                    label_elements_map.update(field.handle(fieldset))
+                else:
+                    labelElem = label.find(div)
+                    if labelElem is not None:
+                        label_elements_map.update(label.handle(div, labelElem))
+            except:
+                continue
         return label_elements_map
     
     def send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         googleTranslator = Translator()
         for label, element in elements_dict.items():
-            if googleTranslator.translate(label.text, dest='en').text == 'First name':
-                LinkedinUtils.send_value(element, user.firstname)
-            elif googleTranslator.translate(label.text, dest='en').text == 'Last name':
-                LinkedinUtils.send_value(element, user.lastname)
-            elif 'Phone country code' in label:
-                LinkedinUtils.select_option(element, user.phone_code)
-            elif label == 'Mobile phone number':
-                LinkedinUtils.send_value(element, user.phone_number)
-            elif 'Email address' in label:
-                LinkedinUtils.select_option(element, user.email)
-            else:
-                raise ValueError("Unsupported label: {}".format(label))
+            try:
+                if googleTranslator.translate(label.text, dest='en').text == 'First name':
+                    LinkedinUtils.send_value(element, user.firstname)
+                    print(f"firstname to send: {user.firstname}")
+                elif googleTranslator.translate(label.text, dest='en').text == 'Last name':
+                    LinkedinUtils.send_value(element, user.lastname)
+                    print(f"lastname to send: {user.lastname}")
+                elif googleTranslator.translate(label.text, dest='en').text == 'Phone country code':
+                    print("selecting user phone country code")
+                    LinkedinUtils.select_option(element, user.phone_code)
+                elif googleTranslator.translate(label.text, dest='en').text == 'Mobile phone number':
+                    LinkedinUtils.send_value(element, user.phone_number)
+                    print(f"mobile to send: {user.phone_number}")
+                elif googleTranslator.translate(label.text, dest='en').text == 'Email address':
+                    print(f"email to select: {user.email}")
+                    LinkedinUtils.select_option(element, user.email)
+                else:
+                    raise ValueError("Unsupported label: {}".format(label))
+            except:
+                continue
 
 # Concrete Divs classes
 

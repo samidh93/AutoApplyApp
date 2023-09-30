@@ -47,11 +47,14 @@ class LinkedinUtils:
                 if user_value in option.accessible_name:
                     select.select_by_visible_text(user_value)
                     print("user option selected: ", select.first_selected_option.accessible_name)
-                else:  # return first option to bypass error; needed to be corrected
-                    select.select_by_visible_text(
-                        select.first_selected_option.accessible_name)
-                    print("select default option: ", select.first_selected_option.accessible_name)
-                return
+                    return 
+                else:
+                    continue
+               # else:  # return first option to bypass error; needed to be corrected
+               #     select.select_by_visible_text(
+               #         select.first_selected_option.accessible_name)
+               #     print("select default option: ", select.first_selected_option.accessible_name)
+               # return
         else:
             select.select_by_visible_text(select.first_selected_option.accessible_name)
 

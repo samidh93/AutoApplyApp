@@ -43,12 +43,15 @@ class LinkedinUtils:
     def select_option( select_element, user_value):
         select = Select(select_element)
         if isinstance(select.options, Iterable):
-            if user_value in select.options:
-                select.select_by_visible_text(user_value)
-            else:  # return first option to bypass error; needed to be corrected
-                select.select_by_visible_text(
-                    select.first_selected_option.accessible_name)
-            return
+            for option in select.options:
+                if user_value in option.accessible_name:
+                    select.select_by_visible_text(user_value)
+                    print("user option selected: ", select.first_selected_option.accessible_name)
+                else:  # return first option to bypass error; needed to be corrected
+                    select.select_by_visible_text(
+                        select.first_selected_option.accessible_name)
+                    print("select default option: ", select.first_selected_option.accessible_name)
+                return
         else:
-            select.select_by_visible_text(select.first_selected_option.text)
+            select.select_by_visible_text(select.first_selected_option.accessible_name)
 

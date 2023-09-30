@@ -52,7 +52,7 @@ if __name__ == "__main__":
                 "firstname": "zayneb",
                 "lastname": "dhieb", 
                 "resume": "https://708f8437-9497-45e7-a86f-8a969c24d91c.usrfiles.com/ugd/4b8c91_0cd5bf0096924bb6990c679beeaa257c.pdf",
-                "phone": "+4915731294281",
+                "phone_number": "15731294281",
                 "limit": "10",
             }
             # extended with more params such salary and experience

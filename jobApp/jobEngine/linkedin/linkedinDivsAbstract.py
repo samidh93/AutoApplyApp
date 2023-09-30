@@ -70,14 +70,14 @@ class DivsSelectionGrouping(Divs):
                 elif googleTranslator.translate(label.text, dest='en').text == 'Last name':
                     LinkedinUtils.send_value(element, user.lastname)
                     print(f"lastname to send: {user.lastname}")
-                elif googleTranslator.translate(label.text, dest='en').text == 'Phone country code':
-                    print("selecting user phone country code")
+                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Phone country code':
+                    print("selecting user phone country code: ", user.phone_code)
                     LinkedinUtils.select_option(element, user.phone_code)
                 elif googleTranslator.translate(label.text, dest='en').text == 'Mobile phone number':
                     LinkedinUtils.send_value(element, user.phone_number)
                     print(f"mobile to send: {user.phone_number}")
-                elif googleTranslator.translate(label.text, dest='en').text == 'Email address':
-                    print(f"email to select: {user.email}")
+                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Email address':
+                    print(f"selecting user email: {user.email}")
                     LinkedinUtils.select_option(element, user.email)
                 else:
                     raise ValueError("Unsupported label: {}".format(label))

@@ -101,12 +101,12 @@ class SpanElement(Element):
     def find(self, element: WebElement):
         try:
             span_element = element.find_element(By.TAG_NAME, 'span')
-            span_element.text.strip()
+            print("span text:", span_element.text.strip())
             return span_element
             # print(f"Label: {label}")
         except NoSuchElementException:
             # Handle the case when 'select' element is not found
-            print("no span element not found.")
+            print("no span element found.")
 
 
 class SelectElement(Element):

@@ -4,7 +4,8 @@ from ..externalApply.directApplicationBuilder import DirectApplicationBuilder
 from .applicationAbstract import Application
 import json
 from ..user.candidateProfile import CandidateProfile
-from ..config.config import BaseConfig , UserConfig, AppConfig
+from ..config.config import BaseConfig, UserConfig, AppConfig
+
 
 class ApplicationDirector:
     def __init__(self, linkedinConfig, application_type='Easy Apply'):
@@ -12,8 +13,8 @@ class ApplicationDirector:
         self.linkedinConfig = linkedinConfig
         self.candidate = self.createCandidatePofile(linkedinConfig)
         self.csv_jobs_file = self.deductUserInCsvJobs(linkedinConfig)
-    
-    def construct_application(self,  application_type= 'Email' or 'Easy Apply' or 'Direct'):
+
+    def construct_application(self,  application_type='Email' or 'Easy Apply' or 'Direct'):
         if application_type == 'Email':
             self.builder = EmailApplicationBuilder()
         elif application_type == 'Easy Apply':
@@ -32,50 +33,65 @@ class ApplicationDirector:
     def createCandidatePofile(self, incomingData):
         json_data = self.loadIncomingDataAsJson(incomingData)
         # User data
-        user_data:dict = json_data.get('user')
+        user_data: dict = json_data.get('user')
         email = user_data.get("email")
         self.field_id = user_data.get('field_id')
         # candidate data
-        candidate_data:dict = json_data.get("candidate")
+        candidate_data: dict = json_data.get("candidate")
         firstname = candidate_data.get('firstname')
         lastname = candidate_data.get('lastname')
         resume = candidate_data.get('resume')
         phone_number = candidate_data.get('phone_number')
         address = candidate_data.get('address')
         limit = candidate_data.get('limit')
-        return CandidateProfile(resume_path=resume, 
-                                     firstname=firstname, 
-                                     lastname=lastname, 
-                                     email=email,  
-                                     phone_number=phone_number, 
-                                     limit=limit, 
-                                     address=address )
-    
+        years_exp = candidate_data.get('years_experience')
+        desired_salary = candidate_data.get('desired_salary')
+        visa = candidate_data.get('visa_required')
+        educations = candidate_data.get("educations")
+        experiences = candidate_data.get("experiences")
+        skills = candidate_data.get("skills")
+        return CandidateProfile(resume_path=resume,
+                                firstname=firstname,
+                                lastname=lastname,
+                                email=email,
+                                phone_number=phone_number,
+                                limit=limit,
+                                address=address,
+                                years_experience=years_exp,
+                                desired_salary=desired_salary,
+                                visa_required=visa,
+                                educations=educations,
+                                experiences=experiences,
+                                skills=skills
+                                )
+
     def deductUserInCsvJobs(self, incomingData):
         json_data = self.loadIncomingDataAsJson(incomingData)
         # User data
-        job:dict = json_data.get("search_params")
+        job: dict = json_data.get("search_params")
         job_title = job.get('job')
         location = job.get('location')
-        return UserConfig.get_jobs_file_path(job_title=job_title, job_location=location,field_id= self.field_id)
-        #return self.getUserSearchJobsCsv(csv_path=csv_path, job_title=job_title, job_location=location, field_id=self.field_id)
-    
-    def replace_spaces_and_commas_with_underscores(self, input_string:str):
+        return UserConfig.get_jobs_file_path(job_title=job_title, job_location=location, field_id=self.field_id)
+        # return self.getUserSearchJobsCsv(csv_path=csv_path, job_title=job_title, job_location=location, field_id=self.field_id)
+
+    def replace_spaces_and_commas_with_underscores(self, input_string: str):
         # Replace spaces and commas with underscores
         modified_string = input_string.replace(' ', '_').replace(',', '_')
         return modified_string
-    
+
     def getUserSearchJobsCsv(self, csv_path, job_title, job_location, field_id):
         job_title = self.replace_spaces_and_commas_with_underscores(job_title)
-        location = self.replace_spaces_and_commas_with_underscores(job_location)
+        location = self.replace_spaces_and_commas_with_underscores(
+            job_location)
         csv_extension = ".csv"
         jobs_path = "/jobs"
-        file = csv_path+jobs_path+"_"+job_title+"_"+location+"_"+field_id+csv_extension # maybe owner id is needed here
+        file = csv_path+jobs_path+"_"+job_title+"_"+location+"_" + \
+            field_id+csv_extension  # maybe owner id is needed here
         return file
 
     def loadIncomingDataAsJson(self, incomingData):
-        #print("incoming Data: ", incomingData)
-        # load actual user data   
+        # print("incoming Data: ", incomingData)
+        # load actual user data
         if isinstance(incomingData, str):
             # If incomingData is a string, assume it's a file path
             try:
@@ -91,10 +107,6 @@ class ApplicationDirector:
         return json_data
 
 
-
-
-
 if __name__ == '__main__':
 
     pass
-    

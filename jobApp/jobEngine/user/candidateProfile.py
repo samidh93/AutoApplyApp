@@ -2,67 +2,36 @@ from ..resume.resumeParser import Resume
 from ..ai.chatgpt import ChatGPT
 import json
 from deprecated import deprecated
+import phonenumbers
+from phonenumbers import geocoder
 
 """
     Candidate profile, Experiences, Educations, Skills
 """
-class Experience:
-    def __init__(self, job_title, company, duration):
-        self.job_title = job_title
-        self.company_name = company
-        self.duration = duration
-        
-class Education:
-    def __init__(self, university, degree, duration):
-        self.university = university
-        self.degree = degree
-        self.duration = duration
-        
-class Skills:
-    def __init__(self, softwares: list, languages:list):
-        self.languages = languages
-        self.softwares = softwares
 
 
-## create more dynamic classes based on sections in resume 
 class CandidateProfile:
-
-    def __init__(self, resume_path, firstname=None, lastname=None, address=None, email=None, phone_number=None, linkedin=None, limit = None):
+    def __init__(self, resume_path, firstname, lastname, address, email, phone_number, limit, years_experience, desired_salary, visa_required,  educations:dict={}, experiences:dict={}, skills:dict={} , **more):
         self.resume = Resume(file_path=resume_path, candidate_firstname=firstname, candidate_lastname=lastname).resume
-        #self.resume_text = self.resume.extract_text()
-        self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")
-        self.experience_list = [Experience]
-        self.education_list = [Education]
-        self.skills_list = [Skills]
+        #self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")
+        self.experiences = Experiences(experiences=experiences) 
+        self.educations = Educations(educations=educations)
+        self.skills = Skills(skills=skills)
+        # access languages
+        self.languages:list = self.skills.languages.languages
+        self.experiences:list = self.skills.softwares.softwares
+        self.years_experience = years_experience
         self.firstname = firstname
         self.lastname = lastname
         self.address = address
         self.email = email
         self.phone_number = phone_number
-        self.linkedin = linkedin
+        self.country_code,self.country_name = PhoneCodeExtractor.extract_country_code_name(self.phone_number)
         self.phone_code = "Germany (+49)"
         self.applications_limit = limit
+        self.visa_required = visa_required
+        self.desired_salary = desired_salary
 
-        # test cases
-        self.set_expected_salary("50000")
-        self.set_languages_expertise("C1")
-        self.set_nationality("Tunisian")
-        self.set_years_experiences("5")
-
-    def set_nationality(self, nationality:str):
-        self.nationality = nationality
-    def set_expected_salary(self, salary:str):
-        self.salary = salary
-    def set_years_experiences(self, years:str):
-        self.years_exp= years
-    def set_languages_expertise(self, languages_expertise: str):
-        self.languages_expert = languages_expertise
-    def set_visa_requirement(self, job_location:str):
-        if self.nationality == job_location:
-            return False
-        return True
-    def extract_resume_plain_text(self):
-        return self.resume_text
 
 
     def extract_personal_infos_from_resume(self): #all in one call, maybe difficult to get
@@ -141,7 +110,126 @@ class CandidateProfile:
             self.education_list.append(education_obj)
         skills_obj = Skills(infos_data['skills']['Software'], infos_data['skills']['Languages'])
         print(skills_obj.softwares, skills_obj.languages)
- 
+
+
+
+class IT:
+    def __init__(self, what:str, level:str): # what= office, level=good, what c++, level=advanced
+        self.what_it = what
+        self.it_level = level
+class Language:
+    def __init__(self, what, level):# what= en, level=good
+        self.what_lang = what
+        self.lang_level = level
+class Languages: 
+    def __init__(self, languages:dict) -> None:
+        # Your code to process the dictionary goes here
+        self.languages:[Language] = []
+        for key, value in languages.items():
+            print(f"Key: {key}, Value: {value}")
+            self.languages.append(Language(key, value))
+
+    def get_level(self, what_lang):
+        for lang in self.languages:
+            if what_lang ==lang.what:
+                return lang.level
+        return None
+
+class Softwares:
+    def __init__(self, softwares:dict) -> None:
+        # Your code to process the dictionary goes here
+        self.softwares = []
+        for key, value in softwares.items():
+            print(f"Key: {key}, Value: {value}")
+            self.softwares.append(Language(key, value))
+    def get_level(self, what_it):
+        for soft in self.softwares:
+            if what_it ==soft.what:
+                return soft.level
+        return None
+# {"skills": 
+#   {"Languages":
+#           { 
+#           "english": "good",
+#            "german": "basic"
+#            }
+#   },
+#   {"Softwares":
+#            {
+#           "ms_word": "good",
+#            "powerpoint": "basic",
+#            "sql": "good"
+#             }
+#    }
+# }
+class Skills:
+    def __init__(self, skills:dict): 
+        # Your code to process the dictionary goes here
+        for key, value in skills.items():
+            print(f"Key: {key}, Value: {value}")
+            if key=="Languages": # pass the value down to the class
+                self.languages = Languages(value)
+            elif key == "Softwares":
+                self.softwares = Softwares(value)
+
+# Should be filled on the specific platform
+
+class Experience:
+    def __init__(self, job_title, company, duration):
+        self.job_title = job_title
+        self.company_name = company
+        self.duration = duration
+
+# {"experiences": 
+#   {
+#           "job_title": "engineer",
+#            "company": "google",
+#           "duration": "2 years"
+#   }, etc
+# }
+class Experiences:
+    def __init__(self, experiences:dict) -> None:
+        self.experiences = []
+        for key, value in experiences.items():
+            print(f"Key: {key}, Value: {value}")
+            self.experiences.append(Experience(key["job_title"], key["company_name"],key["duration"]))
+class Education:
+    def __init__(self, university, degree, duration):
+        self.university = university
+        self.degree = degree
+        self.duration = duration
+
+# {"educations": 
+#   {
+#           "university": "tu",
+#            "degree": "master",
+#           "duration": "2 years"
+#   }, etc
+# }
+class Educations:
+    def __init__(self, educations:dict) -> None:
+        self.educations = []
+        for key, value in educations.items():
+            print(f"Key: {key}, Value: {value}")
+            self.educations.append(Experience(key["university"], key["degree"],key["duration"]))
+
+
+class PhoneCodeExtractor:
+    @staticmethod
+    def extract_country_code_name( mobile_number):
+        try:
+            # Parse the phone number
+            phone_number = phonenumbers.parse(mobile_number, None)
+            # Extract country code
+            country_code = phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+            # Get country name
+            country_name = geocoder.description_for_number(phone_number, "en")
+            return country_code, country_name
+        except phonenumbers.phonenumberutil.NumberFormatException:
+            return None, "Invalid phone number"
+        except Exception as e:
+            return None, str(e)
+
 if __name__ == "__main__":
     candidate = CandidateProfile('jobApp/data/zayneb_dhieb_resume_english.pdf')
     candidate.extract_education_from_resume()

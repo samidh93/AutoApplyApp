@@ -12,7 +12,7 @@ import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
-from .linkedinDivsAbstract import DivsDocumentUpload, DivsContactInfo, DivsPrivacyPolicy, DivsAdditionalQuestions
+from .linkedinDivsAbstract import DivsDocumentUpload, DivsContactInfo, DivsPrivacyPolicy, DivsAdditionalQuestions, DivsHomeAddress
 # Abstract base class for headers
 
 
@@ -100,7 +100,7 @@ class HomeAddressHeader(Header):
 
     def fill(self,form, data:CandidateProfile):
         try:
-            DivHandler = DivsContactInfo()
+            DivHandler = DivsHomeAddress()
             divs = DivHandler.find(form) # return divs 
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
@@ -110,7 +110,6 @@ class HomeAddressHeader(Header):
                     data, dict_Elems)
         except:
             print("no home address to fill")
-
 
 class AdditionalQuestionsHeader(Header):
     header = "Additional Questions"
@@ -135,7 +134,7 @@ class AdditionalQuestionsHeader(Header):
                 # create the key,value pair for each element on the form
                 dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
-                DivHandler.send_user_questions_answer(
+                DivHandler.send_user_questions_answers(
                     data, dict_Elems)
         except:
             print("no additional questions to fill")
@@ -183,7 +182,7 @@ class UnkownHeader(Header):
 class HeaderFactory:
     def create_header(self, form: WebElement):
         headers = [ContactInfoHeader(), ResumeHeader(),HomeAddressHeader(),
-                   AdditionalQuestionsHeader()]
+                   AdditionalQuestionsHeader(), PrivacyPolicyHeader()]
         for header in headers:
             if header.detect(form):
                 return header

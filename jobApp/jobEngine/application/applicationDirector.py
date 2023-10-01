@@ -41,13 +41,15 @@ class ApplicationDirector:
         lastname = candidate_data.get('lastname')
         resume = candidate_data.get('resume')
         phone_number = candidate_data.get('phone_number')
+        address = candidate_data.get('address')
         limit = candidate_data.get('limit')
         return CandidateProfile(resume_path=resume, 
                                      firstname=firstname, 
                                      lastname=lastname, 
                                      email=email,  
                                      phone_number=phone_number, 
-                                     limit=limit )
+                                     limit=limit, 
+                                     address=address )
     
     def deductUserInCsvJobs(self, incomingData):
         json_data = self.loadIncomingDataAsJson(incomingData)

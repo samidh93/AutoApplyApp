@@ -29,7 +29,7 @@ class Divs(ABC):
 # Concrete Divs classes
 
 
-class DivsSelectionGrouping(Divs):
+class DivsContactInfo(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
@@ -79,6 +79,10 @@ class DivsSelectionGrouping(Divs):
                 elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Email address':
                     print(f"selecting user email: {user.email}")
                     LinkedinUtils.select_option(element, user.email)
+                elif googleTranslator.translate(label.text, dest='en').text == 'City':
+                    LinkedinUtils.send_value(element, user.address)
+                elif googleTranslator.translate(label.text, dest='en').text == 'Upload resume':
+                    LinkedinUtils.send_value(element, user.resume)
                 else:
                     raise ValueError("Unsupported label: {}".format(label))
             except:
@@ -101,12 +105,14 @@ class DivsDocumentUpload(Divs):
     def createDictFromDivs(self, divs):
         # Iterate over the divs and extract the label and corresponding input/select values
         label_elements_map = {}
+        inputObj = InputElement()
+        labelObj = LabelElement()
         try:
             for div in divs:  # list of divs
                 # Div contains label and inpout tag
-                label = LabelElement().find(div)
+                label = labelObj.find(div)
                 if label is not None:
-                    input_elem = InputElement().find(div)
+                    input_elem = inputObj.find(div)
                     # text field
                     if input_elem is not None:
                         print(f"added input element with label: {label}")
@@ -125,3 +131,104 @@ class DivsDocumentUpload(Divs):
                 pass
             else:
                 raise ValueError("Unsupported label: {}".format(label))
+
+class DivsAdditionalQuestions(Divs):
+    def find(self, form: WebElement):
+        try:
+            # Find the div with class "jobs-easy-apply-form-section__grouping"
+            divs = form.find_elements(
+                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+            print("found divs with selection grouping")
+            if divs != None:
+                return divs
+        except NoSuchElementException:
+            print("No div selection grouping elements found")
+
+    def createDictFromDivs(self, divs):
+        # Iterate over the divs and extract the label and corresponding input/select values
+        label_elements_map = {}
+        field = FieldsetElement()
+        label = LabelElement()
+        for div in divs:
+            try:
+                print("processing form fields")
+                fieldset = field.find(div)
+                if fieldset is not None:
+                    label_elements_map.update(field.handle(fieldset))
+                else:
+                    labelElem = label.find(div)
+                    if labelElem is not None:
+                        label_elements_map.update(label.handle(div, labelElem))
+            except:
+                continue
+        return label_elements_map
+    
+    def send_user_questions_answer(self, user: CandidateProfile, elements_dict: dict[WebElement]):
+        googleTranslator = Translator()
+        for label, element in elements_dict.items():
+            try:
+                if googleTranslator.translate(label.text, dest='en').text == 'First name':
+                    LinkedinUtils.send_value(element, user.firstname)
+                    print(f"firstname to send: {user.firstname}")
+                elif googleTranslator.translate(label.text, dest='en').text == 'Last name':
+                    LinkedinUtils.send_value(element, user.lastname)
+                    print(f"lastname to send: {user.lastname}")
+                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Phone country code':
+                    print("selecting user phone country code: ", user.phone_code)
+                    LinkedinUtils.select_option(element, user.phone_code)
+                elif googleTranslator.translate(label.text, dest='en').text == 'Mobile phone number':
+                    LinkedinUtils.send_value(element, user.phone_number)
+                    print(f"mobile to send: {user.phone_number}")
+                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Email address':
+                    print(f"selecting user email: {user.email}")
+                    LinkedinUtils.select_option(element, user.email)
+                elif googleTranslator.translate(label.text, dest='en').text == 'City':
+                    LinkedinUtils.send_value(element, user.address)
+                elif googleTranslator.translate(label.text, dest='en').text == 'Upload resume':
+                    LinkedinUtils.send_value(element, user.resume)
+                else:
+                    raise ValueError("Unsupported label: {}".format(label))
+            except:
+                continue
+
+class DivsPrivacyPolicy(Divs):
+    def find(self, form: WebElement):
+        try:
+            # Find the div with class "jobs-easy-apply-form-section__grouping"
+            divs = form.find_elements(
+                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+            print("found divs with selection grouping")
+            if divs != None:
+                return divs
+        except NoSuchElementException:
+            print("No div selection grouping elements found")
+
+    def createDictFromDivs(self, divs):
+        # Iterate over the divs and extract the label and corresponding input/select values
+        label_elements_map = {}
+        field = FieldsetElement()
+        label = LabelElement()
+        for div in divs:
+            try:
+                print("processing form fields")
+                fieldset = field.find(div)
+                if fieldset is not None:
+                    label_elements_map.update(field.handle(fieldset))
+                else:
+                    labelElem = label.find(div)
+                    if labelElem is not None:
+                        label_elements_map.update(label.handle(div, labelElem))
+            except:
+                continue
+        return label_elements_map
+    
+    def select_privacy_policy(self, elements_dict: dict[WebElement]):
+        googleTranslator = Translator()
+        for label, element in elements_dict.items():
+            try:
+                if googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == '?':
+                    LinkedinUtils.click_option(element, True) #click accept the privacy policy
+                else:
+                    raise ValueError("Unsupported label: {}".format(label))
+            except:
+                continue

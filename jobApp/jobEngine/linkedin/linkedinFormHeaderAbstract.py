@@ -12,7 +12,7 @@ import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
-from .linkedinDivsAbstract import DivsDocumentUpload, DivsSelectionGrouping
+from .linkedinDivsAbstract import DivsDocumentUpload, DivsContactInfo, DivsPrivacyPolicy, DivsAdditionalQuestions
 # Abstract base class for headers
 
 
@@ -45,7 +45,7 @@ class ContactInfoHeader(Header):
 
     def fill(self,form, data:CandidateProfile):
         try:
-            DivHandler = DivsSelectionGrouping()
+            DivHandler = DivsContactInfo()
             divs = DivHandler.find(form) # return divs 
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
@@ -83,6 +83,34 @@ class ResumeHeader(Header):
         except:
             print("no resume to fill")
 
+class HomeAddressHeader(Header):
+    header = "Home address"
+
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+
+    def fill(self,form, data:CandidateProfile):
+        try:
+            DivHandler = DivsContactInfo()
+            divs = DivHandler.find(form) # return divs 
+            if len(divs) != 0:
+                # create the key,value pair for each element on the form
+                dict_Elems = DivHandler.createDictFromDivs(divs)
+                # fill the form with candidate data:CandidateProfile
+                DivHandler.send_user_contact_infos(
+                    data, dict_Elems)
+        except:
+            print("no home address to fill")
+
 
 class AdditionalQuestionsHeader(Header):
     header = "Additional Questions"
@@ -100,8 +128,45 @@ class AdditionalQuestionsHeader(Header):
             return False
 
     def fill(self,form, data:CandidateProfile):
-        # Logic to fill in Additional Info data:CandidateProfile
-        pass
+        try:
+            DivHandler = DivsAdditionalQuestions()
+            divs = DivHandler.find(form) # return divs 
+            if len(divs) != 0:
+                # create the key,value pair for each element on the form
+                dict_Elems = DivHandler.createDictFromDivs(divs)
+                # fill the form with candidate data:CandidateProfile
+                DivHandler.send_user_questions_answer(
+                    data, dict_Elems)
+        except:
+            print("no additional questions to fill")
+
+class PrivacyPolicyHeader:
+    header = "Privacy policy"
+
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+
+    def fill(self,form, data:CandidateProfile):
+        try:
+            DivHandler = DivsPrivacyPolicy()
+            divs = DivHandler.find(form) # return divs 
+            if len(divs) != 0:
+                # create the key,value pair for each element on the form
+                dict_Elems = DivHandler.createDictFromDivs(divs)
+                # fill the form with candidate data:CandidateProfile
+                DivHandler.select_privacy_policy(
+                    dict_Elems)
+        except:
+            print("no privacy policy to fill")
 
 
 class UnkownHeader(Header):
@@ -117,7 +182,7 @@ class UnkownHeader(Header):
 # Factory for creating headers
 class HeaderFactory:
     def create_header(self, form: WebElement):
-        headers = [ContactInfoHeader(), ResumeHeader(),
+        headers = [ContactInfoHeader(), ResumeHeader(),HomeAddressHeader(),
                    AdditionalQuestionsHeader()]
         for header in headers:
             if header.detect(form):

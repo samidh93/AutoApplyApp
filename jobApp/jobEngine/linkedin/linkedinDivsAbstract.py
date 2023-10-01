@@ -116,7 +116,7 @@ class DivsDocumentUpload(Divs):
                     input_elem = inputObj.find(div)
                     # text field
                     if input_elem is not None:
-                        print(f"added input element with label: {label}")
+                        print(f"added input element with label: {label.text}")
                         label_elements_map[label] = input_elem
             return label_elements_map
         except Exception as E:
@@ -171,7 +171,7 @@ class DivsHomeAddress(Divs):
         googleTranslator = Translator()
         for label, element in elements_dict.items():
             try:
-                if googleTranslator.translate(label.text, dest='en').text == 'City':
+                if googleTranslator.translate(label.text, dest='en').text.lower() == 'city':
                     LinkedinUtils.send_value(element, user.address)
                 else:
                     raise ValueError("Unsupported label: {}".format(label))

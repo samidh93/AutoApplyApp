@@ -62,18 +62,20 @@ if __name__ == "__main__":
             "visa_required": "False",
             "years_experience": "5",
             "desired_salary": "50000",
-            "experiences":    {
-                "job_title": "engineer",
-                "company": "google",
-                "duration": "2 years"
-            },
-            "educations": {
+            "experiences":   [
+                {
+                    "job_title": "engineer",
+                    "company": "google",
+                    "duration": "2 years"
+                }
+            ],
+            "educations": [
                 {
                     "university": "tu",
                     "degree": "master",
                     "duration": "2 years"
                 }
-            },
+            ],
             "skills":   {
                 "Languages":
                     {

@@ -69,7 +69,7 @@ class LinkedinFormBase:
                     input_elem = _find_input_tag(div, label)
                     # text field
                     if input_elem is not None:
-                        print(f"added input element with label: {label}")
+                        print(f"added input element with label: {label.text}")
                         label_elements_map[label] = input_elem
                     # search for select options
                     else:

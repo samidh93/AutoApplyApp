@@ -188,11 +188,10 @@ class Experience:
 #   }, etc
 # }
 class Experiences:
-    def __init__(self, experiences:dict) -> None:
+    def __init__(self, experiences:[dict]) -> None:
         self.experiences = []
-        for key, value in experiences.items():
-            print(f"Key: {key}, Value: {value}")
-            self.experiences.append(Experience(key["job_title"], key["company_name"],key["duration"]))
+        for exp in experiences:
+            self.experiences.append(Experience(exp["job_title"], exp["company"], exp["duration"]))
 class Education:
     def __init__(self, university, degree, duration):
         self.university = university
@@ -207,11 +206,10 @@ class Education:
 #   }, etc
 # }
 class Educations:
-    def __init__(self, educations:dict) -> None:
+    def __init__(self, educations:[dict]) -> None:
         self.educations = []
-        for key, value in educations.items():
-            print(f"Key: {key}, Value: {value}")
-            self.educations.append(Experience(key["university"], key["degree"],key["duration"]))
+        for educ in educations:
+            self.educations.append(Experience(educ["university"], educ["degree"],educ["duration"]))
 
 
 class PhoneCodeExtractor:
@@ -225,7 +223,7 @@ class PhoneCodeExtractor:
             # Get country name
             country_name = geocoder.description_for_number(phone_number, "en")
             return country_code, country_name
-        except phonenumbers.phonenumberutil.NumberFormatException:
+        except phonenumbers.phonenumberutil.NumberParseException:
             return None, "Invalid phone number"
         except Exception as e:
             return None, str(e)

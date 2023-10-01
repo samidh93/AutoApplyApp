@@ -167,6 +167,58 @@ class PrivacyPolicyHeader:
         except:
             print("no privacy policy to fill")
 
+class WorkExperienceHeader(Header):
+    header = "Work experience"
+
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+    # should be filled directly on platform by user
+    def fill(self,form, data:CandidateProfile):
+        pass
+
+class EducationHeader(Header):
+    header = "Education"
+
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+    # should be filled directly on platform by user
+    def fill(self,form, data:CandidateProfile):
+        pass
+
+class ScreeningQuestionsHeader(Header):
+    header = "Screening questions"
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text == self.header:
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+    # should be filled directly on platform by user
+    def fill(self,form, data:CandidateProfile):
+        pass
 
 class UnkownHeader(Header):
     def detect(self, form: WebElement):
@@ -182,9 +234,10 @@ class UnkownHeader(Header):
 class HeaderFactory:
     def create_header(self, form: WebElement):
         headers = [ContactInfoHeader(), ResumeHeader(),HomeAddressHeader(),
+                  EducationHeader(), WorkExperienceHeader(), ScreeningQuestionsHeader(),
                    AdditionalQuestionsHeader(), PrivacyPolicyHeader()]
         for header in headers:
             if header.detect(form):
                 return header
         return UnkownHeader()
-        raise ValueError("No header detected")
+        #raise ValueError("No header detected")

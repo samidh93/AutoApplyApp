@@ -218,25 +218,26 @@ class DivsAdditionalQuestions(Divs):
         return label_elements_map
 
     def send_user_questions_answers(self, user: CandidateProfile, elements_dict: dict[WebElement]):
-        for label, element in elements_dict.items(): #iterate div by div questions
+        for label, elements in elements_dict.items(): #iterate div by div questions
             try:
                 # try to answer most form questions
-                if isinstance(element, list):
-                    print("The element is of type list.")
-                    if element[0].get_attribute("type") == "radio":
+                if isinstance(elements, list):
+                    print("The elements is of type list.")
+                    elem_type:WebElement = elements[0].find_element(By.TAG_NAME, "input").get_attribute("type")
+                    if elem_type == "radio":
                         # handle dialog questions
                         LinkedinQuestions.process_radio_question(
-                            label, element, user)
-                    elif element[0].get_attribute("type") == "checkbox":
+                            label, elements, user)
+                    elif elem_type == "checkbox":
                         # handle checkbox questions
                         LinkedinQuestions.process_checkbox_question(
-                            label, element, user)
-                elif element.get_attribute("type") == "text":
+                            label, elements, user)
+                elif elements.get_attribute("type") == "text":
                     # handle text based questions
-                    LinkedinQuestions.process_text_question(label, element, user)
+                    LinkedinQuestions.process_text_question(label, elements, user)
                 else:
                     # handle select questions
-                    LinkedinQuestions.process_select_question(label, element, user)
+                    LinkedinQuestions.process_select_question(label, elements, user)
             except:
                 print("undefined question type ")
                 continue

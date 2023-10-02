@@ -23,9 +23,12 @@ class Button(ABC):
         pass
 
     def fillSection(self, form):
-        headerfactory = HeaderFactory()
-        header = headerfactory.create_header(form)
-        header.fill(form=form, data=self.data)
+        try:
+            headerfactory = HeaderFactory()
+            header = headerfactory.create_header(form)
+            header.fill(form=form, data=self.data)
+        except:
+            print("error filling section header")
 
     def set_data(self, data):
         self.data = data

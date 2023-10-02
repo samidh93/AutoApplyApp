@@ -167,19 +167,18 @@ class ScreeningQuestionsHeader(Header):
         pass
 
 class AdditionalQuestionsHeader(Header):
-    header = "Additional Questions"
-    header_1 = "Additional"
+    headers = ["additional questions", "personal info", "additional"]
     def detect(self, form: WebElement):
         try:
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
             translated = googleTranslator.translate(header, dest='en').text.lower()
-            if header == self.header.lower() or header == self.header_1.lower():
-                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+            if translated in self.headers:
+                print("page header translated: ", translated )
                 return True
         except:
-            print(f"no {self.header} or {self.header_1} header found")
+            print(f"translated {translated} header not in headers")
             return False
 
     def fill(self,form, data:CandidateProfile):
@@ -224,13 +223,19 @@ class PrivacyPolicyHeader:
             print("no privacy policy to fill")
 
 class UnkownHeader(Header):
+    header = "unkown"
     def detect(self, form: WebElement):
-        # Logic to detect the Additional Info header's web element
-        pass
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
+            print("new header detected: ", header)
+            googleTranslator = Translator()
 
+        except:
+            print("no header found")
     def fill(self,form, data:CandidateProfile):
         # Logic to fill in Additional Info data:CandidateProfile
-        pass
+        print("filling unkown header")
 
 
 # Factory for creating headers
@@ -241,6 +246,6 @@ class HeaderFactory:
                    AdditionalQuestionsHeader(), PrivacyPolicyHeader()]
         for header in headers:
             if header.detect(form):
-                return header
+                return header # retunr header obj
         return UnkownHeader()
         #raise ValueError("No header detected")

@@ -13,6 +13,7 @@ from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
 from .linkedinElementsAbstract import LabelElement, InputElement, SpanElement
+from datetime import date
 
 class LinkedinUtils:
     def __init__(self) -> None:
@@ -56,14 +57,18 @@ class LinkedinUtils:
     @staticmethod
     def select_option( select_element, user_value):
         select = Select(select_element)
+        if user_value == "first":
+            print("selecting default first option: ", select.options[1].accessible_name)
+            select.select_by_visible_text(select.options[1].accessible_name)     
         if isinstance(select.options, Iterable):
             for option in select.options:
-                if user_value in option.accessible_name: # if user value is in any of the option
-                    select.select_by_visible_text(user_value)
+                if user_value in option.accessible_name.lower(): # if user value is in any of the option
+                    select.select_by_visible_text(option.accessible_name)
                     print("user option selected: ", select.first_selected_option.accessible_name)
                     return 
             # if user value (yes or no or any ) is not part of the option, select first option
-            select.select_by_visible_text(select.options[1])
+            print("selecting default first option: ", select.options[1].accessible_name)
+            select.select_by_visible_text(select.options[1].accessible_name)
 
 class LinkedinQuestions:
     def __init__(self) -> None:
@@ -76,10 +81,16 @@ class LinkedinQuestions:
         try:
             print("processing text question: ", label.text)
             label_translated:str = googleTranslator.translate(label.text, dest='en').text # translate qs to en
+            start_date_keywords = ["start date", "earliest", "notice period"]
             if "salary" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.desired_salary)
             elif "experience" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.years_experience)
+            elif any(keyword in label_translated.lower() for keyword in start_date_keywords):
+                LinkedinUtils.send_value(element, "in 2 months" )
+            elif "find out about us" in label_translated.lower():
+                LinkedinUtils.send_value(element, "linkedin" )
+
         except:
             print(f"unable to process {qs_type}") 
     @staticmethod
@@ -103,19 +114,24 @@ class LinkedinQuestions:
         qs_type= "select question"
         googleTranslator = Translator()
         try:
-            print("processing select question: ", label.text)
-            label_translated:str = googleTranslator.translate(label.text, dest='en').text # translate qs to en
+            print("processing select question: ", label.text.split('\n', 1)[0])
+            label_translated:str = googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower() # translate qs to en
             # handle questions that can be answered by yes or no
             if "do you" in label_translated.lower() or "have you" in label_translated.lower() or "are your" in label_translated.lower():
                 LinkedinUtils.select_option(element, "yes")
             # handle languages questions : basic , good etc.. 
-            if "how good" in label_translated.lower(): # this is meanted to expand to each languages "how good" + "english"
+            elif "how good" in label_translated.lower(): # this is meanted to expand to each languages "how good" + "english"
                 if "english" in label_translated.lower():
                     LinkedinUtils.select_option(element, user.skills.languages.get_level("en")) 
                 elif "german" in label_translated.lower():
                     LinkedinUtils.select_option(element, user.skills.languages.get_level("de")) 
             elif "visa" in label_translated.lower():
                 LinkedinUtils.select_option(element, user.visa_required)
+            elif "how did you" in label_translated.lower():
+                LinkedinUtils.select_option(element, "linkedin")
+            else:
+                LinkedinUtils.select_option(element, "first")
+
         except:
             print(f"unable to process {qs_type}") 
 
@@ -133,7 +149,7 @@ class LinkedinQuestions:
                         label = element.find_element(By.TAG_NAME, "label")
                         if not label.is_selected():
                             label.click()
-                            print(f"element {element.text} clicked successfully.")
+                            print(f"element {label.text} clicked successfully.")
                             return
         except Exception as e:
             print(f"unable to process {qs_type}") 

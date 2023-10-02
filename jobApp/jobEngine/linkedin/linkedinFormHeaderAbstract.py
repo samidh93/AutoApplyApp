@@ -34,9 +34,9 @@ class ContactInfoHeader(Header):
     def detect(self, form: WebElement):
         try:
             # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
                 print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
@@ -61,9 +61,9 @@ class ResumeHeader(Header):
 
     def detect(self, form: WebElement):
         try:
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
                 print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
@@ -89,9 +89,9 @@ class HomeAddressHeader(Header):
     def detect(self, form: WebElement):
         try:
             # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
                 print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
@@ -111,19 +111,75 @@ class HomeAddressHeader(Header):
         except:
             print("no home address to fill")
 
-class AdditionalQuestionsHeader(Header):
-    header = "Additional Questions"
+
+
+class WorkExperienceHeader(Header):
+    header = "Work experience"
 
     def detect(self, form: WebElement):
         try:
             # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
                 print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
             print(f"no {self.header} header found")
+            return False
+    # should be filled directly on platform by user
+    def fill(self,form, data:CandidateProfile):
+        pass
+
+class EducationHeader(Header):
+    header = "Education"
+
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+    # should be filled directly on platform by user
+    def fill(self,form, data:CandidateProfile):
+        pass
+
+class ScreeningQuestionsHeader(Header):
+    header = "Screening questions"
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+    # should be filled directly on platform by user
+    def fill(self,form, data:CandidateProfile):
+        pass
+
+class AdditionalQuestionsHeader(Header):
+    header = "Additional Questions"
+    header_1 = "Additional"
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
+            googleTranslator = Translator()
+            translated = googleTranslator.translate(header, dest='en').text.lower()
+            if header == self.header.lower() or header == self.header_1.lower():
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} or {self.header_1} header found")
             return False
 
     def fill(self,form, data:CandidateProfile):
@@ -145,9 +201,9 @@ class PrivacyPolicyHeader:
     def detect(self, form: WebElement):
         try:
             # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
                 print("page header translated: ", googleTranslator.translate(header, dest='en').text )
                 return True
         except:
@@ -166,59 +222,6 @@ class PrivacyPolicyHeader:
                     dict_Elems)
         except:
             print("no privacy policy to fill")
-
-class WorkExperienceHeader(Header):
-    header = "Work experience"
-
-    def detect(self, form: WebElement):
-        try:
-            # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
-            googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
-                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
-                return True
-        except:
-            print(f"no {self.header} header found")
-            return False
-    # should be filled directly on platform by user
-    def fill(self,form, data:CandidateProfile):
-        pass
-
-class EducationHeader(Header):
-    header = "Education"
-
-    def detect(self, form: WebElement):
-        try:
-            # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
-            googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
-                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
-                return True
-        except:
-            print(f"no {self.header} header found")
-            return False
-    # should be filled directly on platform by user
-    def fill(self,form, data:CandidateProfile):
-        pass
-
-class ScreeningQuestionsHeader(Header):
-    header = "Screening questions"
-    def detect(self, form: WebElement):
-        try:
-            # Find the <h3> element with class "t-16 t-bold".
-            header = form.find_element(By.CSS_SELECTOR, 'h3.t-16.t-bold').text
-            googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text == self.header:
-                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
-                return True
-        except:
-            print(f"no {self.header} header found")
-            return False
-    # should be filled directly on platform by user
-    def fill(self,form, data:CandidateProfile):
-        pass
 
 class UnkownHeader(Header):
     def detect(self, form: WebElement):

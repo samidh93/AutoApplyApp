@@ -65,12 +65,21 @@ class InputOptionsElements(Element):
     def find(self, element: WebElement):
         try:
             # Attempt to find the 'input' element inside the 'element' element
-            input_element = element.find_element(By.TAG_NAME, 'input')
-            value = input_element.get_attribute('value').strip()
-            return input_element
+            input_elements = element.find_elements(By.TAG_NAME, 'input')
+            #value = input_element.get_attribute('value').strip()
+            return input_elements
         except NoSuchElementException:
             print("Input element not found.")
 
+class CheckboxOptionsElements(Element):
+    def find(self, element: WebElement):
+        try:
+            # Attempt to find the 'input' element inside the 'element' element
+            checkbox_elements = element.find_elements(By.CSS_SELECTOR, '[data-test-text-selectable-option]')
+            #value = checkbox_element.get_attribute('value').strip()
+            return checkbox_elements
+        except NoSuchElementException:
+            print("options element not found.")
 
 class FieldsetElement(Element):
     def find(self, element: WebElement):
@@ -85,12 +94,16 @@ class FieldsetElement(Element):
 
     def handle(self, element: WebElement):
         label_elements_map = {}
+        legend = SpanElement()
+        inputs = CheckboxOptionsElements()
         try:
             # we have a set of fields (dialog or checkbox)
-            span_text: WebElement = SpanElement.find(element)
-            inputs_elems = InputOptionsElements.find(
-                element, span_text.text)
-            label_elements_map [span_text.text]= inputs_elems
+            # get the question as text
+            legend_text: WebElement = legend.find(element) 
+            # we have list of options, we collect them
+            elems = inputs.find(
+                element)
+            label_elements_map [legend_text]= elems
             return label_elements_map
         except:
             print("cant handle Fieldset")
@@ -100,7 +113,7 @@ class FieldsetElement(Element):
 class SpanElement(Element):
     def find(self, element: WebElement):
         try:
-            span_element = element.find_element(By.TAG_NAME, 'span')
+            span_element = element.find_element(By.TAG_NAME, 'legend')
             print("span text:", span_element.text.strip())
             return span_element
             # print(f"Label: {label}")

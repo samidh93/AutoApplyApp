@@ -63,9 +63,9 @@ class LinkedInEasyApplyFormHandler:
         if start_time is None:
             start_time = time.time()  # Record the start time
         elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        if elapsed_time >= 180:  # 180 seconds = 3 minutes
-            print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
-            return False
+        #if elapsed_time >= 180:  # 180 seconds = 3 minutes
+        #    print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
+        #    return False
         buttonfactory = ButtonFactory()
         try:
             button:Button = buttonfactory.create_button(form, self.driver, self.candidate)

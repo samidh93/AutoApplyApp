@@ -12,7 +12,7 @@ import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
-from .linkedinElementsAbstract import LabelElement, InputElement, FieldsetElement, SpanElement, SelectElement
+from .linkedinElementsAbstract import LabelElement, InputElement, FieldsetElement, SpanElement, SelectElement, CheckboxOptionsElements
 from .linkedinFunctions import LinkedinUtils, LinkedinQuestions
 # Abstract base class for Divss
 
@@ -171,8 +171,13 @@ class DivsHomeAddress(Divs):
         googleTranslator = Translator()
         for label, element in elements_dict.items():
             try:
-                if googleTranslator.translate(label.text, dest='en').text.lower() == 'city':
+                translated:str = googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower()
+                print("translated adress: ", translated)
+                if  translated== 'city':
                     LinkedinUtils.send_value(element, user.address)
+                    if not LinkedinUtils.choose_option_listbox(element, user.address):
+                        # just clean and pass
+                        element.clear()
                 else:
                     raise ValueError("Unsupported label: {}".format(label))
             except:
@@ -243,7 +248,7 @@ class DivsPrivacyPolicy(Divs):
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
                 By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
-            print("found divs with selection grouping")
+            print("found divs privacy policy")
             if divs != None:
                 return divs
         except NoSuchElementException:
@@ -256,7 +261,7 @@ class DivsPrivacyPolicy(Divs):
         label = LabelElement()
         for div in divs:
             try:
-                print("processing form fields")
+                print("processing form fieldset")
                 fieldset = field.find(div)
                 if fieldset is not None:
                     label_elements_map.update(field.handle(fieldset))
@@ -270,11 +275,13 @@ class DivsPrivacyPolicy(Divs):
 
     def select_privacy_policy(self, elements_dict: dict[WebElement]):
         googleTranslator = Translator()
-        for label, element in elements_dict.items():
+        for label, elements in elements_dict.items():
             try:
-                if googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == '?':
+                if 'PRIVACY POLICY'.lower() in googleTranslator.translate(label.text, dest='en').text.lower() :
                     # click accept the privacy policy
-                    LinkedinQuestions.process_checkbox_question(label,element, None)
+                    print("clicking privacy policy")
+                    LinkedinQuestions.process_checkbox_question(label,elements, None)
+                    return 
                 else:
                     raise ValueError("Unsupported label: {}".format(label))
             except:

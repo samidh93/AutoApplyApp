@@ -29,6 +29,20 @@ class LinkedinUtils:
         else:
             print("input type not recognized")
     @staticmethod
+    def choose_option_listbox(element: WebElement, value:str):
+        try:
+            options = element.find_elements(By.XPATH, '//div[@role="option"]')
+            for opt in options:
+                print(f"user value: {value.lower()}, option value: {opt.text.lower()}")
+                if value.lower() in opt.text.lower():
+                    opt.click()
+                    return True
+        except:
+            print("no auto fill option found ")
+            return False
+            
+        
+    @staticmethod
     def click_option( element: WebElement, value: str):
         element_type = element.get_attribute("type")
         if element_type == "radio":
@@ -107,25 +121,20 @@ class LinkedinQuestions:
 
 
     @staticmethod
-    def process_checkbox_question( label:WebElement, element: WebElement, user:CandidateProfile):
+    def process_checkbox_question( label:WebElement, elements: WebElement, user:CandidateProfile):
         qs_type= "checkbox question"
         googleTranslator = Translator()
-        spanObj = SpanElement()
         try:
-            spanElem:WebElement = spanObj.find(element)
-            print("checkbox question: ", spanElem.text.strip() )
-            # random value in the middle
-            # Find the associated label using its attributes (for or id) or relationship (preceding-sibling, following-sibling, etc.)
-            input_options = element.find_elements(By.TAG_NAME, "input")
-            label_options = element.find_elements(By.TAG_NAME, "label")
-            for opt in input_options:
-                for label in label_options:
-                    print("radio option: ", label.text)
-                    if label.text.lower() == googleTranslator.translate("I Agree Terms & Conditions", dest='en').text.lower():
-                        if not opt.is_selected():
-                            opt.click()
-                            print(f"Label {label.text} clicked successfully.")
-
+            print("checkbox question: ", label.text.strip() )
+            for element in elements:
+                #for opt_label in label_options:
+                    print("checkbox option: ", element.text)
+                    if element.text.lower() == googleTranslator.translate("I Agree Terms & Conditions", dest='en').text.lower():
+                        label = element.find_element(By.TAG_NAME, "label")
+                        if not label.is_selected():
+                            label.click()
+                            print(f"element {element.text} clicked successfully.")
+                            return
         except Exception as e:
             print(f"unable to process {qs_type}") 
 

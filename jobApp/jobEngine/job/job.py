@@ -1,3 +1,6 @@
+from urllib.parse import urlparse
+import re
+
 class Job:
     def __init__(self, id, job_id, link,  job_title, job_location, company_name, num_applicants, posted_date,
                   job_description=None, company_emails=None, job_poster_name=None,  application_type=None, applied=False):
@@ -16,6 +19,18 @@ class Job:
         self.job_poster_name = job_poster_name # the name of the recruiter
         self.application_type = application_type # internal or external
         self.applied = applied # False 
+        self.platform = self.extract_platform(self.link)
+
+
+    def extract_platform(self, url):
+            # Regular expression pattern to match the domain (without top-level domain)
+            pattern = r"https?://(?:www\.)?([^/.]+)(?:\.\w+)+"
+            # Use re.search to find the domain (without top-level domain) in the URL
+            match = re.search(pattern, url)
+            if match:
+                return match.group(1)
+            else:
+                return None
 
     def to_dict(self):
         return {

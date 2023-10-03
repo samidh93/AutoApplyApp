@@ -17,6 +17,11 @@ class PathManager:
 
 # Example usage:
 if __name__ == "__main__":
-    path_manager = PathManager()
-    path_manager.add_project_root_to_sys_path()
-    path_manager.show_sys_path()
+    #path_manager = PathManager()
+    #path_manager.add_project_root_to_sys_path()
+    #path_manager.show_sys_path()import os
+    import multiprocessing
+    import os
+    num_cores = os.cpu_count()
+    
+    print(f"Number of CPU cores (threads) available: {num_cores}")

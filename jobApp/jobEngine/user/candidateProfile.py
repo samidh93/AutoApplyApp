@@ -6,9 +6,8 @@ import phonenumbers
 from phonenumbers import geocoder
 
 """
-    Candidate profile, Experiences, Educations, Skills
+Candidate profile, Experiences, Educations, Skills
 """
-
 
 class CandidateProfile:
     def __init__(self, resume_path, firstname, lastname, address, email, phone_number, limit, years_experience, desired_salary, visa_required,  educations:dict={}, experiences:dict={}, skills:dict={} , **more):
@@ -31,9 +30,18 @@ class CandidateProfile:
         self.applications_limit = limit
         self.visa_required = visa_required
         self.desired_salary = desired_salary
+        self.summary = None # will be generated automaticly with each job
 
+    def generate_summary_for_job(self, job_title, company, platform, hiring_manager):
+        self.summary =  f"Dear {hiring_manager or 'Hiring Manager'},\n\n\ \
+            I am writing to express my keen interest in the {job_title} position at {company},\
+            as advertised on {platform}. With a deep passion for my work and an extensive record of achievements, \
+            I am enthusiastic about the opportunity to contribute my skills and drive to your dynamic team. \
+            I am eager to meet with you in person or online to discuss how my qualifications align with your needs.\n\n\
+            Sincerely,\n\
+            {self.firstname} {self.lastname}"
 
-
+        
     def extract_personal_infos_from_resume(self): #all in one call, maybe difficult to get
         request = "given the following personal informations, return data as json like ['firstname': 'xxx', 'lastname': 'xxx', 'address': 'xxx', 'email': 'xxx', 'phone_number':'xxx', 'linkedin': 'xxx' ] if any data is missing return empty value. no header personal infos is required.\n"
         full_qs = request + self.resume_text

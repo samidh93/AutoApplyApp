@@ -64,25 +64,27 @@ class DivsContactInfo(Divs):
         googleTranslator = Translator()
         for label, element in elements_dict.items():
             try:
-                if googleTranslator.translate(label.text, dest='en').text == 'First name':
+                if googleTranslator.translate(label.text, dest='en').text.lower() == 'first name':
                     LinkedinUtils.send_value(element, user.firstname)
                     print(f"firstname to send: {user.firstname}")
-                elif googleTranslator.translate(label.text, dest='en').text == 'Last name':
+                elif googleTranslator.translate(label.text, dest='en').text.lower() == 'last name':
                     LinkedinUtils.send_value(element, user.lastname)
                     print(f"lastname to send: {user.lastname}")
-                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Phone country code':
+                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower() == 'phone country code':
                     print("selecting user phone country code: ", user.phone_code)
                     LinkedinUtils.select_option(element, user.phone_code)
-                elif googleTranslator.translate(label.text, dest='en').text == 'Mobile phone number':
+                elif googleTranslator.translate(label.text, dest='en').text.lower() == 'mobile phone number':
                     LinkedinUtils.send_value(element, user.phone_number)
                     print(f"mobile to send: {user.phone_number}")
-                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text == 'Email address':
+                elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower() == 'email address':
                     print(f"selecting user email: {user.email}")
                     LinkedinUtils.select_option(element, user.email)
-                elif googleTranslator.translate(label.text, dest='en').text == 'City':
+                elif googleTranslator.translate(label.text, dest='en').text.lower() == 'city':
                     LinkedinUtils.send_value(element, user.address)
-                elif googleTranslator.translate(label.text, dest='en').text == 'Upload resume':
+                elif googleTranslator.translate(label.text, dest='en').text.lower() == 'upload resume':
                     LinkedinUtils.send_value(element, user.resume)
+                elif  googleTranslator.translate(label.text, dest='en').text.lower() == "summary":
+                    LinkedinUtils.send_value(element, user.summary)
                 else:
                     raise ValueError("Unsupported label: {}".format(label))
             except:

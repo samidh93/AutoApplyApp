@@ -79,34 +79,35 @@ class LinkedinQuestions:
         googleTranslator = Translator()
         qs_type= "text question"
         try:
-            print("processing text question: ", label.text)
             label_translated:str = googleTranslator.translate(label.text, dest='en').text # translate qs to en
+            print("processing translated text question: ", label_translated)
             start_date_keywords = ["start date", "earliest", "notice period"]
+            platform_keywords = ["aware of us", "find out about us"]
             if "salary" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.desired_salary)
             elif "experience" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.years_experience)
             elif any(keyword in label_translated.lower() for keyword in start_date_keywords):
                 LinkedinUtils.send_value(element, "in 2 months" )
-            elif "find out about us" in label_translated.lower():
+            elif any(keyword in label_translated.lower() for keyword in platform_keywords):
                 LinkedinUtils.send_value(element, "linkedin" )
 
         except:
             print(f"unable to process {qs_type}") 
     @staticmethod
-    def process_radio_question( label:WebElement, element: WebElement, user:CandidateProfile ):
+    def process_radio_question( label:WebElement, elements: WebElement, user:CandidateProfile ):
         googleTranslator = Translator()
-        spanObj = SpanElement()
         qs_type= "radio question"
         try:
-            spanElem:WebElement = spanObj.find(element)
-            print("processing radio question: ", spanElem.text.strip())
-            input_options = element.find_elements(By.TAG_NAME, "input")
-            for opt in input_options:
-                radio_value= opt.get_attribute("value").lower()
-                print("radio option: ", radio_value)
-                if radio_value == googleTranslator.translate("yes", dest='en').text:
-                    opt.click()
+            print("processing radio question: ", label.text.strip())
+            for element in elements:
+                print("radio option: ", element.text)
+                if element.text.lower() == googleTranslator.translate("yes", dest='en').text.lower():
+                    label = element.find_element(By.TAG_NAME, "label")
+                    if not label.is_selected():
+                        label.click()
+                        print(f"element {element.text} clicked successfully.")
+                        return
         except:
             print(f"unable to process {qs_type}") 
     @staticmethod
@@ -142,6 +143,13 @@ class LinkedinQuestions:
         googleTranslator = Translator()
         try:
             print("checkbox question: ", label.text.strip() )
+            # if only one checkbox to click, just fucking click it if is not already clicked
+            if len(elements) == 1:
+                label = elements[0].find_element(By.TAG_NAME, "label")
+                if not label.is_selected():
+                    label.click()
+                    print(f"element {elements[0].text} clicked successfully.")
+                    return 
             for element in elements:
                 #for opt_label in label_options:
                     print("checkbox option: ", element.text)
@@ -149,7 +157,7 @@ class LinkedinQuestions:
                         label = element.find_element(By.TAG_NAME, "label")
                         if not label.is_selected():
                             label.click()
-                            print(f"element {label.text} clicked successfully.")
+                            print(f"element {element.text} clicked successfully.")
                             return
         except Exception as e:
             print(f"unable to process {qs_type}") 

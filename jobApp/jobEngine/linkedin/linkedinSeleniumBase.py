@@ -102,8 +102,15 @@ class LinkedinSeleniumBase:
             'start': self.start_pos
         }
 
-    def login_linkedin(self, save_cookies=False):
+    def login_linkedin(self, save_cookies=True):
         """This function logs into your personal LinkedIn profile"""
+        # try to load cookies from file if they exist
+        try:
+            self.driver.get(self.base_url)
+            self._load_cookies()
+            return self.driver  
+        except:
+            print("cookies not found or could ne be loaded")
         # go to the LinkedIn login url
         try: 
             self.driver.get(self.login_url)
@@ -119,14 +126,16 @@ class LinkedinSeleniumBase:
             current_url = self.driver.current_url
             baseRedirectUrl = "https://www.linkedin.com/feed/?trk=guest_homepage-basic_nav-header-signin"
             if not self.is_url_subset(current_url, baseRedirectUrl):
-                raise LoginException(f"login attempt failed, redirection not as expected url")
+                print("wrong credentials or robot check")
+                #raise LoginException(f"login attempt failed, redirection not as expected url")
+                time.sleep(10)
             if save_cookies:
                     self._save_cookies()
             return self.driver
 
         except LoginException as e:
             logger.error(f"{e}")
-            self.driver.quit()
+            #self.driver.quit()
             raise # reraise the exception to the caller
 
 
@@ -151,21 +160,28 @@ class LinkedinSeleniumBase:
     def _save_cookies(self, cookies_file='jobApp/secrets/cookies.json'):
         # Save the cookies to a file
         cookies = self.driver.get_cookies()
+        self.saved_cookies = cookies
         # print(cookies)
-        self.saved_cookies = cookies_file
+        self.saved_cookies_file = cookies_file
         # save the cookies to a JSON file
-        with open(self.saved_cookies, 'w') as f:
+        with open(self.saved_cookies_file, 'w') as f:
             json.dump(cookies, f)
 
     def _load_cookies(self, cookies_file='jobApp/secrets/cookies.json'):
-        # load the cookies from the JSON file
-        with open(cookies_file, 'r') as f:
-            cookies = json.load(f)
-        # add the cookies to the webdriver
-        for cookie in cookies:
-            self.driver.add_cookie(cookie)
-        # Refresh the page to apply the cookie
-        self.driver.refresh()
+        try:
+            # load the cookies from the JSON file
+            with open(cookies_file, 'r') as f:
+                cookies = json.load(f)
+            self.saved_cookies= cookies
+            # add the cookies to the webdriver
+            for cookie in cookies:
+                self.driver.add_cookie(cookie)
+            # Refresh the page to apply the cookie
+            self.driver.refresh()
+        except Exception as e:
+            print("error cookies: ", e)
+            raise
+
 
     def is_url_subset(self, url, base_url):
         # Parse the URLs

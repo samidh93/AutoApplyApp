@@ -10,7 +10,8 @@ from ..config.config import BaseConfig, UserConfig, AppConfig
 import concurrent.futures
 import os
 import multiprocessing
-
+from selenium import webdriver
+from ..linkedin.linkedinSeleniumBase import LinkedinSeleniumBase
 def print_progress_bar(iteration, total, bar_length=50):
     percent = "{:.1f}".format(100 * (iteration / float(total)))
     filled_length = int(bar_length * iteration // total)
@@ -18,44 +19,49 @@ def print_progress_bar(iteration, total, bar_length=50):
     print(f"Progress: [{bar}] {percent}% Complete", end="\r")
 
 class Application(ABC):
-    def __init__(self, candidate: CandidateProfile, csvJobsFile=BaseConfig.get_data_path()) -> None:
+    def __init__(self, candidate: CandidateProfile, csvJobsFile=BaseConfig.get_data_path(), linkedin_data=None) -> None:
+        self.linkedin_data = linkedin_data
         self.candidate_profile = candidate
         self.csv_file = csvJobsFile
         self.jobs = self.load_jobs_from_csv()
 
     @abstractmethod
-    def ApplyForJob(self, job:Job):
+    def ApplyForJob(self, job:Job, driver:webdriver, cookies:list):
         pass
+
+    def set_linkedin_data(self, linkedin_data):
+        self.linkedin_data = linkedin_data
 
     def ApplyForAll(self, application_type="internal" or "external", application_limit=10):
         print("applying for jobs from the csv file")
         print("candidate applications limit: ", application_limit)
+        # login task here
+        baseObj = LinkedinSeleniumBase(self.linkedin_data)
+        baseObj.login_linkedin(save_cookies=True)
+        self.cookies = baseObj.saved_cookies
 
         # Create a ThreadPoolExecutor with a specified number of threads
         num_threads = os.cpu_count()  # You can adjust this based on your system's capabilities
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
             futures = []
-
             for i, j in enumerate(self.jobs):
                 print_progress_bar(i, len(self.jobs) + 1)
                 if j.applied:
-                    # We already applied for this job
+                    # we already applied for this job
+                    print(f"skipping applied job: {j.job_id}")
                     continue
-
                 if application_type == j.application_type:
                     print(f"\n################ applying for job number {j.id} ##################\n")
                     self.candidate_profile.generate_summary_for_job(job_title=j.job_title, company=j.company_name, platform=j.platform, hiring_manager=j.job_poster_name)
                     # Submit the job application task to the ThreadPoolExecutor
-                    futures.append(executor.submit(self.ApplyForJob, j))
-                    futures.append(executor.submit(self.update_job_status, j))
-
+                    driver = LinkedinSeleniumBase(self.linkedin_data).driver
+                    futures.append(executor.submit(self.ApplyForJob, j, driver, self.cookies))
+                    #futures.append(executor.submit(self.update_job_status, j))
                 else:
                     print(f"Ignoring {j.application_type}")
                     continue
-
             # Wait for all submitted tasks to complete
             concurrent.futures.wait(futures)
-
         print("\nApplying Task completed!")
 #    # add thread for each job application
 #    def ApplyForAll(self, application_type = "internal" or "external", application_limit=10):
@@ -124,15 +130,30 @@ class Application(ABC):
             writer.writeheader()
             writer.writerows(job_data)
             flocker.unlock(file)
-    
-    def update_job_status(self, job:Job):
+
+
+    def update_job_status(self, job: Job):
         flocker = FileLocker()
-        print("updating job status in csv file")
-        with open(self.csv_file, mode='w',newline='',  encoding='utf-8' ) as file:
-            flocker.lockForWrite(file)
+
+        print("Updating job status in CSV file")
+
+        # Open the file for reading
+        with open(self.csv_file, mode='r', newline='', encoding='utf-8') as file:
+            flocker.lockForRead(file)
             reader = csv.DictReader(file)
             job_data = [row for row in reader]
-            flocker.unlock(file)
-            for row in job_data:
-                if row['job_id'] == str(job.job_id):
-                    row['applied'] = job.applied
+
+        # Perform updates on job_data
+        for row in job_data:
+            if row['job_id'] == str(job.job_id):
+                row['applied'] = job.applied
+
+        # Reopen the file for writing
+        with open(self.csv_file, mode='w', newline='', encoding='utf-8') as file:
+            flocker.lockForWrite(file)
+            writer = csv.DictWriter(file, fieldnames=reader.fieldnames)
+            writer.writeheader()
+            writer.writerows(job_data)
+
+        # Unlock the file after writing
+        flocker.unlock(file)

@@ -6,12 +6,13 @@ from ..linkedin.linkedinEasyApplyForm import LinkedInEasyApplyFormHandler
 from ..linkedin.loginSessionLinkedin import LoginSessionLinkedCreator
 from deprecated import deprecated
 import threading
+from selenium import webdriver
 
 class EasyApplyApplication(Application):
     def __init__(self, candidate_profile: CandidateProfile,  csvJobsFile='jobApp/data/jobs.csv', linkedinData=None):
+        super().__init__(candidate=candidate_profile, csvJobsFile=csvJobsFile, linkedin_data=linkedinData)
         self.candidate_profile = candidate_profile
         self.type = 'Easy Apply'
-        super().__init__(candidate=candidate_profile, csvJobsFile=csvJobsFile)
         self.pid_login = None
         self.login_task_finished = threading.Event()
         self.login_task_killed = threading.Event()
@@ -39,16 +40,21 @@ class EasyApplyApplication(Application):
             print("terminating login thread ")
             self.login_task_killed.set()
         
-    def ApplyForJob(self, job:Job):
+    def ApplyForJob(self, job:Job, driver:webdriver, cookies:list ):
         applied = False
         print(f"sending easy application for {job.job_title} at {job.company_name} in {job.job_location}")
-        applied = self.easyApplyFormObj.applyForJob(job.link)
-        if applied:
-            job.setJobApplied(True) # applied for job
-            print(f"set job applied {job.applied}")
-        else:
-            job.setJobApplied(False) # not applied for job
-            print(f"set job applied {job.applied}")      
+        try:
+            applied = self.easyApplyFormObj.applyForJob(job.link,driver, cookies)
+            driver.quit()
+            if applied:
+                job.setJobApplied(True) # applied for job
+                print(f"is job applied: {job.applied}")
+                self.update_job_status(job=job)
+            else:
+                job.setJobApplied(False) # not applied for job
+                print(f"is job applied: {job.applied}")    
+        except Exception as E:
+            print(f"error {E} applying to job: {job.job_id}")
 
     def ApplyForAll(self):
         return super().ApplyForAll("internal", application_limit=self.candidate_profile.applications_limit)

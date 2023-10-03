@@ -40,23 +40,20 @@ class LinkedInEasyApplyFormHandler:
         #    return False
         # open job url
         self.get_the_url(job_link, driver)  # get the url form the job
-        # return true if job was success or already applied, false if job not found, deleted or can't apply
+        # return true if job was success or already applied
         if self.is_application_submitted(driver):
             return True
-        #if self.is_applications_closed(): # we need new variable to check if applications closed: either by number of applicants or anything else 
-        #    return False
-        self.clickApplyPage(driver)  # try to click apply button: retry when not clicked
-        if not self.button_apply_clicked:
-            self.clickApplyPage(driver)
-        if not self.button_apply_clicked:
+        # continue if is not submitted
+        # wait for the click button to appear
+        if not self.clickApplyPage(driver): 
             return False
-        # detect form page type: 
-        form = self.find_application_form(driver)  # try to find the form
-        #if not self._detect_form_page_type(self.form, start_time):
-        #    return False
-        #self.button_apply_clicked = False
-        #return True
-        self.handleFormPage(form, start_time)
+        # return false if button is not clicked
+        # find the form
+        form = self.find_application_form(driver)  
+        # handle form page
+        if not self.handleFormPage(form, start_time):
+            # error during apply job 
+            return False
 
     ####### Detect PAge #############
     def handleFormPage(self, form: WebElement, start_time=None, driver:webdriver=None):
@@ -74,6 +71,7 @@ class LinkedInEasyApplyFormHandler:
             return self.handleFormPage(form, start_time)
         except ValueError as E:
             print("error: ", str(E))
+            return False
 
     ###### load links from csv file ########
     def load_links_from_csv(self):
@@ -132,13 +130,14 @@ class LinkedInEasyApplyFormHandler:
         try:
             print("try clicking button easy apply")
             # Wait for the button element to be clickable
-            button:WebElement = WebDriverWait(driver, 5).until(
+            button:WebElement = WebDriverWait(driver, 20).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )
             # button = driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
             button.click()
             self.button_apply_clicked = True
+            return True
             print("button apply clicked")
         # if already applied or not found
         except:
@@ -151,10 +150,11 @@ class LinkedInEasyApplyFormHandler:
         # click on the easy apply button, skip if already applied to the position
         try:
             # Wait for the timeline entries to load
-            submitted = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
+            submitted = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
             print(submitted.text.lower())
             if 'submitted resume' in submitted.text.lower() :
                 print("application submitted")
+                self.resume_submitted = True
                 return True
         except:
             print("submitted entry not found")
@@ -162,7 +162,7 @@ class LinkedInEasyApplyFormHandler:
     def is_applications_closed(self, driver:webdriver):
         try:
             # Wait for the error element to load
-            WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
+            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
             error_element = driver.find_element(By.CLASS_NAME, 'jobs-details-top-card__apply-error')
             error_message = error_element.find_element(By.CLASS_NAME, 'artdeco-inline-feedback__message').text.strip()
             if "No longer accepting applications" in error_message:

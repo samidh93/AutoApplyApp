@@ -36,15 +36,16 @@ class Application(ABC):
 
     def ApplyForAll(self, application_type="internal" or "external", application_limit=10):
         print("applying for jobs from the csv file")
-        self.jobs = self.jobs[:10]
+        #self.jobs = self.jobs[:10]
         print("candidate applications limit: ", application_limit)
         self.get_applied_jobs_count()
         print("number of applied jobs found: ", self.jobs_applied)
         print("remainig jobs to apply for: ", len(self.jobs)- self.jobs_applied)
         # login task here
         baseObj = LinkedinSeleniumBase(self.linkedin_data)
-        baseObj.login_linkedin(save_cookies=True)
+        log_driver = baseObj.login_linkedin(save_cookies=True)
         self.cookies = baseObj.saved_cookies
+        log_driver.quit()
         # Create a ThreadPoolExecutor with a specified number of threads
         num_threads = 4  # we keep only 4 due to some issues
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:

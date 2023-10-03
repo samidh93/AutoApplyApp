@@ -1,4 +1,4 @@
-from ..application.applicationAbstract import Application
+from ..application.applicationAbstract import Application, print_progress_bar
 from ..job.job import Job
 from ..user.candidateProfile import CandidateProfile
 from ..utils.processHandler import ProcessHandler
@@ -7,7 +7,7 @@ from ..linkedin.loginSessionLinkedin import LoginSessionLinkedCreator
 from deprecated import deprecated
 import threading
 from selenium import webdriver
-
+import time
 class EasyApplyApplication(Application):
     def __init__(self, candidate_profile: CandidateProfile,  csvJobsFile='jobApp/data/jobs.csv', linkedinData=None):
         super().__init__(candidate=candidate_profile, csvJobsFile=csvJobsFile, linkedin_data=linkedinData)
@@ -45,7 +45,6 @@ class EasyApplyApplication(Application):
         print(f"sending easy application for {job.job_title} at {job.company_name} in {job.job_location}")
         try:
             applied = self.easyApplyFormObj.applyForJob(job.link,driver, cookies)
-            driver.quit()
             if applied:
                 job.setJobApplied(True) # applied for job
                 print(f"is job applied: {job.applied}")
@@ -53,8 +52,15 @@ class EasyApplyApplication(Application):
             else:
                 job.setJobApplied(False) # not applied for job
                 print(f"is job applied: {job.applied}")    
+            
         except Exception as E:
             print(f"error {E} applying to job: {job.job_id}")
+        finally:
+        # Update the progress bar dynamically
+            with self.lock:
+                self.completed_jobs += 1
+                print_progress_bar(self.completed_jobs, len(self.jobs)-self.jobs_applied)
+            driver.quit()
 
     def ApplyForAll(self):
         return super().ApplyForAll("internal", application_limit=self.candidate_profile.applications_limit)

@@ -151,12 +151,14 @@ class LinkedInEasyApplyFormHandler:
         # click on the easy apply button, skip if already applied to the position
         try:
             # Wait for the timeline entries to load
-            submitted = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'li.post-apply-timeline__entity.t-14')))
-            if submitted.text.lower() == 'application submitted':
+            submitted = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
+            print(submitted.text.lower())
+            if 'submitted resume' in submitted.text.lower() :
+                print("application submitted")
                 return True
         except:
+            print("submitted entry not found")
             return False
-
     def is_applications_closed(self, driver:webdriver):
         try:
             # Wait for the error element to load

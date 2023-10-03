@@ -28,7 +28,7 @@ class Application(ABC):
         self.lock = threading.Lock()  # Create a lock for thread-safe progress updates
 
     @abstractmethod
-    def ApplyForJob(self, job:Job, driver:webdriver, cookies:list):
+    def ApplyForJob(self, job:Job,  cookies:list):
         pass
 
     def set_linkedin_data(self, linkedin_data):
@@ -46,7 +46,7 @@ class Application(ABC):
         baseObj.login_linkedin(save_cookies=True)
         self.cookies = baseObj.saved_cookies
         # Create a ThreadPoolExecutor with a specified number of threads
-        num_threads = 2  # we keep only 4 due to some issues
+        num_threads = 4  # we keep only 4 due to some issues
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
             self.completed_jobs = 0  # To keep track of completed jobs
             futures = []
@@ -59,8 +59,7 @@ class Application(ABC):
                     #print(f"\n################ applying for job number {j.id} ##################\n")
                     self.candidate_profile.generate_summary_for_job(job_title=j.job_title, company=j.company_name, platform=j.platform, hiring_manager=j.job_poster_name)
                     # Submit the job application task to the ThreadPoolExecutor
-                    driver = LinkedinSeleniumBase(self.linkedin_data).driver
-                    futures.append(executor.submit(self.ApplyForJob, j, driver, self.cookies))
+                    futures.append(executor.submit(self.ApplyForJob, j, self.cookies))
                 else:
                     print(f"Ignoring {j.application_type}")
                     continue

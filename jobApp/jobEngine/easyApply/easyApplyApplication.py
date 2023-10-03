@@ -8,6 +8,8 @@ from deprecated import deprecated
 import threading
 from selenium import webdriver
 import time
+from ..linkedin.linkedinSeleniumBase import LinkedinSeleniumBase
+
 class EasyApplyApplication(Application):
     def __init__(self, candidate_profile: CandidateProfile,  csvJobsFile='jobApp/data/jobs.csv', linkedinData=None):
         super().__init__(candidate=candidate_profile, csvJobsFile=csvJobsFile, linkedin_data=linkedinData)
@@ -40,18 +42,19 @@ class EasyApplyApplication(Application):
             print("terminating login thread ")
             self.login_task_killed.set()
         
-    def ApplyForJob(self, job:Job, driver:webdriver, cookies:list ):
+    def ApplyForJob(self, job:Job, cookies:list ):
         applied = False
+        driver = LinkedinSeleniumBase(self.linkedin_data).driver
         print(f"sending easy application for {job.job_title} at {job.company_name} in {job.job_location}")
         try:
             applied = self.easyApplyFormObj.applyForJob(job.link,driver, cookies)
             if applied:
                 job.setJobApplied(True) # applied for job
-                print(f"is job applied: {job.applied}")
+                print(f"is job success applied: {job.applied}")
                 self.update_job_status(job=job)
             else:
                 job.setJobApplied(False) # not applied for job
-                print(f"is job applied: {job.applied}")    
+                print(f"is job success applied: {job.applied}")    
             
         except Exception as E:
             print(f"error {E} applying to job: {job.job_id}")

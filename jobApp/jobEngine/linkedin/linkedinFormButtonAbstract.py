@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, NoSuchElementException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
@@ -36,26 +36,27 @@ class Button(ABC):
 
 # Concrete button classes
 class SubmitButton(Button):
-    def detect(self, form: WebElement, driver: webdriver.Remote):
+    button_name = "Submit"
+    def detect(self, form: WebElement, driver):
         # Find the button using its aria-label attribute
         try:
             # Wait for the button to be clickable or visible
-            wait = WebDriverWait(driver, 1)
-            self.button:WebElement = wait.until(EC.element_to_be_clickable(
+            wait = WebDriverWait(driver, 3)
+            self.button:WebElement = wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//span[text()='Submit application']")))
-            # Scroll to the button to ensure it's in view
+            ## Scroll to the button to ensure it's in view
             driver.execute_script("arguments[0].scrollIntoView();", self.button)
             print("page form with submit detected")
             return True
         except:
-            # Handle the case when 'select' element is not found
-            print("Submit button element not found.")
+            print("Submit button element not found" )
             return False
     
     def click(self):
         # click the submit page button
         try:
             self.button.click()
+            print(f"button {self.button_name} clicked")
             self.SubmitClicked = True
             return True
         except:
@@ -66,6 +67,7 @@ class SubmitButton(Button):
 
 
 class ReviewButton(Button):
+    button_name = "Review"
     def detect(self, form: WebElement, driver):
         # Find the button using its aria-label attribute
         try:
@@ -84,6 +86,7 @@ class ReviewButton(Button):
         try:
             # Click the button
             self.button.click()
+            print(f"button {self.button_name} clicked")
             self.ReviewClicked = True
             return True
         except:
@@ -93,6 +96,8 @@ class ReviewButton(Button):
             return False
 
 class NextButton(Button):
+    button_name = "Next"
+
     def detect(self, form: WebElement, driver):
         # Find the button using its aria-label attribute
         try:
@@ -110,6 +115,7 @@ class NextButton(Button):
         try:
             # Click the button
             self.button.click()
+            print(f"button {self.button_name} clicked")
             self.nextClicked = True
             return True
         except :

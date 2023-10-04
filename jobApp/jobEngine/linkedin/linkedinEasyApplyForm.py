@@ -51,7 +51,7 @@ class LinkedInEasyApplyFormHandler:
         # find the form
         form = self.find_application_form(driver)  
         # handle form page
-        if not self.handleFormPage(form, start_time):
+        if not self.handleFormPage(form, start_time, driver=driver):
             # error during apply job 
             return False
 
@@ -68,7 +68,10 @@ class LinkedInEasyApplyFormHandler:
             button:Button = buttonfactory.create_button(form, driver, self.candidate)
             button.fillSection(form)
             button.click()
-            return self.handleFormPage(form, start_time)
+            # submit exit condition
+            if hasattr(button, 'SubmitClicked') and getattr(button, 'SubmitClicked') is True:
+                return True
+            return self.handleFormPage(form, start_time, driver=driver)
         except ValueError as E:
             print("error: ", str(E))
             return False
@@ -125,20 +128,24 @@ class LinkedInEasyApplyFormHandler:
 
 
     ####### Click Button Apply #########
-    def clickApplyPage(self, driver:webdriver):
+    def clickApplyPage(self, driver:webdriver.Chrome):
         # click on the easy apply button, skip if already applied to the position
         try:
+            # simulate click to interact
+            element = "t-24.t-bold.job-details-jobs-unified-top-card__job-title"
+            dummy_clicker = driver.find_element(By.CLASS_NAME, element)
+            dummy_clicker.click()
             print("try clicking button easy apply")
             # Wait for the button element to be clickable
             button:WebElement = WebDriverWait(driver, 20).until(
-                EC.element_to_be_clickable(
+                EC.visibility_of_element_located(
                     (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )
             # button = driver.find_element(By.XPATH, "//span[@class='artdeco-button__text' and text()='Easy Apply']")
             button.click()
             self.button_apply_clicked = True
+            print("button easy apply clicked")
             return True
-            print("button apply clicked")
         # if already applied or not found
         except:
             print('easy apply job button is not found, skipping')
@@ -150,7 +157,7 @@ class LinkedInEasyApplyFormHandler:
         # click on the easy apply button, skip if already applied to the position
         try:
             # Wait for the timeline entries to load
-            submitted = WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
+            submitted = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
             print(submitted.text.lower())
             if 'submitted resume' in submitted.text.lower() :
                 print("application submitted")
@@ -159,10 +166,11 @@ class LinkedInEasyApplyFormHandler:
         except:
             print("submitted entry not found")
             return False
+        
     def is_applications_closed(self, driver:webdriver):
         try:
             # Wait for the error element to load
-            WebDriverWait(driver, 20).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
+            WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
             error_element = driver.find_element(By.CLASS_NAME, 'jobs-details-top-card__apply-error')
             error_message = error_element.find_element(By.CLASS_NAME, 'artdeco-inline-feedback__message').text.strip()
             if "No longer accepting applications" in error_message:

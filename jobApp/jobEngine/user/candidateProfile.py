@@ -22,11 +22,11 @@ class CandidateProfile:
         self.years_experience = years_experience
         self.firstname = firstname
         self.lastname = lastname
-        self.address = address
+        self.address = Address(address=address) # pass json object 
         self.email = email
         self.phone_number = phone_number
-        self.country_code,self.country_name = PhoneCodeExtractor.extract_country_code_name(self.phone_number)
-        self.phone_code = "Germany (+49)"
+        self.country_code, self.country_name = PhoneCodeExtractor.extract_country_code_name(self.phone_number)
+        self.phone_code = f"{self.country_name} ({self.country_code})"
         self.applications_limit = limit
         self.visa_required = visa_required
         self.desired_salary = desired_salary
@@ -119,8 +119,11 @@ class CandidateProfile:
         skills_obj = Skills(infos_data['skills']['Software'], infos_data['skills']['Languages'])
         print(skills_obj.softwares, skills_obj.languages)
 
-
-
+class Address:
+    def __init__(self, address: dict):
+        self.street = address.get("street") 
+        self.city = address.get("city")
+        self.plz = address.get("plz")
 class IT:
     def __init__(self, what:str, level:str): # what= office, level=good, what c++, level=advanced
         self.what_it = what
@@ -134,7 +137,6 @@ class Languages:
         # Your code to process the dictionary goes here
         self.languages:[Language] = []
         for key, value in languages.items():
-            print(f"Key: {key}, Value: {value}")
             self.languages.append(Language(key, value))
 
     def get_level(self, what_lang):
@@ -148,7 +150,6 @@ class Softwares:
         # Your code to process the dictionary goes here
         self.softwares = []
         for key, value in softwares.items():
-            print(f"Key: {key}, Value: {value}")
             self.softwares.append(Language(key, value))
     def get_level(self, what_it):
         for soft in self.softwares:
@@ -174,7 +175,7 @@ class Skills:
     def __init__(self, skills:dict): 
         # Your code to process the dictionary goes here
         for key, value in skills.items():
-            print(f"Key: {key}, Value: {value}")
+            #print(f"Key: {key}, Value: {value}")
             if key=="Languages": # pass the value down to the class
                 self.languages = Languages(value)
             elif key == "Softwares":
@@ -230,10 +231,13 @@ class PhoneCodeExtractor:
             country_code = phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
             # Get country name
             country_name = geocoder.description_for_number(phone_number, "en")
+            print(f"country_code: {country_code}, country: {country_name}")
             return country_code, country_name
-        except phonenumbers.phonenumberutil.NumberParseException:
+        except phonenumbers.phonenumberutil.NumberParseException as E:
+            print("phone number error: ", str(E))
             return None, "Invalid phone number"
         except Exception as e:
+            print("phone number error: ", str(e))
             return None, str(e)
 
 if __name__ == "__main__":

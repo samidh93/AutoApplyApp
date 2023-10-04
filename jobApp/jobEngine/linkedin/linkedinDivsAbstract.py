@@ -27,8 +27,6 @@ class Divs(ABC):
         pass
 
 # Concrete Divs classes
-
-
 class DivsContactInfo(Divs):
     def find(self, form: WebElement):
         try:
@@ -77,7 +75,6 @@ class DivsContactInfo(Divs):
                     LinkedinUtils.send_value(element, user.phone_number)
                     print(f"mobile to send: {user.phone_number}")
                 elif googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower() == 'email address':
-                    print(f"selecting user email: {user.email}")
                     LinkedinUtils.select_option(element, user.email)
                 elif googleTranslator.translate(label.text, dest='en').text.lower() == 'city':
                     LinkedinUtils.send_value(element, user.address)
@@ -85,14 +82,15 @@ class DivsContactInfo(Divs):
                     LinkedinUtils.send_value(element, user.resume)
                 elif  googleTranslator.translate(label.text, dest='en').text.lower() == "summary":
                     LinkedinUtils.send_value(element, user.summary)
+                elif googleTranslator.translate(label.text, dest='en').text.lower() == "headline":
+                    #LinkedinUtils.send_value(element, user.summary)
+                    pass
                 else:
                     raise ValueError("Unsupported label: {}".format(label))
             except:
                 continue
 
 # Concrete Divs classes
-
-
 class DivsDocumentUpload(Divs):
     def find(self, form: WebElement):
         try:
@@ -136,8 +134,6 @@ class DivsDocumentUpload(Divs):
                 raise ValueError("Unsupported label: {}".format(label))
 
 # Concrete Divs classes
-
-
 class DivsHomeAddress(Divs):
     def find(self, form: WebElement):
         try:
@@ -176,18 +172,21 @@ class DivsHomeAddress(Divs):
                 translated:str = googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower()
                 print("translated adress: ", translated)
                 if  translated== 'city':
-                    LinkedinUtils.send_value(element, user.address)
-                    if not LinkedinUtils.choose_option_listbox(element, user.address):
+                    LinkedinUtils.send_value(element, user.address.city)
+                    time.sleep(1) # wait for the suggestion to appear
+                    if not LinkedinUtils.choose_option_listbox(element, user.address.city):
                         # just clean and pass
                         element.clear()
+                elif "street address" in translated :
+                    LinkedinUtils.send_value(element, user.address.street)
+                elif "postal code" in translated or "plz" in translated:
+                    LinkedinUtils.send_value(element, user.address.plz)
                 else:
                     raise ValueError("Unsupported label: {}".format(label))
             except:
                 continue
 
 ################## Most Unpredictable Part #################
-
-
 class DivsAdditionalQuestions(Divs):
     def find(self, form: WebElement):
         try:

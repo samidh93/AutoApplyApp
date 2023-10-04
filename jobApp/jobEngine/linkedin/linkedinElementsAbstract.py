@@ -34,20 +34,23 @@ class LabelElement(Element):
         label_elements_map = {}
         inputObj = InputElement()
         selectObj = SelectElement()
+        textAreaObj = TextAreaElement()
         try:
             input_elem = inputObj.find(div)
-            # text field
             if input_elem is not None:
                 print(f"added input element with label: {element.text}")
                 label_elements_map[element] = input_elem
-                # search for select options
-            else:
+        except:
+            try:
+                textarea_elem = textAreaObj.find(div)
+                if textarea_elem is not None:
+                    print(f"added text element with label: {element.text}")
+                    label_elements_map[element] = textarea_elem
+            except:
                 select_elem = selectObj.find(div)
                 if select_elem is not None:
                     print(f"added select element with label: {element.text}")
                     label_elements_map[element] = select_elem
-        except:
-            print("input element not handled")
         return label_elements_map
 
 class InputElement(Element):
@@ -60,6 +63,18 @@ class InputElement(Element):
             return input_element
         except NoSuchElementException:
             print("Input element not found.")
+            raise
+
+class TextAreaElement(Element):
+    def find(self, element: WebElement):
+        try:
+            # Attempt to find the 'TextArea' element inside the 'element' element
+            TextArea_element = element.find_element(By.TAG_NAME, 'textarea')
+            value = TextArea_element.get_attribute('value').strip()
+            print("TextArea value: ", value)
+            return TextArea_element
+        except NoSuchElementException:
+            print("TextArea element not found.")
 
 class InputOptionsElements(Element):
     def find(self, element: WebElement):

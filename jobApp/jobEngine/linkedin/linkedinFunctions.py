@@ -20,15 +20,20 @@ class LinkedinUtils:
         pass
     @staticmethod
     def send_value( element: WebElement, value: str):
-        element_type = element.get_attribute("type")
-        if element_type == "file":
-            print(f"sending file path: {value}")
-            element.send_keys(value)
-        elif element_type == "text":
-            element.clear()
-            element.send_keys(value)
-        else:
+        try:
+            element_type = element.get_attribute("type")
+            if element_type == "file":
+                print(f"sending file path: {value}")
+                element.send_keys(value)
+            elif element_type == "text":
+                element.clear()
+                element.send_keys(value)
+            else: #textarea
+                element.clear()
+                element.send_keys(value)       
+        except:
             print("input type not recognized")
+
     @staticmethod
     def choose_option_listbox(element: WebElement, value:str):
         try:

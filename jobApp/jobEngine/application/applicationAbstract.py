@@ -13,7 +13,7 @@ import multiprocessing
 from selenium import webdriver
 from ..linkedin.linkedinSeleniumBase import LinkedinSeleniumBase
 
-def print_progress_bar(completed_jobs, total_jobs, bar_length=100):
+def print_progress_bar(completed_jobs, total_jobs, bar_length=50):
     percent = "{:.1f}".format(100 * (completed_jobs / float(total_jobs)))
     filled_length = int(bar_length * completed_jobs // total_jobs)
     bar = "#" * filled_length + "-" * (bar_length - filled_length)

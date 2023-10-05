@@ -60,20 +60,20 @@ class LinkedinUtils:
                 if elem == value:
                     elem.click()
     @staticmethod
-    def select_option( select_element, user_value):
+    def select_option( select_element, user_value:str):
         select = Select(select_element)
         if user_value == "first":
-            print("selecting default first option: ", select.options[1].accessible_name)
+            print("no user data, selecting default first option: ", select.options[1].accessible_name)
             select.select_by_visible_text(select.options[1].accessible_name)     
         if isinstance(select.options, Iterable):
             for option in select.options:
-                if user_value in option.accessible_name.lower(): # if user value is in any of the option
+                if user_value.lower() in option.accessible_name.lower(): # if user value is in any of the option
                     select.select_by_visible_text(option.accessible_name)
                     print("user option selected: ", select.first_selected_option.accessible_name)
                     return 
                 # else: send user data and options to chatgpt and let it choose
             # if user value (yes or no or any ) is not part of the option, select first option
-            print("selecting default first option: ", select.options[1].accessible_name)
+            print("user data not found, selecting default first option: ", select.options[1].accessible_name)
             select.select_by_visible_text(select.options[1].accessible_name)
 
 class LinkedinQuestions:

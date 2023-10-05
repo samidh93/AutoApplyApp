@@ -54,6 +54,8 @@ class LinkedInEasyApplyFormHandler:
         if not self.handleFormPage(form, start_time, driver=driver):
             # error during apply job 
             return False
+        # return job applied true
+        return True
 
     ####### Detect PAge #############
     def handleFormPage(self, form: WebElement, start_time=None, driver:webdriver=None):
@@ -69,7 +71,8 @@ class LinkedInEasyApplyFormHandler:
             button.fillSection(form)
             button.click()
             # submit exit condition
-            if hasattr(button, 'SubmitClicked') and getattr(button, 'SubmitClicked') is True:
+            if button.submitted:
+                print("form submitted succefully")
                 return True
             return self.handleFormPage(form, start_time, driver=driver)
         except ValueError as E:

@@ -40,13 +40,12 @@ class SubmitButton(Button):
     def detect(self, form: WebElement, driver):
         # Find the button using its aria-label attribute
         try:
+            time.sleep(2)
             # Wait for the button to be clickable or visible
-            wait = WebDriverWait(driver, 3)
-            self.button:WebElement = wait.until(EC.presence_of_element_located(
-                (By.XPATH, "//span[text()='Submit application']")))
-            ## Scroll to the button to ensure it's in view
-            driver.execute_script("arguments[0].scrollIntoView();", self.button)
+            self.button = form.find_element(By.XPATH,  "//span[text()='Submit application']")
             print("page form with submit detected")
+            self.form = form
+            self.driver = driver
             return True
         except:
             print("Submit button element not found" )
@@ -55,6 +54,7 @@ class SubmitButton(Button):
     def click(self):
         # click the submit page button
         try:
+            self.driver.execute_script("arguments[0].scrollIntoView();", self.button)
             self.button.click()
             print(f"button {self.button_name} clicked")
             self.SubmitClicked = True
@@ -63,7 +63,13 @@ class SubmitButton(Button):
             # Handle the case when 'select' element is not found
             print("Submit button element not found.")
             self.SubmitClicked = False
-            return False
+            #return False
+        else:
+            self.form.submit()
+            print("form submitted")
+            self.SubmitClicked = True
+
+
 
 
 class ReviewButton(Button):
@@ -71,9 +77,9 @@ class ReviewButton(Button):
     def detect(self, form: WebElement, driver):
         # Find the button using its aria-label attribute
         try:
-            self.button = form.find_element(
-                By.XPATH, "//span[text()='Review']")
+            self.button = form.find_element(By.XPATH,  "//span[text()='Review']")
             print("page form with review detected")
+            self.driver = driver
             return True
         except:
             # Handle the case when 'next' element is not found
@@ -84,7 +90,7 @@ class ReviewButton(Button):
     def click(self):
         # Logic to click the Review button
         try:
-            # Click the button
+            self.driver.execute_script("arguments[0].scrollIntoView();", self.button)
             self.button.click()
             print(f"button {self.button_name} clicked")
             self.ReviewClicked = True
@@ -98,11 +104,12 @@ class ReviewButton(Button):
 class NextButton(Button):
     button_name = "Next"
 
-    def detect(self, form: WebElement, driver):
+    def detect(self, form: WebElement, driver:webdriver.Chrome):
         # Find the button using its aria-label attribute
         try:
             self.button = form.find_element(By.XPATH, "//span[text()='Next']")
             print("page form with next detected")
+            self.driver = driver
             return True
         except:
             # Handle the case when 'next' element is not found
@@ -113,7 +120,7 @@ class NextButton(Button):
     def click(self):
         # Logic to click the Next button
         try:
-            # Click the button
+            self.driver.execute_script("arguments[0].scrollIntoView();", self.button)
             self.button.click()
             print(f"button {self.button_name} clicked")
             self.nextClicked = True

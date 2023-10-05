@@ -124,10 +124,7 @@ class Address:
         self.street = address.get("street") 
         self.city = address.get("city")
         self.plz = address.get("plz")
-class IT:
-    def __init__(self, what:str, level:str): # what= office, level=good, what c++, level=advanced
-        self.what_it = what
-        self.it_level = level
+
 class Language:
     def __init__(self, what, level):# what= en, level=good
         self.what_lang = what
@@ -141,10 +138,16 @@ class Languages:
 
     def get_level(self, what_lang):
         for lang in self.languages:
-            if what_lang ==lang.what:
-                return lang.level
+            print("language: ", lang.what_lang)
+            print("level: ", lang.lang_level)
+            if what_lang ==lang.what_lang:
+                return lang.lang_level
         return None
 
+class IT:
+    def __init__(self, what:str, level:str): # what= office, level=good, what c++, level=advanced
+        self.what_it = what
+        self.it_level = level
 class Softwares:
     def __init__(self, softwares:dict) -> None:
         # Your code to process the dictionary goes here
@@ -153,8 +156,8 @@ class Softwares:
             self.softwares.append(Language(key, value))
     def get_level(self, what_it):
         for soft in self.softwares:
-            if what_it ==soft.what:
-                return soft.level
+            if what_it ==soft.what_it:
+                return soft.it_level
         return None
 # {"skills": 
 #   {"Languages":
@@ -228,7 +231,7 @@ class PhoneCodeExtractor:
             # Parse the phone number
             phone_number = phonenumbers.parse(mobile_number, None)
             # Extract country code
-            country_code = phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL)
+            country_code = phonenumbers.format_number(phone_number, phonenumbers.PhoneNumberFormat.INTERNATIONAL).split()[0]
             # Get country name
             country_name = geocoder.description_for_number(phone_number, "en")
             print(f"country_code: {country_code}, country: {country_name}")

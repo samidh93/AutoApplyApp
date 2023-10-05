@@ -71,6 +71,7 @@ class LinkedinUtils:
                     select.select_by_visible_text(option.accessible_name)
                     print("user option selected: ", select.first_selected_option.accessible_name)
                     return 
+                # else: send user data and options to chatgpt and let it choose
             # if user value (yes or no or any ) is not part of the option, select first option
             print("selecting default first option: ", select.options[1].accessible_name)
             select.select_by_visible_text(select.options[1].accessible_name)
@@ -122,19 +123,20 @@ class LinkedinQuestions:
         try:
             print("processing select question: ", label.text.split('\n', 1)[0])
             label_translated:str = googleTranslator.translate(label.text.split('\n', 1)[0], dest='en').text.lower() # translate qs to en
-            # handle questions that can be answered by yes or no
-            if "do you" in label_translated.lower() or "have you" in label_translated.lower() or "are your" in label_translated.lower():
-                LinkedinUtils.select_option(element, "yes")
             # handle languages questions : basic , good etc.. 
-            elif "how good" in label_translated.lower(): # this is meanted to expand to each languages "how good" + "english"
-                if "english" in label_translated.lower():
-                    LinkedinUtils.select_option(element, user.skills.languages.get_level("en")) 
-                elif "german" in label_translated.lower():
-                    LinkedinUtils.select_option(element, user.skills.languages.get_level("de")) 
+            if "english" in label_translated.lower():
+                    LinkedinUtils.select_option(element, user.skills.languages.get_level("english")) 
+            elif "german" in label_translated.lower():
+                    LinkedinUtils.select_option(element, user.skills.languages.get_level("german")) 
+            elif "experience" in label_translated.lower():
+                LinkedinUtils.select_option(element, user.years_experience)
             elif "visa" in label_translated.lower():
                 LinkedinUtils.select_option(element, user.visa_required)
             elif "how did you" in label_translated.lower():
                 LinkedinUtils.select_option(element, "linkedin")
+            # handle questions that can be answered by yes or no
+            elif "do you" in label_translated.lower() or "have you" in label_translated.lower() or "are your" in label_translated.lower():
+                LinkedinUtils.select_option(element, "yes")
             else:
                 LinkedinUtils.select_option(element, "first")
 

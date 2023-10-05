@@ -63,7 +63,7 @@ if __name__ == "__main__":
                 "plz": "10365"
             },
             "limit": "10",
-            "visa_required": "False",
+            "visa_required": "yes",
             "years_experience": "5",
             "desired_salary": "50000",
             "experiences":   [
@@ -83,7 +83,7 @@ if __name__ == "__main__":
             "skills":   {
                 "Languages":
                     {
-                        "english": "good",
+                        "english": "advanced",
                         "german": "basic"
                     },
                 "Softwares":

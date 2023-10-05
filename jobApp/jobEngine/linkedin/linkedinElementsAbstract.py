@@ -75,6 +75,7 @@ class TextAreaElement(Element):
             return TextArea_element
         except NoSuchElementException:
             print("TextArea element not found.")
+            raise
 
 class InputOptionsElements(Element):
     def find(self, element: WebElement):

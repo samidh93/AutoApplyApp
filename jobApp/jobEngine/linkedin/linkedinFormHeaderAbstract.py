@@ -222,6 +222,24 @@ class PrivacyPolicyHeader:
         except:
             print("no privacy policy to fill")
 
+class ReviewApplicationHeader:
+    header = "Review your application"
+
+    def detect(self, form: WebElement):
+        try:
+            # Find the <h3> element with class "t-16 t-bold".
+            header = form.find_element(By.CSS_SELECTOR, 'h3.t-18').text
+            googleTranslator = Translator()
+            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
+                print("page header translated: ", googleTranslator.translate(header, dest='en').text )
+                return True
+        except:
+            print(f"no {self.header} header found")
+            return False
+
+    def fill(self,form, data:CandidateProfile):
+        print("skipping header submit page")
+        pass
 class UnkownHeader(Header):
     header = "unkown"
     def detect(self, form: WebElement):
@@ -243,7 +261,7 @@ class HeaderFactory:
     def create_header(self, form: WebElement):
         headers = [ContactInfoHeader(), ResumeHeader(),HomeAddressHeader(),
                   EducationHeader(), WorkExperienceHeader(), ScreeningQuestionsHeader(),
-                   AdditionalQuestionsHeader(), PrivacyPolicyHeader()]
+                   AdditionalQuestionsHeader(), PrivacyPolicyHeader(), ReviewApplicationHeader()]
         for header in headers:
             if header.detect(form):
                 return header # retunr header obj

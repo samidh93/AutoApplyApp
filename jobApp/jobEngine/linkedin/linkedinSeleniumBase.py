@@ -144,6 +144,10 @@ class LinkedinSeleniumBase:
         print(f"################## getting jobs starting from {self.params['start']} ###############")
         full_url = f"{self.job_search_url}?{'&'.join([f'{k}={v}' for k, v in self.params.items()])}"
         print(f"constructed url: {full_url }")
+        self.driver.get(self.base_url)
+        for cookie in self.saved_cookies:
+            self.driver.add_cookie(cookie)
+        self.driver.refresh()
         self.driver.get(full_url)
         return self.driver
  

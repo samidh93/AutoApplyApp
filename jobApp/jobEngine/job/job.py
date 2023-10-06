@@ -23,14 +23,16 @@ class Job:
 
 
     def extract_platform(self, url):
+        try:
             # Regular expression pattern to match the domain (without top-level domain)
             pattern = r"https?://(?:www\.)?([^/.]+)(?:\.\w+)+"
             # Use re.search to find the domain (without top-level domain) in the URL
             match = re.search(pattern, url)
-            if match:
-                return match.group(1)
-            else:
-                return None
+            return match.group(1)
+        except:
+            print("extracting platform failed")
+            return None
+
 
     def to_dict(self):
         return {

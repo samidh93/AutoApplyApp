@@ -2,15 +2,15 @@ from jobApp.jobScraperLinkedinMicroService import JobScraperLinkedinMicroService
 from jobApp.linkedinEasyApplyMicroService import easyApplyMicroService
 from jobApp.loginSessionLinkedinMicroService import LoginSessionLinkedCreator, LoginException
 import logging
+import time
 logger = logging.getLogger(__name__)
 
 
 class appCreatorLinkedin:
     def __init__(self, linkedinConfigFile) -> None:
         # self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile)
-        # self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
-        self.linkedinJobApply = easyApplyMicroService(
-            linkedinConfig=linkedinConfigFile)
+        self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
+        #self.linkedinJobApply = easyApplyMicroService(linkedinConfig=linkedinConfigFile)
 
     def tryCredentialsLinkedin(self):
         try:
@@ -96,4 +96,7 @@ if __name__ == "__main__":
         }
     }
     testapp = appCreatorLinkedin(applyReq)
-    testapp.applyJobs()
+    testapp.collectJobs()
+    while True:
+        time.sleep(5)
+        print("waiting for job collector ...")

@@ -103,7 +103,9 @@ class JobScraperLinkedin:
                 futures.append(executor.submit(self.processPage, p,page_to_visit, self.linkedinObj.saved_cookies))
             # Wait for all submitted tasks to complete
             concurrent.futures.wait(futures)
-        
+        self.job_details_list = self.sort_deque_by_id_ascending('id',self.job_details_list )
+        # sort data ascending by id: index
+        self.writeDataToCsv( self.job_details_list, self.createFileJobLocation())
         return self.job_details_list
     
     def collectJobsThreads(self, page_to_visit):
@@ -199,6 +201,31 @@ class JobScraperLinkedin:
             writer.writeheader()  # Write the header row
             writer.writerows(Data_in)  # Write the data rows
         print(f"CSV file '{Csv_file_out}' created successfully.")
+
+    def sort_deque_by_id_ascending(self, sort_filter, input_deque):
+        # Use sorted() with a custom key function to sort the deque
+        sorted_deque = deque(sorted(input_deque, key=lambda item: item[sort_filter]))
+        return sorted_deque
+
+    def sortDataByIndexCsv(self, csvToSort):
+        # Read the CSV data and sort by 'id' in ascending order
+        with open(csvToSort, 'r', newline='') as file:
+            reader = csv.DictReader(file)
+            sorted_data = sorted(reader, key=lambda row: int(row['id']))
+
+        # Write the sorted data back to the CSV file
+        with open(csvToSort, 'w', newline='') as file:
+            fieldnames = reader.fieldnames
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            
+            # Write the header row
+            writer.writeheader()
+            
+            # Write the sorted rows
+            for row in sorted_data:
+                writer.writerow(row)
+
+        print(f"CSV file '{csvToSort}' sorted successfully.")
 
     def writeJobToCsv(self, Job:dict, Csv_file_out):
         # Check if the file exists

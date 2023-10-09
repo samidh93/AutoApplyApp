@@ -87,19 +87,27 @@ class LinkedinQuestions:
         try:
             label_translated:str = googleTranslator.translate(label.text, dest='en').text # translate qs to en
             print("processing translated text question: ", label_translated)
-            start_date_keywords = ["start date", "earliest", "notice period"]
+            start_date_keywords = ["start date", "earliest", "notice period", "when"]
             platform_keywords = ["aware of us", "find out about us"]
             if "salary" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.desired_salary)
             elif "experience" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.years_experience)
             elif any(keyword in label_translated.lower() for keyword in start_date_keywords):
-                LinkedinUtils.send_value(element, "in 2 months" )
+                LinkedinUtils.send_value(element, user.earliest_start_date )
             elif any(keyword in label_translated.lower() for keyword in platform_keywords):
                 LinkedinUtils.send_value(element, "linkedin" )
-
+            elif "city" in label_translated.lower():
+                LinkedinUtils.send_value(element, user.address.city)
+            elif "country" in label_translated.lower():
+                LinkedinUtils.send_value(element, user.country_name)
+            elif "name" in label_translated.lower():
+                LinkedinUtils.send_value(element, user.firstname)
+            elif "willing" or "move" in label_translated.lower():
+                LinkedinUtils.send_value(element, "yes" )
         except:
             print(f"unable to process {qs_type}") 
+
     @staticmethod
     def process_radio_question( label:WebElement, elements: WebElement, user:CandidateProfile ):
         googleTranslator = Translator()

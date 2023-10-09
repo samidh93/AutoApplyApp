@@ -19,12 +19,6 @@ class LinkedInEasyApplyFormHandler:
     def __init__(self, candidate_profile: CandidateProfile, csv_jobs='jobApp/data/jobs.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
         self.csv_file = csv_jobs
         self.links = self.load_links_from_csv()
-        # only for debugging, split login and apply in sesssions, keep login session open
-        #login = JobSearchRequestSessionAttachLinkedin(linkedin_data_file)
-        #bot = login.createJobSearchRequestSession()
-        #self.driver = bot.driver  # pass the new driver to current one
-        #self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file)
-        #self.driver = self.linkedinObj.login_linkedin()
         self.label_elements_map = {}
         self.candidate = candidate_profile
         self.button_apply_clicked = False
@@ -35,9 +29,9 @@ class LinkedInEasyApplyFormHandler:
         self.cookies = cookies
         start_time = time.time() # begin counter
         elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        #if elapsed_time >= 180:  # 180 seconds = 3 minutes
-        #    print("Time limit (3 minutes) per application exceeded. Returning from applyForJob.")
-        #    return False
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) per application exceeded. Returning from applyForJob.")
+            return False
         # open job url
         self.get_the_url(job_link, driver)  # get the url form the job
         # return true if job was success or already applied
@@ -62,9 +56,9 @@ class LinkedInEasyApplyFormHandler:
         if start_time is None:
             start_time = time.time()  # Record the start time
         elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        #if elapsed_time >= 180:  # 180 seconds = 3 minutes
-        #    print("Time limit (3 minutes) exceeded. Returning from applyForJob.")
-        #    return False
+        if elapsed_time >= 180:  # 180 seconds = 3 minutes
+            print("Time limit (3 minutes) per job app exceeded. quitting ..")
+            return False
         buttonfactory = ButtonFactory()
         try:
             button:Button = buttonfactory.create_button(form, driver, self.candidate)

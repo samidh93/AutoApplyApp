@@ -47,7 +47,7 @@ class Application(ABC):
         self.cookies = baseObj.saved_cookies
         log_driver.quit()
         # Create a ThreadPoolExecutor with a specified number of threads
-        num_threads = 4  # we keep only 4 due to some issues
+        num_threads = 2  # we keep only 4 due to some issues
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
             self.completed_jobs = 0  # To keep track of completed jobs
             futures = []
@@ -67,25 +67,7 @@ class Application(ABC):
             # Wait for all submitted tasks to complete
             concurrent.futures.wait(futures)
         print("\nApplying Task completed!")
-#    # add thread for each job application
-#    def ApplyForAll(self, application_type = "internal" or "external", application_limit=10):
-#        print("applying for jobs from the csv file") 
-#        print("candidate applications limit: ", application_limit)         
-#        for i,j in enumerate(self.jobs):
-#            print_progress_bar(i, len(self.jobs)+1)
-#            if j.applied:
-#            # we already applied for this job
-#                continue
-#            if application_type == j.application_type: # apply for the same type
-#                print(f"\n################ applying for job number {j.id} ##################\n")
-#                self.candidate_profile.generate_summary_for_job(job_title=j.job_title, company=j.company_name, platform=j.platform, hiring_manager=j.job_poster_name)
-#                self.ApplyForJob(j)
-#                self.update_job_status(j)
-#            else:
-#                print(f"ignoring {j.application_type} ")
-#                continue
-#        print("\nApplying Task completed!")
-#
+
     def load_jobs_from_csv(self)->list[Job]:
         flocker = FileLocker()
         jobs = [] #list of jobs
@@ -138,9 +120,7 @@ class Application(ABC):
 
     def update_job_status(self, job: Job):
         flocker = FileLocker()
-
         print("Updating job status in CSV file")
-
         # Open the file for reading
         with open(self.csv_file, mode='r', newline='', encoding='utf-8') as file:
             flocker.lockForRead(file)

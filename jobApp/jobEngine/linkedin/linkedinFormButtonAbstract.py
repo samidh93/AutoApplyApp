@@ -12,6 +12,7 @@ import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .linkedinFormHeaderAbstract import HeaderFactory
+from concurrent.futures import ThreadPoolExecutor
 
 # Abstract base class for buttons
 
@@ -141,12 +142,23 @@ class NextButton(Button):
             return False
 
 
-# Factory for creating buttons
+
 class ButtonFactory:
     def create_button(self, form: WebElement, driver: webdriver, data: CandidateProfile):
         buttons: [Button] = [SubmitButton(), ReviewButton(), NextButton()]
-        for button in buttons:
+        
+        def create_button_task(button):
             if button.detect(form, driver):
                 button.set_data(data)
                 return button
-        # raise ValueError("No button detected")
+            return None
+
+        with ThreadPoolExecutor() as executor:
+            results = list(executor.map(create_button_task, buttons))
+        
+        for result in results:
+            if result is not None:
+                return result
+        
+        # Raise an exception if no button is detected
+        raise ValueError("No button detected")

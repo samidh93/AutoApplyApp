@@ -4,6 +4,7 @@ import json
 from deprecated import deprecated
 import phonenumbers
 from phonenumbers import geocoder
+from datetime import datetime, timedelta
 
 """
 Candidate profile, Experiences, Educations, Skills
@@ -31,13 +32,38 @@ class CandidateProfile:
         self.visa_required = visa_required
         self.desired_salary = desired_salary
         self.summary = None # will be generated automaticly with each job
+        self.earliest_start_date = self.get_start_date() # we give per default 3 months
+
+    def get_start_date(self, in_days=90 ):
+        # Get the current date
+        current_date = datetime.now()
+        # Calculate the date 2 months from now
+        two_months_from_now = current_date + timedelta(days=in_days)
+        # Format the date as "mm/dd/yyyy"
+        formatted_date = two_months_from_now.strftime("%m/%d/%Y")
+        # Print the formatted date
+        print(formatted_date)
+        return formatted_date
+    
+    def set_start_date(self,in_days: float):
+        # Get the current date
+        current_date = datetime.now()
+        # Calculate the date 2 months from now
+        two_months_from_now = current_date + timedelta(days=in_days)
+        # Format the date as "mm/dd/yyyy"
+        formatted_date = two_months_from_now.strftime("%m/%d/%Y")
+        # Print the formatted date
+        print(formatted_date)
+        self.earliest_start_date = formatted_date
+
+
 
     def generate_summary_for_job(self, job_title, company, platform, hiring_manager):
-        self.summary =  f"Dear {hiring_manager or 'Hiring Manager'},\n\n\ \
+        self.summary =  f"Dear {hiring_manager or 'Hiring Manager'},\n\
             I am writing to express my keen interest in the {job_title} position at {company},\
-            as advertised on {platform}. With a deep passion for my work and an extensive record of achievements, \
-            I am enthusiastic about the opportunity to contribute my skills and drive to your dynamic team. \
-            I am eager to meet with you in person or online to discuss how my qualifications align with your needs.\n\n\
+            as advertised on {platform}. With a deep passion for my work and an extensive record of achievements,\
+            I am enthusiastic about the opportunity to contribute my skills and drive to your dynamic team.\
+            I am eager to meet with you in person or online to discuss how my qualifications align with your needs.\n\
             Sincerely,\n\
             {self.firstname} {self.lastname}"
 

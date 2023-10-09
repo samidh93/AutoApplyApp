@@ -15,16 +15,43 @@ from googletrans import Translator
 from .linkedinElementsAbstract import LabelElement, InputElement, FieldsetElement, SpanElement, SelectElement, CheckboxOptionsElements
 from .linkedinFunctions import LinkedinUtils, LinkedinQuestions
 # Abstract base class for Divss
-
+from concurrent.futures import ThreadPoolExecutor
+import threading
 
 class Divs(ABC):
+    label_elements_map = {}
+    lock = threading.Lock()  # Create a lock for synchronization
+
     @abstractmethod
     def find(self, form: WebElement):
         pass
 
-    @abstractmethod
     def createDictFromDivs(self, divs):
-        pass
+        field = FieldsetElement()
+        label = LabelElement()
+
+        def process_div(div):
+            try:
+                print("processing form fields")
+                fieldset = field.find(div)
+                if fieldset is not None:
+                    return field.handle(fieldset)
+                else:
+                    labelElem = label.find(div)
+                    if labelElem is not None:
+                        return label.handle(div, labelElem)
+            except Exception as e:
+                print(f"Error processing div: {e}")
+            return {}
+
+        with ThreadPoolExecutor() as executor:
+            results = list(executor.map(process_div, divs))
+
+        for result in results:
+            with self.lock:
+                self.label_elements_map.update(result)
+
+        return self.label_elements_map
 
 # Concrete Divs classes
 class DivsContactInfo(Divs):
@@ -40,23 +67,7 @@ class DivsContactInfo(Divs):
             print("No div selection grouping elements found")
 
     def createDictFromDivs(self, divs):
-        # Iterate over the divs and extract the label and corresponding input/select values
-        label_elements_map = {}
-        field = FieldsetElement()
-        label = LabelElement()
-        for div in divs:
-            try:
-                print("processing form fields")
-                fieldset = field.find(div)
-                if fieldset is not None:
-                    label_elements_map.update(field.handle(fieldset))
-                else:
-                    labelElem = label.find(div)
-                    if labelElem is not None:
-                        label_elements_map.update(label.handle(div, labelElem))
-            except:
-                continue
-        return label_elements_map
+        pass
 
     def send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         googleTranslator = Translator()
@@ -104,24 +115,7 @@ class DivsDocumentUpload(Divs):
             return False
 
     def createDictFromDivs(self, divs):
-        # Iterate over the divs and extract the label and corresponding input/select values
-        label_elements_map = {}
-        inputObj = InputElement()
-        labelObj = LabelElement()
-        try:
-            for div in divs:  # list of divs
-                # Div contains label and inpout tag
-                label = labelObj.find(div)
-                if label is not None:
-                    input_elem = inputObj.find(div)
-                    # text field
-                    if input_elem is not None:
-                        print(f"added input element with label: {label.text}")
-                        label_elements_map[label] = input_elem
-            return label_elements_map
-        except Exception as E:
-            print("create dict from divs doc upload error: ", str(E))
-            return {}
+       pass
 
     def send_user_documents(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         googleTranslator = Translator()
@@ -147,23 +141,7 @@ class DivsHomeAddress(Divs):
             print("No div selection grouping elements found")
 
     def createDictFromDivs(self, divs):
-        # Iterate over the divs and extract the label and corresponding input/select values
-        label_elements_map = {}
-        field = FieldsetElement()
-        label = LabelElement()
-        for div in divs:
-            try:
-                print("processing form fields")
-                fieldset = field.find(div)
-                if fieldset is not None:
-                    label_elements_map.update(field.handle(fieldset))
-                else:
-                    labelElem = label.find(div)
-                    if labelElem is not None:
-                        label_elements_map.update(label.handle(div, labelElem))
-            except:
-                continue
-        return label_elements_map
+        pass
 
     def send_user_contact_infos(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         googleTranslator = Translator()
@@ -200,23 +178,7 @@ class DivsAdditionalQuestions(Divs):
             print("No div selection grouping elements found")
 
     def createDictFromDivs(self, divs):
-        # Iterate over the divs and extract the label and corresponding input/select values
-        label_elements_map = {}
-        field = FieldsetElement()
-        label = LabelElement()
-        for div in divs:
-            try:
-                print("processing form fields")
-                fieldset = field.find(div)
-                if fieldset is not None:
-                    label_elements_map.update(field.handle(fieldset))
-                else:
-                    labelElem = label.find(div)
-                    if labelElem is not None:
-                        label_elements_map.update(label.handle(div, labelElem))
-            except:
-                continue
-        return label_elements_map
+        pass
 
     def send_user_questions_answers(self, user: CandidateProfile, elements_dict: dict[WebElement]):
         for label, elements in elements_dict.items(): #iterate div by div questions
@@ -233,7 +195,7 @@ class DivsAdditionalQuestions(Divs):
                         # handle checkbox questions
                         LinkedinQuestions.process_checkbox_question(
                             label, elements, user)
-                elif elements.get_attribute("type") == "text":
+                elif elements.get_attribute("type") == "text" or elements.tag_name == 'textarea':
                     # handle text based questions
                     LinkedinQuestions.process_text_question(label, elements, user)
                 else:
@@ -258,22 +220,7 @@ class DivsPrivacyPolicy(Divs):
 
     def createDictFromDivs(self, divs):
         # Iterate over the divs and extract the label and corresponding input/select values
-        label_elements_map = {}
-        field = FieldsetElement()
-        label = LabelElement()
-        for div in divs:
-            try:
-                print("processing form fieldset")
-                fieldset = field.find(div)
-                if fieldset is not None:
-                    label_elements_map.update(field.handle(fieldset))
-                else:
-                    labelElem = label.find(div)
-                    if labelElem is not None:
-                        label_elements_map.update(label.handle(div, labelElem))
-            except:
-                continue
-        return label_elements_map
+        pass
 
     def select_privacy_policy(self, elements_dict: dict[WebElement]):
         googleTranslator = Translator()

@@ -13,6 +13,9 @@ from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from googletrans import Translator
 from .linkedinDivsAbstract import DivsDocumentUpload, DivsContactInfo, DivsPrivacyPolicy, DivsAdditionalQuestions, DivsHomeAddress
+from concurrent.futures import ThreadPoolExecutor
+
+
 # Abstract base class for headers
 
 
@@ -240,6 +243,7 @@ class ReviewApplicationHeader:
     def fill(self,form, data:CandidateProfile):
         print("skipping header submit page")
         pass
+
 class UnkownHeader(Header):
     header = "unkown"
     def detect(self, form: WebElement):
@@ -256,14 +260,28 @@ class UnkownHeader(Header):
         print("filling unkown header")
 
 
-# Factory for creating headers
 class HeaderFactory:
     def create_header(self, form: WebElement):
-        headers = [ContactInfoHeader(), ResumeHeader(),HomeAddressHeader(),
-                  EducationHeader(), WorkExperienceHeader(), ScreeningQuestionsHeader(),
+        headers = [ContactInfoHeader(), ResumeHeader(), HomeAddressHeader(),
+                   EducationHeader(), WorkExperienceHeader(), ScreeningQuestionsHeader(),
                    AdditionalQuestionsHeader(), PrivacyPolicyHeader(), ReviewApplicationHeader()]
-        for header in headers:
+
+        def create_header_task(header):
             if header.detect(form):
-                return header # retunr header obj
+                return header
+            return None
+
+        with ThreadPoolExecutor() as executor:
+            results = list(executor.map(create_header_task, headers))
+
+        for result in results:
+            if result is not None:
+                return result
+
         return UnkownHeader()
-        #raise ValueError("No header detected")
+
+
+
+
+
+

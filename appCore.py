@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 class appCreatorLinkedin:
     def __init__(self, linkedinConfigFile) -> None:
         # self.linkedSessionCreatorService = LoginSessionLinkedCreator(linkedinConfigFile)
-        self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
-        #self.linkedinJobApply = easyApplyMicroService(linkedinConfig=linkedinConfigFile)
+        #self.linkedinJobCollector = JobScraperLinkedinMicroService(linkedin_data=linkedinConfigFile)
+        self.linkedinJobApply = easyApplyMicroService(linkedinConfig=linkedinConfigFile)
 
     def tryCredentialsLinkedin(self):
         try:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
                 "city": "berlin",
                 "plz": "10365"
             },
-            "limit": "5",
+            "limit": "20",
             "visa_required": "yes",
             "years_experience": "5",
             "desired_salary": "50000",
@@ -96,6 +96,6 @@ if __name__ == "__main__":
         }
     }
     testapp = appCreatorLinkedin(applyReq)
-    testapp.collectJobs()
+    testapp.applyJobs()
     while True:
         time.sleep(5)

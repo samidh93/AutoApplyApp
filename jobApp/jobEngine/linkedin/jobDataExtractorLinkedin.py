@@ -30,34 +30,32 @@ class JobDetailsExtractorLinkedin:
             print("job link extraction error")
             raise
 
-    def getJobTitleSelenium(self, element: WebElement):
+    def getJobTitleSelenium(self, job: WebElement):
         #find job title 
         what_data = "job title"
         try:
-            title= element.find_element(By.CSS_SELECTOR,'h2.t-24.t-bold.job-details-jobs-unified-top-card__job-title')
-            self.job_title = title.text
+            self.job_title= job.find_element(By.TAG_NAME, 'a').get_attribute('aria-label')
             print(f"job title: {self.job_title}")
             return self.job_title 
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
 
-    def getCompanySelenium(self, element: WebElement):
+    def getCompanySelenium(self, job: WebElement):
         #find company title 
         what_data = "company name"
         try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.job-details-jobs-unified-top-card__primary-description')
-            company=  div_element.find_element(By.CSS_SELECTOR,"a.app-aware-link")
+            company=  job.find_element(By.CLASS_NAME,"job-card-container__primary-description ")
             self.company = company.text
             print(f"company: {self.company}")
             return self.company
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
 
-    def getLocationSelenium(self, element: WebElement):
+    def getLocationSelenium(self, job: WebElement):
         #find job title 
         what_data = "location"
         try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.job-details-jobs-unified-top-card__primary-description')
+            self.extracted_location = job.find_elements(By.CLASS_NAME, "job-card-container__metadata-item ")[0].text
             # try via html source code: already given in the search bar: skipping here
             print(f"location: {self.extracted_location}")
             return self.extracted_location
@@ -84,9 +82,7 @@ class JobDetailsExtractorLinkedin:
         #find job title 
         what_data = "publication date"
         try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.job-details-jobs-unified-top-card__primary-description')
-            date=  div_element.find_elements(By.CSS_SELECTOR,'span.tvm__text--neutral')
-            self.published = date[0].text
+            self.published  = element.find_elements(By.CLASS_NAME,'job-card-container__footer-item')[0].find_element(By.TAG_NAME, 'time').get_attribute('datetime')
             print(f"published: {self.published}")
             return self.published
         except:

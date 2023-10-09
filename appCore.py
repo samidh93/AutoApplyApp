@@ -62,7 +62,7 @@ if __name__ == "__main__":
                 "city": "berlin",
                 "plz": "10365"
             },
-            "limit": "10",
+            "limit": "5",
             "visa_required": "yes",
             "years_experience": "5",
             "desired_salary": "50000",

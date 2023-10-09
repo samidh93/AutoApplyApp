@@ -192,16 +192,18 @@ class JobScraperLinkedin:
         thread2.start()
 
     def extractJobData(self, job: WebElement, jobDataExtractorObj:  JobDetailsExtractorLinkedin):
-        div_element = job.find_element(
-            By.CSS_SELECTOR, 'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
-        job_title = jobDataExtractorObj.getJobTitleSelenium(div_element)
-        company = jobDataExtractorObj.getCompanySelenium(div_element)
-        num_applicants = jobDataExtractorObj.getNumberApplicants(div_element)
-        published = jobDataExtractorObj.getPublicationDate(div_element)
-        job_description = jobDataExtractorObj.getJobDescriptionText(
-            div_element)
-        emails = jobDataExtractorObj.getCompanyEmails(div_element)
-        poster_name = jobDataExtractorObj.getHiringManagerName(div_element)
+        try:
+            #div_element = job.find_element(
+            #    By.CSS_SELECTOR, 'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
+            job_title = jobDataExtractorObj.getJobTitleSelenium(job)
+            company = jobDataExtractorObj.getCompanySelenium(job)
+            #num_applicants = jobDataExtractorObj.getNumberApplicants(job)
+            published = jobDataExtractorObj.getPublicationDate(job)
+            #job_description = jobDataExtractorObj.getJobDescriptionText( job)
+            #emails = jobDataExtractorObj.getCompanyEmails(job)
+            #poster_name = jobDataExtractorObj.getHiringManagerName(job)
+        except:
+            print("error extracting job data")
 
     def createJobObj(self, index: int, job: WebElement) -> Job:
         try:
@@ -209,7 +211,7 @@ class JobScraperLinkedin:
             jobDataExtractor.getJobLink(job)
             jobDataExtractor.getJobID(job)
             # use it when to extract all details, otherwise details will be None
-            # self.extractJobData(job,jobDataExtractor )
+            self.extractJobData(job,jobDataExtractor )
             applied = False
             job = Job(id=index, job_id=jobDataExtractor.job_id, link=jobDataExtractor.job_link,
                       job_title=jobDataExtractor.job_title, job_location=self.job_location,
@@ -274,7 +276,7 @@ class JobScraperLinkedin:
         except:
             print("exception move to job occured")
 
-    def writeDataToCsv(self, Data_in, Csv_file_out):
+    def writeDataToCsv(self, Data_in:[dict]  , Csv_file_out):
         # Write the dictionary to the CSV file
         with open(Csv_file_out, 'w', newline='') as file:
             fieldnames = Data_in[0].keys()
@@ -285,8 +287,7 @@ class JobScraperLinkedin:
 
     def sort_deque_by_id_ascending(self, sort_filter, input_deque):
         # Use sorted() with a custom key function to sort the deque
-        sorted_deque = deque(
-            sorted(input_deque, key=lambda item: item[sort_filter]))
+        sorted_deque = sorted(input_deque, key=lambda item: item[sort_filter])
         return sorted_deque
 
     def sortDataByIndexCsv(self, csvToSort):

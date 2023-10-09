@@ -99,4 +99,3 @@ if __name__ == "__main__":
     testapp.collectJobs()
     while True:
         time.sleep(5)
-        print("waiting for job collector ...")

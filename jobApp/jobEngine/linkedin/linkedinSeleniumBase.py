@@ -101,6 +101,8 @@ class LinkedinSeleniumBase:
             'f_AL': self.filter_easy_apply,
             'start': self.start_pos
         }
+        # extra: applications limit:
+        self.applications_limit =incomingJsondata["candidate"]["limit"]
 
     def login_linkedin(self, save_cookies=True):
         """This function logs into your personal LinkedIn profile"""

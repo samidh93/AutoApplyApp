@@ -1,20 +1,43 @@
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 import re 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.common.exceptions import NoSuchElementException, NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
 
 class JobDetailsExtractorLinkedin:
-    def __init__(self):
-        pass
+    def __init__(self, job:WebElement):
+        self.job = job
+        self.job_title = None
+        self.company = None 
+        self.num_applicants = None 
+        self.published = None 
+        self.job_description = None 
+        self.emails = None 
+        self.hiring_manager = None 
+        self.job_id = None
+        self.job_link = None
 
    ####### use selenium ####
+    def getJobLink(self, job: WebElement):
+        try:
+            link_element: WebElement = WebDriverWait(job, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, 'a')))
+            self.job_link = link_element.get_attribute('href')
+            print("extracted job link: ", self.job_link)
+            return self.job_link
+        except NoSuchElementException:
+            print("job link extraction error")
+            raise
+
     def getJobTitleSelenium(self, element: WebElement):
         #find job title 
         what_data = "job title"
         try:
             title= element.find_element(By.CSS_SELECTOR,'h2.t-24.t-bold.job-details-jobs-unified-top-card__job-title')
-            self.extracted_title = title.text
-            print(f"job title: {self.extracted_title}")
-            return self.extracted_title 
+            self.job_title = title.text
+            print(f"job title: {self.job_title}")
+            return self.job_title 
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
 
@@ -24,9 +47,9 @@ class JobDetailsExtractorLinkedin:
         try:
             div_element = element.find_element(By.CSS_SELECTOR,'div.job-details-jobs-unified-top-card__primary-description')
             company=  div_element.find_element(By.CSS_SELECTOR,"a.app-aware-link")
-            self.extracted_company = company.text
-            print(f"company: {self.extracted_company}")
-            return self.extracted_company
+            self.company = company.text
+            print(f"company: {self.company}")
+            return self.company
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
 
@@ -63,9 +86,9 @@ class JobDetailsExtractorLinkedin:
         try:
             div_element = element.find_element(By.CSS_SELECTOR,'div.job-details-jobs-unified-top-card__primary-description')
             date=  div_element.find_elements(By.CSS_SELECTOR,'span.tvm__text--neutral')
-            self.publish_date = date[0].text
-            print(f"publish_date: {self.publish_date}")
-            return self.publish_date
+            self.published = date[0].text
+            print(f"published: {self.published}")
+            return self.published
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
     
@@ -90,10 +113,10 @@ class JobDetailsExtractorLinkedin:
             # Extract the text content of the <div> element
             content = div_element.text
             # Print the extracted content
-            skip = "see link directly"
-            print(f"Job Details: {skip}")
+            self.job_description = "see link directly"
+            print(f"Job Details: {self.job_description}")
             #print(content)
-            return skip
+            return self.job_description
         except:
             print(f"Exceptionn occured while extracting job data: {what_data}")
 
@@ -107,10 +130,10 @@ class JobDetailsExtractorLinkedin:
             content = div_element.text
             # Use a regular expression to find email addresses
             email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-            emails = re.findall(email_pattern, content)
+            self.emails = re.findall(email_pattern, content)
             # Print the extracted email addresses
-            print("Extracted Email Addresses:", emails)
-            return emails
+            print("Extracted Email Addresses:", self.emails)
+            return self.emails
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
 
@@ -121,10 +144,10 @@ class JobDetailsExtractorLinkedin:
             # Find the <span> element with the specified class
             span_element = element.find_element(By.CSS_SELECTOR,'span.jobs-poster__name.t-14.t-black.mb0')
             # Extract the text content of the <span> element
-            poster_name = span_element.text.strip()
+            self.hiring_manager = span_element.text.strip()
             # Print the extracted job poster's name
-            print("Job Poster's Name:", poster_name)
-            return poster_name
+            print("Job Poster's Name:", self.hiring_manager)
+            return self.hiring_manager
         except:
             print(f"exceptionn occured while extracting job data: {what_data}")
             return None

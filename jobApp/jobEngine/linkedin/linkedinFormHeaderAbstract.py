@@ -61,18 +61,18 @@ class ContactInfoHeader(Header):
 
 
 class ResumeHeader(Header):
-    header = "Resume"
+    headers = ["resume", "cv"]
 
     def detect(self, form: WebElement):
         try:
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
+            if googleTranslator.translate(header, dest='en').text.lower() in self.headers:
                 print("page header translated: ",
                       googleTranslator.translate(header, dest='en').text)
                 return True
         except:
-            print(f"no {self.header} header found")
+            print(f"no {self.headers} header found")
             return False
 
     def fill(self, form, data: CandidateProfile):

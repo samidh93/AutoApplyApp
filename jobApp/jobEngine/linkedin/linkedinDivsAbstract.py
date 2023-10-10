@@ -43,7 +43,7 @@ class DivsContactInfo(Divs):
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
                 translation = google_translator.translate(
-                    text, dest='en').text.lower()
+                    text, src='de',dest='en').text.lower()
                 if translation == 'first name':
                     LinkedinUtils.send_value(div, user.firstname)
                     print(f"firstname to send: {user.firstname}")
@@ -53,10 +53,10 @@ class DivsContactInfo(Divs):
                 elif translation == 'phone country code' or translation == 'country code':
                     print("selecting user phone country code: ", user.phone_code)
                     LinkedinUtils.select_option(div, user.phone_code)
-                elif translation == 'mobile phone number':
+                elif translation == 'mobile phone number' or translation == 'mobile number':
                     LinkedinUtils.send_value(div, user.phone_number)
                     print(f"mobile to send: {user.phone_number}")
-                elif translation.split('\n', 1)[0] == 'email address':
+                elif translation == 'email address' or translation == 'e-mail address':
                     LinkedinUtils.select_option(div, user.email)
                 elif translation == 'city':
                     LinkedinUtils.send_value(div, user.address)

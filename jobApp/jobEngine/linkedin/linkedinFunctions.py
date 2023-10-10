@@ -108,12 +108,11 @@ class LinkedinUtils:
                 select.select_by_visible_text(select.options[1].accessible_name)     
             if isinstance(select.options, Iterable):
                 for option in select.options:
-                    translated = googleTranslator.translate(option.accessible_name, dest='en').text.lower()
+                    translated = googleTranslator.translate(option.accessible_name,src='de', dest='en').text.lower()
                     if user_value.lower() in translated: # if user value is in any of the option
                         select.select_by_visible_text(option.accessible_name)
                         print("user option selected: ", select.first_selected_option.accessible_name)
                         return 
-                    # else: send user data and options to chatgpt and let it choose
                 # if user value (yes or no or any ) is not part of the option, select first option
                 print("user data not found, selecting default first option: ", select.options[1].accessible_name)
                 select.select_by_visible_text(select.options[1].accessible_name)

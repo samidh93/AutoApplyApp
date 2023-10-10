@@ -71,6 +71,7 @@ class CandidateProfile:
             I am eager to meet with you in person or online to discuss how my qualifications align with your needs.\n\
             Sincerely,\n\
             {self.firstname} {self.lastname}"
+        return self.summary
 
         
     def extract_personal_infos_from_resume(self): #all in one call, maybe difficult to get

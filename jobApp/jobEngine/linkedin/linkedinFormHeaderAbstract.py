@@ -54,10 +54,10 @@ class ContactInfoHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_contact_infos(
-                    data, dict_Elems)
+                    data, divs)
         except:
             print("no contact infos to fill")
 
@@ -83,10 +83,10 @@ class ResumeHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_documents(
-                    data, dict_Elems)
+                    data, divs)
         except:
             print("no resume to fill")
 
@@ -113,10 +113,10 @@ class HomeAddressHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_contact_infos(
-                    data, dict_Elems)
+                    data, divs)
         except:
             print("no home address to fill")
 
@@ -207,10 +207,10 @@ class AdditionalQuestionsHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_questions_answers(
-                    data, dict_Elems)
+                    data, divs)
         except:
             print("no additional questions to fill")
 
@@ -237,10 +237,10 @@ class PrivacyPolicyHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.select_privacy_policy(
-                    dict_Elems)
+                    divs)
         except:
             print("no privacy policy to fill")
 
@@ -288,10 +288,10 @@ class VoluntarySelfIdentification(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.select_gender(
-                    dict_Elems, data)
+                    divs, data)
         except:
             print("no privacy policy to fill")
 
@@ -317,10 +317,10 @@ class UnknownHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # create the key,value pair for each element on the form
-                dict_Elems = DivHandler.createDictFromDivs(divs)
+                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_questions_answers(
-                    user=data, elements_dict=dict_Elems)
+                    data, divs)
         except:
             print("no data to fill")
 

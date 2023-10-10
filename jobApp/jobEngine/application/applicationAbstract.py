@@ -47,7 +47,7 @@ class Application(ABC):
         self.cookies = baseObj.saved_cookies
         log_driver.quit()
         # Create a ThreadPoolExecutor with a specified number of threads
-        num_threads = 2  # we keep only 4 due to some issues
+        num_threads = 1 # we keep 4 browser sessions open onyl
         with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
             self.completed_jobs = 0  # To keep track of completed jobs
             futures = []
@@ -58,7 +58,7 @@ class Application(ABC):
                     continue
                 if application_type == j.application_type:
                     #print(f"\n################ applying for job number {j.id} ##################\n")
-                    self.candidate_profile.generate_summary_for_job(job_title=j.job_title, company=j.company_name, platform=j.platform, hiring_manager=j.job_poster_name)
+                    self.candidate_profile.set_current_job(job=j)
                     # Submit the job application task to the ThreadPoolExecutor
                     futures.append(executor.submit(self.ApplyForJob, j, self.cookies))
                 else:

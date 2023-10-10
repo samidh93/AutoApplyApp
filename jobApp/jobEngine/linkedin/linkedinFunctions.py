@@ -89,14 +89,15 @@ class LinkedinQuestions:
             print("processing translated text question: ", label_translated)
             start_date_keywords = ["start date", "earliest", "notice period", "when"]
             platform_keywords = ["aware of us", "find out about us"]
+            experience_keywords =["how many", "years", "experience", "how long"]
             if "salary" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.desired_salary)
-            elif "experience" in label_translated.lower():
+            elif any(keyword in label_translated.lower() for keyword in experience_keywords):
                 LinkedinUtils.send_value(element, user.years_experience)
             elif any(keyword in label_translated.lower() for keyword in start_date_keywords):
                 LinkedinUtils.send_value(element, user.earliest_start_date )
             elif any(keyword in label_translated.lower() for keyword in platform_keywords):
-                LinkedinUtils.send_value(element, "linkedin" )
+                LinkedinUtils.send_value(element, user.current_job.platform )
             elif "city" in label_translated.lower():
                 LinkedinUtils.send_value(element, user.address.city)
             elif "country" in label_translated.lower():
@@ -142,6 +143,8 @@ class LinkedinQuestions:
                 LinkedinUtils.select_option(element, user.visa_required)
             elif "how did you" in label_translated.lower():
                 LinkedinUtils.select_option(element, "linkedin")
+            elif "gender" in label_translated.lower():
+                LinkedinUtils.select_option(element, user.gender)
             # handle questions that can be answered by yes or no
             elif "do you" in label_translated.lower() or "have you" in label_translated.lower() or "are your" in label_translated.lower():
                 LinkedinUtils.select_option(element, "yes")
@@ -158,7 +161,7 @@ class LinkedinQuestions:
         googleTranslator = Translator()
         try:
             print("checkbox question: ", label.text.strip() )
-            # if only one checkbox to click, just fucking click it if is not already clicked
+            # if only one checkbox to click, just click it if is not already clicked
             if len(elements) == 1:
                 label = elements[0].find_element(By.TAG_NAME, "label")
                 if not label.is_selected():
@@ -174,6 +177,12 @@ class LinkedinQuestions:
                             label.click()
                             print(f"element {element.text} clicked successfully.")
                             return
+                    elif googleTranslator.translate("Are you willing", dest='en').text.lower() in element.text.lower():
+                        label = element.find_element(By.TAG_NAME, "label")
+                        if not label.is_selected():
+                            label.click()
+                            print(f"element {element.text} clicked successfully.")
+                            return          
         except Exception as e:
             print(f"unable to process {qs_type}") 
 

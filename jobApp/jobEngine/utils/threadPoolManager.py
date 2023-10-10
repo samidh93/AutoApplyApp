@@ -8,7 +8,7 @@ class ThreadPoolManager:
 
     def run(self):
         # Create a thread pool and map the items to the function
-        with ThreadPoolExecutor() as executor:
+        with ThreadPoolExecutor(max_workers=2) as executor:
             self.results = executor.map(self.threaded_func, *self.threaded_func_args, **self.items)
         print("All threads have completed.")
 

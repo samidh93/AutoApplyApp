@@ -15,8 +15,9 @@ from .linkedinSeleniumBase import LinkedinSeleniumBase
 from .linkedinFormButtonAbstract import ButtonFactory, Button
 ''' handle linkedin easy apply form template'''
 
+
 class LinkedInEasyApplyFormHandler:
-    def __init__(self, candidate_profile: CandidateProfile, csv_jobs='jobApp/data/jobs.csv', linkedin_data_file = 'jobApp/secrets/linkedin.json'):
+    def __init__(self, candidate_profile: CandidateProfile, csv_jobs='jobApp/data/jobs.csv', linkedin_data_file='jobApp/secrets/linkedin.json'):
         self.csv_file = csv_jobs
         self.links = self.load_links_from_csv()
         self.label_elements_map = {}
@@ -24,14 +25,16 @@ class LinkedInEasyApplyFormHandler:
         self.button_apply_clicked = False
 
     ###### Apply Phase #####
-    def applyForJob(self, job_link: str, driver:webdriver, cookies) -> bool:
+    def applyForJob(self, job_link: str, driver: webdriver, cookies, use_timeout=False, timeout=180) -> bool:
         # keep track of the time for application, do not exceed max 3 minutes:
         self.cookies = cookies
-        start_time = time.time() # begin counter
-        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        if elapsed_time >= 180:  # 180 seconds = 3 minutes
-            print("Time limit (3 minutes) per application exceeded. Returning from applyForJob.")
-            return False
+        start_time = None
+        if use_timeout == True:
+            start_time = time.time()  # begin counter
+            elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+            if elapsed_time >= timeout:  # 180 seconds = 3 minutes
+               print(f"Time limit {timeout} seconds per application exceeded. Returning from applyForJob.")
+               return False
         # open job url
         self.get_the_url(job_link, driver)  # get the url form the job
         # return true if job was success or already applied
@@ -39,29 +42,30 @@ class LinkedInEasyApplyFormHandler:
             return True
         # continue if is not submitted
         # wait for the click button to appear
-        if not self.clickApplyPage(driver): 
+        if not self.clickApplyPage(driver):
             return False
         # return false if button is not clicked
         # find the form
-        form = self.find_application_form(driver)  
+        form = self.find_application_form(driver)
         # handle form page
-        if not self.handleFormPage(form, start_time, driver=driver):
-            # error during apply job 
+        if not self.handleFormPage(form, start_time, driver=driver, timeout=timeout):
+            # error during apply job
             return False
         # return job applied true
         return True
 
     ####### Detect PAge #############
-    def handleFormPage(self, form: WebElement, start_time=None, driver:webdriver=None):
-        if start_time is None:
-            start_time = time.time()  # Record the start time
-        elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
-        if elapsed_time >= 180:  # 180 seconds = 3 minutes
-            print("Time limit (3 minutes) per job app exceeded. quitting ..")
-            return False
+    def handleFormPage(self, form: WebElement, start_time=None, driver: webdriver = None, timeout=180):
+        if start_time != None:
+            # start_time = time.time()  # Record the start time
+            elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
+            if elapsed_time >= timeout:  # 180 seconds = 3 minutes
+                print(f"Time limit {timeout} seconds per job app exceeded. quitting ..")
+                return False
         buttonfactory = ButtonFactory()
         try:
-            button:Button = buttonfactory.create_button(form, driver, self.candidate)
+            button: Button = buttonfactory.create_button(
+                form, driver, self.candidate)
             button.fillSection(form)
             button.click()
             # submit exit condition
@@ -89,7 +93,7 @@ class LinkedInEasyApplyFormHandler:
         print(f"onsite apply links count: {len(links)}")
 
     ###### get url in browser #######
-    def get_the_url(self, url, driver:webdriver):
+    def get_the_url(self, url, driver: webdriver):
         # navigate to the URL
         try:  # try to open link in browser
             driver.get(url)
@@ -101,7 +105,7 @@ class LinkedInEasyApplyFormHandler:
             self.status = False
 
     ###### find application form #########
-    def find_application_form(self,  driver:webdriver):
+    def find_application_form(self,  driver: webdriver):
       # fill the expected first page template
         try:
             self.div_element_form_holder = driver.find_element(
@@ -111,7 +115,7 @@ class LinkedInEasyApplyFormHandler:
                 form_element = self.div_element_form_holder.find_element(
                     By.TAG_NAME, 'form')
                 if form_element:
-                    #print(f"form_element found: form object {form_element}")
+                    # print(f"form_element found: form object {form_element}")
                     self.form = form_element  # pass the form to parent
                     return form_element
                 else:
@@ -123,9 +127,8 @@ class LinkedInEasyApplyFormHandler:
         except:
             print("no page found")
 
-
     ####### Click Button Apply #########
-    def clickApplyPage(self, driver:webdriver.Chrome):
+    def clickApplyPage(self, driver: webdriver.Chrome):
         # click on the easy apply button, skip if already applied to the position
         try:
             # simulate click to interact
@@ -134,7 +137,7 @@ class LinkedInEasyApplyFormHandler:
             dummy_clicker.click()
             print("try clicking button easy apply")
             # Wait for the button element to be clickable
-            button:WebElement = WebDriverWait(driver, 20).until(
+            button: WebElement = WebDriverWait(driver, 20).until(
                 EC.visibility_of_element_located(
                     (By.XPATH, "//button[contains(@aria-label, 'Easy Apply')]"))
             )
@@ -148,33 +151,39 @@ class LinkedInEasyApplyFormHandler:
             print('easy apply job button is not found, skipping')
             self.status = False
 
-   
+
 ####### helper functions ########
-    def is_application_submitted(self, driver:webdriver)->bool :
+
+    def is_application_submitted(self, driver: webdriver) -> bool:
         # click on the easy apply button, skip if already applied to the position
         try:
             # Wait for the timeline entries to load
-            submitted = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
+            submitted = WebDriverWait(driver, 5).until(EC.presence_of_element_located(
+                (By.CSS_SELECTOR, 'a[aria-label="Download your submitted resume"]')))
             print(submitted.text.lower())
-            if 'submitted resume' in submitted.text.lower() :
+            if 'submitted resume' in submitted.text.lower():
                 print("application submitted")
                 self.resume_submitted = True
                 return True
         except:
             print("submitted entry not found")
             return False
-        
-    def is_applications_closed(self, driver:webdriver):
+
+    def is_applications_closed(self, driver: webdriver):
         try:
             # Wait for the error element to load
-            WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
-            error_element = driver.find_element(By.CLASS_NAME, 'jobs-details-top-card__apply-error')
-            error_message = error_element.find_element(By.CLASS_NAME, 'artdeco-inline-feedback__message').text.strip()
+            WebDriverWait(driver, 5).until(EC.presence_of_element_located(
+                (By.CLASS_NAME, 'jobs-details-top-card__apply-error')))
+            error_element = driver.find_element(
+                By.CLASS_NAME, 'jobs-details-top-card__apply-error')
+            error_message = error_element.find_element(
+                By.CLASS_NAME, 'artdeco-inline-feedback__message').text.strip()
             if "No longer accepting applications" in error_message:
                 print("application closed, no longer accepting applicants")
                 return True
         except:
             return False
+
 
 if __name__ == '__main__':
     pass

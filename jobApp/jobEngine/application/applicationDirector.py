@@ -40,6 +40,7 @@ class ApplicationDirector:
         candidate_data: dict = json_data.get("candidate")
         firstname = candidate_data.get('firstname')
         lastname = candidate_data.get('lastname')
+        gender = candidate_data.get('gender')
         resume = candidate_data.get('resume')
         phone_number = candidate_data.get('phone_number')
         address = candidate_data.get('address')
@@ -60,6 +61,7 @@ class ApplicationDirector:
                                 years_experience=years_exp,
                                 desired_salary=desired_salary,
                                 visa_required=visa,
+                                gender=gender,
                                 educations=educations,
                                 experiences=experiences,
                                 skills=skills

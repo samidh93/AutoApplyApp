@@ -55,6 +55,7 @@ if __name__ == "__main__":
         "candidate": {
             "firstname": "zayneb",
             "lastname": "dhieb",
+            "gender": "female",
             "resume": "https://708f8437-9497-45e7-a86f-8a969c24d91c.usrfiles.com/ugd/4b8c91_0cd5bf0096924bb6990c679beeaa257c.pdf",
             "phone_number": "+4915731294281",
             "address": {

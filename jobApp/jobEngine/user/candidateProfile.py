@@ -5,13 +5,13 @@ from deprecated import deprecated
 import phonenumbers
 from phonenumbers import geocoder
 from datetime import datetime, timedelta
-
+from ..job.job import Job
 """
 Candidate profile, Experiences, Educations, Skills
 """
 
 class CandidateProfile:
-    def __init__(self, resume_path, firstname, lastname, address, email, phone_number, limit, years_experience, desired_salary, visa_required,  educations:dict={}, experiences:dict={}, skills:dict={} , **more):
+    def __init__(self, resume_path, firstname, lastname, address, email, phone_number, limit, years_experience, desired_salary, visa_required, gender,  educations:dict={}, experiences:dict={}, skills:dict={} , **more):
         self.resume = Resume(file_path=resume_path, candidate_firstname=firstname, candidate_lastname=lastname).resume
         #self.cv_nlp = ChatGPT("jobApp/secrets/openai.json")
         self.experiences = Experiences(experiences=experiences) 
@@ -33,6 +33,11 @@ class CandidateProfile:
         self.desired_salary = desired_salary
         self.summary = None # will be generated automaticly with each job
         self.earliest_start_date = self.get_start_date() # we give per default 3 months
+        self.gender = gender
+        self.current_job = None # we set this to current jo if any infos from current job is need without passing job obj around
+
+    def set_current_job(self, job:Job):
+        self.current_job = job
 
     def get_start_date(self, in_days=90 ):
         # Get the current date
@@ -58,10 +63,10 @@ class CandidateProfile:
 
 
 
-    def generate_summary_for_job(self, job_title, company, platform, hiring_manager):
-        self.summary =  f"Dear {hiring_manager or 'Hiring Manager'},\n\
-            I am writing to express my keen interest in the {job_title} position at {company},\
-            as advertised on {platform}. With a deep passion for my work and an extensive record of achievements,\
+    def generate_summary_for_job(self):
+        self.summary =  f"Dear {self.current_job.job_poster_name or 'Hiring Manager'},\n\
+            I am writing to express my keen interest in the {self.current_job.job_title} position at {self.current_job.company_name},\
+            as advertised on {self.current_job.platform}. With a deep passion for my work and an extensive record of achievements,\
             I am enthusiastic about the opportunity to contribute my skills and drive to your dynamic team.\
             I am eager to meet with you in person or online to discuss how my qualifications align with your needs.\n\
             Sincerely,\n\

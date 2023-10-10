@@ -13,7 +13,8 @@ from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .linkedinFormHeaderAbstract import HeaderFactory
 from concurrent.futures import ThreadPoolExecutor
-
+import concurrent.futures
+import threading
 # Abstract base class for buttons
 
 
@@ -81,7 +82,6 @@ class SubmitButton(Button):
             return False
 
 
-
 class ReviewButton(Button):
     button_name = "Review"
 
@@ -142,23 +142,22 @@ class NextButton(Button):
             return False
 
 
-
 class ButtonFactory:
     def create_button(self, form: WebElement, driver: webdriver, data: CandidateProfile):
         buttons: [Button] = [SubmitButton(), ReviewButton(), NextButton()]
-        
-        def create_button_task(button):
-            if button.detect(form, driver):
-                button.set_data(data)
-                return button
+
+        def create_button_task(button: Button):
+            try:
+                if button.detect(form, driver):
+                    button.set_data(data)
+                    return button
+            except:
+                print("error when detecting button")
             return None
 
-        with ThreadPoolExecutor() as executor:
-            results = list(executor.map(create_button_task, buttons))
-        
-        for result in results:
-            if result is not None:
-                return result
-        
+        for button in buttons:
+            butt= create_button_task(button=button)
         # Raise an exception if no button is detected
-        raise ValueError("No button detected")
+        if butt is None:
+            raise ValueError("No button detected")
+        return butt

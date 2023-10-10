@@ -164,30 +164,30 @@ class LinkedinQuestions:
     def process_checkbox_question( div: WebElement, user:CandidateProfile):
         qs_type= "checkbox question"
         googleTranslator = Translator()
+
         try:
-            print("checkbox question: ", label.text.strip() )
+            legend = div.find_element(By.TAG_NAME, "legend")
+            print("checkbox question: ", legend.text.strip() )
             # if only one checkbox to click, just click it if is not already clicked
-            if len(div) == 1:
-                label = div[0].find_element(By.TAG_NAME, "label")
-                if not label.is_selected():
-                    label.click()
-                    print(f"element {div[0].text} clicked successfully.")
+            checkboxElems:WebElement = div.find_elements(By.TAG_NAME, "label")
+            if len(checkboxElems) == 1:
+                if not checkboxElems[0].is_selected():
+                    checkboxElems[0].click()
+                    print(f"element clicked successfully.")
                     return 
-            for element in div:
+            for element in checkboxElems:
                 #for opt_label in label_options:
                     print("checkbox option: ", element.text)
                     if element.text.lower() == googleTranslator.translate("I Agree Terms & Conditions", dest='en').text.lower():
-                        label = element.find_element(By.TAG_NAME, "label")
-                        if not label.is_selected():
-                            label.click()
+                        if not element.is_selected():
+                            element.click()
                             print(f"element {element.text} clicked successfully.")
                             return
                     elif googleTranslator.translate("Are you willing", dest='en').text.lower() in element.text.lower():
-                        label = element.find_element(By.TAG_NAME, "label")
-                        if not label.is_selected():
-                            label.click()
+                        if not element.is_selected():
+                            element.click()
                             print(f"element {element.text} clicked successfully.")
                             return          
         except Exception as e:
-            print(f"unable to process {qs_type}") 
+            print(f"unable to process {qs_type}, error {e}") 
 

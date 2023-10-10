@@ -27,35 +27,6 @@ class Divs(ABC):
     def find(self, form: WebElement):
         pass
 
-    def createDictFromDivs(self, divs):
-        self.label_elements_map.clear()
-        field = FieldsetElement()
-        label = LabelElement()
-
-        def process_div(div):
-            try:
-                print("processing form fields")
-                fieldset = field.find(div)
-                if fieldset is not None:
-                    return field.handle(fieldset)
-                else:
-                    labelElem = label.find(div)
-                    if labelElem is not None:
-                        return label.handle(div, labelElem)
-            except Exception as e:
-                print(f"Error processing div: {e}")
-            return {}
-
-        for div in divs:
-            result = process_div(div)
-            if result != {}:
-                self.label_elements_map.update(result)
-
-        return self.label_elements_map
-
-# Concrete Divs classes
-
-
 class DivsContactInfo(Divs):
     def find(self, form: WebElement):
         try:
@@ -128,8 +99,7 @@ class DivsHomeAddress(Divs):
             try:
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
-                translation = google_translator.translate(
-                    text, dest='en').text.lower()
+                translation = google_translator.translate(text, dest='en').text.lower()
                 if translation == 'city':
                     LinkedinUtils.send_value(div, user.address.city)
                     time.sleep(1)  # wait for the suggestion to appear
@@ -138,7 +108,7 @@ class DivsHomeAddress(Divs):
                         div.find_element(By.TAG_NAME, "input").clear()
                 elif "street address" in translation:
                     LinkedinUtils.send_value(div, user.address.street)
-                elif "postal code" in translation or "plz" in translation:
+                elif "postal code" in translation or "zip" in translation:
                     LinkedinUtils.send_value(div, user.address.plz)
                 else:
                     raise ValueError("Unsupported label: {}".format(div.text))
@@ -167,9 +137,9 @@ class DivsDocumentUpload(Divs):
                 text = div.text.split('\n', 1)[0] or div.text
                 translation = google_translator.translate(
                     text, dest='en').text.lower()
-                if translation == 'Upload resume':
+                if translation == 'Upload resume'.lower():
                     LinkedinUtils.send_value(div, user.resume)
-                elif translation == "Upload cover letter":
+                elif translation == "Upload cover letter".lower():
                     pass
             except:
                 raise ValueError("Unsupported label: {}".format(div.text))

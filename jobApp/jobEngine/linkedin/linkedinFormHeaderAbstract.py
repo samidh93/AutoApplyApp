@@ -53,8 +53,6 @@ class ContactInfoHeader(Header):
             DivHandler = DivsContactInfo()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_contact_infos(
                     data, divs)
@@ -82,8 +80,6 @@ class ResumeHeader(Header):
             DivHandler = DivsDocumentUpload()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_documents(
                     data, divs)
@@ -112,8 +108,6 @@ class HomeAddressHeader(Header):
             DivHandler = DivsHomeAddress()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_contact_infos(
                     data, divs)
@@ -206,8 +200,6 @@ class AdditionalQuestionsHeader(Header):
             DivHandler = DivsAdditionalQuestions()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_questions_answers(
                     data, divs)
@@ -236,8 +228,6 @@ class PrivacyPolicyHeader(Header):
             DivHandler = DivsPrivacyPolicy()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.select_privacy_policy(
                     divs)
@@ -287,8 +277,6 @@ class VoluntarySelfIdentification(Header):
             DivHandler = DivsVoluntarySelfIdentification()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.select_gender(
                     divs, data)
@@ -316,8 +304,6 @@ class UnknownHeader(Header):
             DivHandler = DivsAdditionalQuestions()
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
-                # create the key,value pair for each element on the form
-                #dict_Elems = DivHandler.createDictFromDivs(divs)
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_questions_answers(
                     data, divs)
@@ -333,41 +319,16 @@ class HeaderFactory:
                    AdditionalQuestionsHeader(), PrivacyPolicyHeader(), ReviewApplicationHeader(),
                    VoluntarySelfIdentification()]
 
-        # Create an event to signal when a header is found
-        header_found_event = threading.Event()
-        form_lock = threading.Lock()
         def create_header_task(header: Header):
             try:
-                with form_lock:
-                    if header.detect(form):
-                        header_found_event.set()  # Signal that a header is found
-                        return header
+                if header.detect(form):
+                    return header
             except Exception as e:
                 print(f"Error in create_header_task: {e}")
-            return None
-
-        # Create a Future object for each header
-        futures = []
-        with ThreadPoolExecutor(max_workers=len(headers)) as executor:
-            for header in headers:
-                if not header_found_event.is_set():
-                    futures.append(executor.submit(create_header_task, header))
-                else:
-                    break  # Cancel the loop if a header is found
-
-            # Wait for any of the threads to find a header
-            concurrent.futures.wait(futures, return_when=concurrent.futures.FIRST_COMPLETED)
-
-            # Cancel all remaining tasks in the pool
-            for future in futures:
-                if not future.done():
-                    future.cancel()
-
-            # Find the header that was detected and return it
-            for future in futures:
-                if future.done() and future.result():
-                    print(future.result().header)
-                    return future.result()
-
+                return None
+        for header in headers:
+            head = create_header_task(header)
+            if head != None: # found header
+                return head
         # Return UnknownHeader if no header was found
         return UnknownHeader()

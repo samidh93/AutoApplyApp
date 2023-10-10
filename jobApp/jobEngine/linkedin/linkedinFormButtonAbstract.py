@@ -157,7 +157,8 @@ class ButtonFactory:
 
         for button in buttons:
             butt= create_button_task(button=button)
-        # Raise an exception if no button is detected
-        if butt is None:
-            raise ValueError("No button detected")
-        return butt
+            # Raise an exception if no button is detected
+            if butt != None:
+                return butt
+        
+        raise ValueError("No button detected")

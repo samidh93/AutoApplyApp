@@ -20,9 +20,6 @@ import threading
 
 
 class Divs(ABC):
-    label_elements_map = {}
-    lock = threading.Lock()  # Create a lock for synchronization
-
     @abstractmethod
     def find(self, form: WebElement):
         pass
@@ -159,23 +156,23 @@ class DivsAdditionalQuestions(Divs):
             print("No div selection grouping elements found")
 
     def send_user_questions_answers(self, user: CandidateProfile, divs: [WebElement]):
-        def process_elements(div, user):
+ 
+        def process_elements(div:WebElement, user):
             try:
-                if isinstance(div, list):
-                    elem_type: WebElement = div[0].find_element(
-                        By.TAG_NAME, "input").get_attribute("type")
-                    if elem_type == "radio":
-                        # handle dialog questions
-                        LinkedinQuestions.process_radio_question(
-                             div, user)
-                    elif elem_type == "checkbox":
-                        # handle checkbox questions
-                        LinkedinQuestions.process_checkbox_question(
-                             div, user)
-                elif div.get_attribute("type") == "text" or div.tag_name == 'textarea':
+                if LinkedinUtils.isRadioElement(div):
+                    # handle radio elems
+                    LinkedinQuestions.process_radio_question(
+                         div, user)
+                elif LinkedinUtils.isCheckboxElement(div):
+                    # handle checkbox questions
+                    LinkedinQuestions.process_checkbox_question(
+                         div, user)
+                elif LinkedinUtils.isTextElment(div):
                     # handle text based questions
                     LinkedinQuestions.process_text_question(div, user)
-                else:
+                elif LinkedinUtils.isTextAreaElment(div):
+                    LinkedinQuestions.process_text_question(div, user)
+                elif LinkedinUtils.isSelectElement(div):
                     # handle select questions
                     LinkedinQuestions.process_select_question(div, user)
             except Exception as e:

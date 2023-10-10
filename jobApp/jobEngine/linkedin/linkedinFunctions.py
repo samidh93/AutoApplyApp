@@ -18,6 +18,43 @@ from datetime import date
 class LinkedinUtils:
     def __init__(self) -> None:
         pass
+
+    @staticmethod
+    def isTextElment(div:WebElement)->bool:
+        try:
+            if div.find_element(By.TAG_NAME , "input").get_attribute("type") == "text":
+                return True
+        except:
+                return False
+    @staticmethod
+    def isTextAreaElment(div:WebElement)->bool:
+        try:
+            if div.find_element(By.TAG_NAME, "textarea" ).tag_name == 'textarea':
+                return True
+        except:
+                return False
+    @staticmethod
+    def isRadioElement(div:WebElement)->bool:
+        try:
+            if div.find_elements(By.TAG_NAME,"input")[0].get_attribute("type") == "radio":
+                return True
+        except:
+            return False
+        
+    @staticmethod
+    def isCheckboxElement(div:WebElement)->bool:
+        try:
+            if div.find_elements(By.TAG_NAME,"input")[0].get_attribute("type") == "checkbox":
+                return True
+        except:
+            return False
+    @staticmethod
+    def isSelectElement(div:WebElement)->bool:
+        try:
+            if div.find_element(By.TAG_NAME,"select").tag_name == "select":
+                return True
+        except:
+            return False
     @staticmethod
     def send_value( element: WebElement, value: str):
         try:
@@ -62,15 +99,17 @@ class LinkedinUtils:
                     elem.click()
     @staticmethod
     def select_option( div:WebElement, user_value:str):
+        googleTranslator = Translator()
         try:
             select_element = div.find_element(By.TAG_NAME, "select")
             select = Select(select_element)
-            if user_value == "first":
-                print("no user data, selecting default first option: ", select.options[1].accessible_name)
+            if user_value == "first" or None:
+                print("no user data to the qs, selecting default first option: ", select.options[1].accessible_name)
                 select.select_by_visible_text(select.options[1].accessible_name)     
             if isinstance(select.options, Iterable):
                 for option in select.options:
-                    if user_value.lower() in option.accessible_name.lower(): # if user value is in any of the option
+                    translated = googleTranslator.translate(option.accessible_name, dest='en').text.lower()
+                    if user_value.lower() in translated: # if user value is in any of the option
                         select.select_by_visible_text(option.accessible_name)
                         print("user option selected: ", select.first_selected_option.accessible_name)
                         return 
@@ -92,7 +131,7 @@ class LinkedinQuestions:
         try:
             label_translated:str = googleTranslator.translate(div.text, dest='en').text # translate qs to en
             print("processing translated text question: ", label_translated)
-            start_date_keywords = ["start date", "earliest", "notice period", "when"]
+            start_date_keywords = ["start date", "earliest", "notice period", "when", "available from"]
             platform_keywords = ["aware of us", "find out about us"]
             experience_keywords =["how many", "years", "experience", "how long"]
             if "salary" in label_translated.lower():
@@ -119,14 +158,17 @@ class LinkedinQuestions:
         googleTranslator = Translator()
         qs_type= "radio question"
         try:
-            print("processing radio question: ", label.text.strip())
-            for element in div:
+            source_qs = div.text.split('\n', 1)[0] or div.text
+            print("processing radio question: ", source_qs)
+            elements = div.find_elements(By.TAG_NAME, "label")
+            for element in elements:
                 print("radio option: ", element.text)
-                if element.text.lower() == googleTranslator.translate("yes", dest='en').text.lower():
-                    label = element.find_element(By.TAG_NAME, "label")
-                    if not label.is_selected():
-                        label.click()
-                        print(f"element {element.text} clicked successfully.")
+                source_lang = googleTranslator.translate(source_qs, dest='en').src
+                translated = googleTranslator.translate(element.text.lower().strip(), src=source_lang,dest='en').text.lower() 
+                if translated == "yes":
+                    if not element.is_selected():
+                        element.click()
+                        print(f"element {translated} clicked successfully.")
                         return
         except:
             print(f"unable to process {qs_type}") 
@@ -147,7 +189,7 @@ class LinkedinQuestions:
             elif "visa" in label_translated.lower():
                 LinkedinUtils.select_option(div, user.visa_required)
             elif "how did you" in label_translated.lower():
-                LinkedinUtils.select_option(div, "linkedin")
+                LinkedinUtils.select_option(div, user.current_job.platform)
             elif "gender" in label_translated.lower():
                 LinkedinUtils.select_option(div, user.gender)
             # handle questions that can be answered by yes or no
@@ -169,7 +211,7 @@ class LinkedinQuestions:
             legend = div.find_element(By.TAG_NAME, "legend")
             print("checkbox question: ", legend.text.strip() )
             # if only one checkbox to click, just click it if is not already clicked
-            checkboxElems:WebElement = div.find_elements(By.TAG_NAME, "label")
+            checkboxElems:[WebElement] = div.find_elements(By.TAG_NAME, "label")
             if len(checkboxElems) == 1:
                 if not checkboxElems[0].is_selected():
                     checkboxElems[0].click()
@@ -178,16 +220,17 @@ class LinkedinQuestions:
             for element in checkboxElems:
                 #for opt_label in label_options:
                     print("checkbox option: ", element.text)
-                    if element.text.lower() == googleTranslator.translate("I Agree Terms & Conditions", dest='en').text.lower():
+                    translated = googleTranslator.translate(element.text.lower(), dest='en').text.lower()
+                    if googleTranslator.translate("I Agree Terms & Conditions", dest='en').text.lower() in translated:
                         if not element.is_selected():
                             element.click()
-                            print(f"element {element.text} clicked successfully.")
+                            print(f"element {translated} clicked successfully.")
                             return
-                    elif googleTranslator.translate("Are you willing", dest='en').text.lower() in element.text.lower():
+                    elif googleTranslator.translate("Are you willing", dest='en').text.lower() in translated:
                         if not element.is_selected():
                             element.click()
-                            print(f"element {element.text} clicked successfully.")
+                            print(f"element {translated} clicked successfully.")
                             return          
         except Exception as e:
             print(f"unable to process {qs_type}, error {e}") 
-
+    

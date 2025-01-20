@@ -20,4 +20,4 @@ activate
 pip install -r requirements.txt
 
 # Deactivate the virtual environment (optional)
-deactivate
+#deactivate

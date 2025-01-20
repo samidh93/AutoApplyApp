@@ -29,5 +29,3 @@ The vision is to relief humans from repeting the same tasks such filling forms, 
 ![design](<docs/design.png>)
 
 
-
-

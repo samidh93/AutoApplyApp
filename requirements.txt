@@ -3,14 +3,6 @@ colorlog
 pydantic
 requests
 selenium
-dotenv
-logging
-time
-json
-os
-platform
-zipfile
-shutil
 pathlib
-unittest
 typing
+pytest

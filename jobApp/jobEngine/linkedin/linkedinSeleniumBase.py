@@ -8,8 +8,7 @@ import time
 import logging
 from urllib.parse import urlparse
 from ..config.config import UserConfig
-import urllib.request
-from ..chromedriver.chromeDriver import ConfigureChromeDriver
+from webdriver_manager.chrome import ChromeDriverManager
 
 logger = logging.getLogger(__name__)
 """ Base class with base configuration for linkedin login, search and selenium driver"""
@@ -32,7 +31,7 @@ class LinkedinSeleniumBase:
 
     def _create_selenium_driver(self, config_file,implicit_wait=5 ):
         
-        driver = ConfigureChromeDriver(config_file).driver
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
         driver.implicitly_wait(implicit_wait)
         return driver
     

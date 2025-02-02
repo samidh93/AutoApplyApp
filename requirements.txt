@@ -6,3 +6,16 @@ selenium
 pathlib
 typing
 pytest
+google-auth
+google-auth-oauthlib
+google-api-python-client
+PyPDF2
+pdfplumber
+python-docx
+openai
+deprecation
+deprecated
+phonenumbers
+googletrans
+python-dotenv
+webdriver-manager

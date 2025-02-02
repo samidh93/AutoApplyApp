@@ -1,14 +1,13 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
 import json
 import time
 import logging
 from urllib.parse import urlparse
 from ..config.config import UserConfig
 from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.service import Service as ChromeService
 
 logger = logging.getLogger(__name__)
 """ Base class with base configuration for linkedin login, search and selenium driver"""

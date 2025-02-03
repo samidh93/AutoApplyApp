@@ -121,10 +121,10 @@ def createRequest():
             "created_date": "created_date"
         },
         "search_params": {
-            "job": "software engineer",
+            "job": "system engineer",
             "location": "Germany",
-            "limit": "10",
-            "f_WT": 2 #remote
+            "limit": "20",
+            "f_WT": "1,2,3" #  1 = in office, 2 = remote, 3 = hybrid
         },
         "candidate": {
             "firstname": first,
@@ -177,6 +177,6 @@ if __name__ == "__main__":
        
     testapp = appCreatorLinkedin(applyReq)
     #testapp.tryCredentialsLinkedin()
-    #testapp.searchJobs()
-    testapp.applyJobs()
+    testapp.searchJobs()
+    #testapp.applyJobs()
 

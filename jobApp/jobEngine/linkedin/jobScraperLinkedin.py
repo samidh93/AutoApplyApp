@@ -127,6 +127,7 @@ class JobScraperLinkedin:
             if self.limit_reached_event.is_set():
                     logger.info("limit reached breaking job loop")
                     break
+            self.moveClickJob(driver, job)
             self.processJob(job, page_number)
         logger.info(f"finishing page thread: {thread_id}")
         driver.quit()
@@ -173,8 +174,8 @@ class JobScraperLinkedin:
         total_pages = self.getAvailablesPages(self.driver) or 1
         jobs_per_page = 25
         # assume the number of pages: (app_limit)/25 + 1, we add extra one
-        page_to_visit = (self.application_limit // jobs_per_page) + (2 if self.application_limit % jobs_per_page > 0 else 1) 
-        #page_to_visit = int(self.application_limit/jobs_per_page) + 1
+        #page_to_visit = (self.application_limit // jobs_per_page) + (2 if self.application_limit % jobs_per_page > 0 else 1) 
+        page_to_visit = int((self.application_limit/jobs_per_page) + 1)
         if page_to_visit > total_pages:
             page_to_visit = total_pages
         logger.info(f"number of pages available to visit: {page_to_visit}")
@@ -226,7 +227,7 @@ class JobScraperLinkedin:
             job_title = jobDataExtractorObj.getJobTitleSelenium(job)
             company = jobDataExtractorObj.getCompanySelenium(job)
             #num_applicants = jobDataExtractorObj.getNumberApplicants(job)
-            published = jobDataExtractorObj.getPublicationDate(job)
+            #published = jobDataExtractorObj.getPublicationDate(job)
             #job_description = jobDataExtractorObj.getJobDescriptionText( job)
             #emails = jobDataExtractorObj.getCompanyEmails(job)
             #poster_name = jobDataExtractorObj.getHiringManagerName(job)
@@ -241,13 +242,13 @@ class JobScraperLinkedin:
             # use it when to extract all details, otherwise details will be None
             self.extractJobData(job,jobDataExtractor )
             applied = False
-            job = Job(id=index, job_id=jobDataExtractor.job_id, link=jobDataExtractor.job_link,
+            jobObj = Job(id=index, job_id=jobDataExtractor.job_id, link=jobDataExtractor.job_link,
                       job_title=jobDataExtractor.job_title, job_location=self.job_location,
                       company_name=jobDataExtractor.company, num_applicants=jobDataExtractor.num_applicants,
                       posted_date=jobDataExtractor.published, job_description=jobDataExtractor.job_description,
                       company_emails=jobDataExtractor.emails, job_poster_name=jobDataExtractor.hiring_manager,
                       application_type=self.application_type, applied=applied)
-            return job
+            return jobObj
         except:
             logger.error("error creating job obj")
 

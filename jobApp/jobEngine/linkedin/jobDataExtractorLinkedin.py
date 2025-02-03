@@ -40,29 +40,28 @@ class JobDetailsExtractorLinkedin:
             logger.info(f"job title: {self.job_title}")
             return self.job_title 
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
 
     def getCompanySelenium(self, job: WebElement):
         #find company title 
         what_data = "company name"
         try:
-            company=  job.find_element(By.CLASS_NAME,"job-card-container__primary-description ")
-            self.company = company.text
+            self.company=  job.find_element(By.CLASS_NAME,"artdeco-entity-lockup__subtitle").text
             logger.info(f"company: {self.company}")
             return self.company
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
 
     def getLocationSelenium(self, job: WebElement):
         #find job title 
         what_data = "location"
         try:
-            self.extracted_location = job.find_elements(By.CLASS_NAME, "job-card-container__metadata-item ")[0].text
+            self.extracted_location = job.find_elements(By.CLASS_NAME, "job-card-container__metadata-wrapper")[0].text
             # try via html source code: already given in the search bar: skipping here
             logger.info(f"location: {self.extracted_location}")
             return self.extracted_location
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
 
     def getNumberApplicants(self, element:WebElement):
         #find job title 
@@ -78,7 +77,7 @@ class JobDetailsExtractorLinkedin:
             logger.info(f"num_applicants: {self.num_applicants}")
             return self.num_applicants
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
 
     def getPublicationDate(self, element:WebElement):
         #find job title 
@@ -88,7 +87,7 @@ class JobDetailsExtractorLinkedin:
             logger.info(f"published: {self.published}")
             return self.published
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
     
     def getJobID(self, element:WebElement):
         # extract job id 
@@ -100,7 +99,7 @@ class JobDetailsExtractorLinkedin:
             logger.info("Job ID: %s", self.job_id)
             return self.job_id
         except:
-            logger.info(f"Exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"Exceptionn occured while extracting job data: {what_data}")
 
     def getJobDescriptionText(self, element:WebElement):
 
@@ -116,7 +115,7 @@ class JobDetailsExtractorLinkedin:
             #logger.info(content)
             return self.job_description
         except:
-            logger.info(f"Exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"Exceptionn occured while extracting job data: {what_data}")
 
     def getCompanyEmails(self, element:WebElement):
         #find job title 
@@ -133,7 +132,7 @@ class JobDetailsExtractorLinkedin:
             logger.info("Extracted Email Addresses:", self.emails)
             return self.emails
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
 
     def getHiringManagerName(self, element:WebElement):
         #find job title 
@@ -147,5 +146,5 @@ class JobDetailsExtractorLinkedin:
             logger.info("Job Poster's Name: %s", self.hiring_manager)
             return self.hiring_manager
         except:
-            logger.info(f"exceptionn occured while extracting job data: {what_data}")
+            logger.error(f"exceptionn occured while extracting job data: {what_data}")
             return None

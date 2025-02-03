@@ -72,7 +72,7 @@ class LinkedinSeleniumBase:
         incomingJsondata, default_user_json = self.parseIncomingDataAsJson(source, defaultUser)
         # User data
         user_data:dict = incomingJsondata.get("user", default_user_json.get("user"))
-        logger.info(f"user data: {user_data}")
+        #logger.info(f"user data: {user_data}")
         self.email = user_data.get('email', default_user_json.get("email"))
         self.password = user_data.get('password', default_user_json.get("password"))
         # otp link

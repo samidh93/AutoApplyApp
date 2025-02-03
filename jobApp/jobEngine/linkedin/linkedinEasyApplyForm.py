@@ -133,12 +133,11 @@ class LinkedInEasyApplyFormHandler:
         # click on the easy apply button, skip if already applied to the position
         try:
             # simulate click to interact
-            element = "t-24.t-bold.job-details-jobs-unified-top-card__job-title"
-            dummy_clicker = driver.find_element(By.CLASS_NAME, element)
-            #dummy_clicker.click()
             logger.info("try clicking button easy apply")
             # Wait for the button element to be clickable
-            button: WebElement = WebDriverWait(driver, 30).until(EC.element_to_be_clickable((By.CLASS_NAME, "jobs-apply-button--top-card")))            
+            button: WebElement = WebDriverWait(driver, 30).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, "jobs-apply-button--top-card"))
+            )
             button.click()
             self.button_apply_clicked = True
             logger.info("button easy apply clicked")

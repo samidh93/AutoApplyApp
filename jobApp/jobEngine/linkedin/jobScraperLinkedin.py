@@ -19,7 +19,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class JobScraperLinkedin:
-    def __init__(self, linkedin_data_file, csv_file_out='jobApp/data/jobs.csv',  application_type="internal" or "external"):
+    def __init__(self, linkedin_data_file, csv_file_out='output/jobs.csv',  application_type="internal" or "external"):
         # the base class
         self.linkedin_data = linkedin_data_file
         self.linkedinObj = LinkedinSeleniumBase(linkedin_data_file)
@@ -37,8 +37,8 @@ class JobScraperLinkedin:
         self.global_job_index = 0  # track the global job index, used for determing the limit
         self.job_index_list = []
         self.limit_reached_event = threading.Event()
-        self.page_threads = 1  # import to calculate overload of running more than one page thread
-        self.job_threads = 1  # import to calculate overload of running more than one job thread
+        self.page_threads = 0  # import to calculate overload of running more than one page thread
+        self.job_threads = 0  # import to calculate overload of running more than one job thread
 
     def getJobCountFound(self):
         # login to get easy apply jobs
@@ -123,6 +123,32 @@ class JobScraperLinkedin:
         # logger.info the list of extracted job titles
         logger.info(f"number of jobs on this page: {len(job_list)}")
         # Create a ThreadPoolExecutor with a maximum number of threads
+        for i, job in enumerate(job_list):
+            if self.limit_reached_event.is_set():
+                    logger.info("limit reached breaking job loop")
+                    break
+            self.processJob(job, page_number)
+        logger.info(f"finishing page thread: {thread_id}")
+        driver.quit()
+
+    def processPageThreaded(self, page_number, total_pages,  page_cookies):
+        thread_id = threading.get_ident()
+        if self.limit_reached_event.is_set():
+            logger.info(f"limit reached return current page thread: {thread_id}")
+            return
+        logger.info(
+            f"visiting page number {page_number}, remaining pages {total_pages - page_number-1}")
+        logger.info(f"Current Page Thread ID: {threading.current_thread().name}")
+        driver = self.driver
+        if page_number > 0:
+            linkedinObj = LinkedinSeleniumBase(self.linkedin_data)
+            linkedinObj.saved_cookies = page_cookies
+            driver = linkedinObj.getEasyApplyJobSearchRequestUrlResults(
+                start=page_number*25)
+        job_list = self.getListOfJobsOnPage(driver)
+        # logger.info the list of extracted job titles
+        logger.info(f"number of jobs on this page: {len(job_list)}")
+        # Create a ThreadPoolExecutor with a maximum number of threads
         prefix = f"page_{page_number}_job"
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.job_threads, thread_name_prefix=prefix) as executor:
             futures = []
@@ -156,7 +182,7 @@ class JobScraperLinkedin:
         # to be sure we are in the limit of pages
         self.page_threads = page_to_visit
         # need more investigation how driver handles threads, for now 2 seems to be ok
-        self.job_threads = 2
+        self.job_threads = 0
         self.job_index_list = [i * jobs_per_page for i in range(page_to_visit)]
         # Create a ThreadPoolExecutor with a specified number of threads
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.page_threads) as executor:
@@ -223,7 +249,7 @@ class JobScraperLinkedin:
                       application_type=self.application_type, applied=applied)
             return job
         except:
-            logger.info("error creating job obj")
+            logger.error("error creating job obj")
 
     def getTotalJobsSearchCount(self, element: WebElement):
        # find the total amount of results
@@ -235,7 +261,7 @@ class JobScraperLinkedin:
             logger.info(f"total jobs found: {total_results_int}")
             return total_results_int
         except NoSuchElementException:
-            logger.info("no results found ")
+            logger.error("no results found ")
 
     def getAvailablesPages(self, element: WebElement):
         # find pages availables
@@ -249,7 +275,7 @@ class JobScraperLinkedin:
             logger.info(f"total pages availables: {pages_availables}")
             return pages_availables
         except:
-            logger.info("exception available pages occured")
+            logger.error("exception available pages occured")
 
     def getListOfJobsOnPage(self, driver: webdriver.Chrome):
         # find jobs on page
@@ -257,15 +283,15 @@ class JobScraperLinkedin:
             time.sleep(1)
             WebDriverWait(driver, 5).until(
                 EC.presence_of_element_located(
-                    (By.CLASS_NAME, "scaffold-layout__list-container"))
+                    (By.CLASS_NAME, "scaffold-layout__list"))
             )
             jobs_container = driver.find_element(
-                By.CLASS_NAME, "scaffold-layout__list-container")
+                By.CLASS_NAME, "scaffold-layout__list")
             li_elements = jobs_container.find_elements(
-                By.CSS_SELECTOR, "li[class*='jobs-search-results__list-item']")
+                By.CSS_SELECTOR, "li[class*='relative scaffold-layout__list-item']")
             return li_elements
         except:
-            logger.info("exception list jobs occured")
+            logger.error("exception list jobs occured")
 
     def moveClickJob(self, driver: WebElement, job: WebElement):
         # move the cursor to the job, click it to focus
@@ -276,7 +302,7 @@ class JobScraperLinkedin:
             hover.perform()
             job.click()
         except:
-            logger.info("exception move to job occured")
+            logger.error("exception move to job occured")
 
     def writeDataToCsv(self, Data_in:[dict]  , Csv_file_out):
         # Write the dictionary to the CSV file

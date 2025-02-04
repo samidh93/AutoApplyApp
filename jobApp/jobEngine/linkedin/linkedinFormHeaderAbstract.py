@@ -18,6 +18,8 @@ import concurrent.futures
 import threading
 import logging
 logger = logging.getLogger(__name__)
+import asyncio
+
 # Abstract base class for headers
 
 
@@ -41,7 +43,10 @@ class ContactInfoHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            translated = googleTranslator.translate(header, dest='en').text.lower()
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
             logger.info("page header translated: %s", translated)
             if translated == self.header.lower():
                 return True
@@ -68,9 +73,12 @@ class ResumeHeader(Header):
         try:
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() in self.headers:
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated in self.headers:
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.headers[0]} header found")
@@ -96,9 +104,12 @@ class HomeAddressHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -124,9 +135,12 @@ class WorkExperienceHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -145,9 +159,12 @@ class EducationHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -166,9 +183,12 @@ class ScreeningQuestionsHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -180,15 +200,23 @@ class ScreeningQuestionsHeader(Header):
 
 
 class AdditionalQuestionsHeader(Header):
-    headers = ["additional questions", "personal info", "additional"]
+    headers = [
+        "additional questions",
+        "personal info",
+        "additional",
+        "questions",
+        "further questions",
+    ]
 
     def detect(self, form: WebElement):
         try:
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            translated = googleTranslator.translate(
-                header, dest='en').text.lower()
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
             if translated in self.headers:
                 logger.info("page header translated: %s", translated)
                 return True
@@ -216,9 +244,12 @@ class PrivacyPolicyHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -244,9 +275,12 @@ class ReviewApplicationHeader(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-18').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -265,9 +299,12 @@ class VoluntarySelfIdentification(Header):
             # Find the <h3> element with class "t-16 t-bold".
             header = form.find_element(By.TAG_NAME, 'h3').text
             googleTranslator = Translator()
-            if googleTranslator.translate(header, dest='en').text.lower() == self.header.lower():
-                logger.info("page header translated: %s",
-                      googleTranslator.translate(header, dest='en').text)
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            if translated == self.header.lower():
+                logger.info("page header translated: %s", translated)
                 return True
         except:
             logger.info(f"no {self.header} header found")
@@ -294,7 +331,11 @@ class UnknownHeader(Header):
             header = form.find_element(By.CSS_SELECTOR, 'h3.t-16').text
             logger.info("new header detected: %s", header)
             googleTranslator = Translator()
-
+            # Run the coroutine to get the translation result.
+            translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
+            # Now access the 'text' attribute and convert to lowercase.
+            translated = translation_result.text.lower()
+            logger.info("new header translated: %s", translated)
         except:
             logger.info("no header found")
 

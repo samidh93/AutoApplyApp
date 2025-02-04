@@ -18,6 +18,7 @@ from .linkedinFunctions import LinkedinUtils, LinkedinQuestions
 from concurrent.futures import ThreadPoolExecutor
 import threading
 import logging
+import asyncio
 logger = logging.getLogger(__name__)
 
 class Divs(ABC):
@@ -149,7 +150,7 @@ class DivsAdditionalQuestions(Divs):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
-                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+                By.CLASS_NAME, 'fb-dash-form-element')
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -200,7 +201,7 @@ class DivsPrivacyPolicy(Divs):
         googleTranslator = Translator()
         for div in divs:
             try:
-                if 'PRIVACY POLICY'.lower() in googleTranslator.translate(div.text, dest='en').text.lower():
+                if 'PRIVACY POLICY'.lower() in asyncio.run(googleTranslator.translate(div.text, dest='en')).text.lower():
                     # click accept the privacy policy
                     logger.info("clicking privacy policy")
                     LinkedinQuestions.process_checkbox_question(
@@ -228,7 +229,7 @@ class DivsVoluntarySelfIdentification(Divs):
         googleTranslator = Translator()
         for div in divs:
             try:
-                if 'gender'.lower() in googleTranslator.translate(div.text, dest='en').text.lower():
+                if 'gender'.lower() in asyncio.run(googleTranslator.translate(div.text, dest='en')).text.lower():
                     # click accept the privacy policy
                     logger.info("selecting gender")
                     LinkedinQuestions.process_select_question(

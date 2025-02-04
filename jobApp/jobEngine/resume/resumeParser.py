@@ -10,7 +10,7 @@ import docx
 from urllib.parse import urlparse
 from datetime import date
 from ..config.config import UserConfig
-#from docx2pdf import convert
+import shutil
 import logging
 logger = logging.getLogger(__name__)
 
@@ -98,13 +98,13 @@ class Resume:
             # Construct the full path for the new location
             new_path = os.path.join(output_directory, new_filename)
             
-            # Move and rename the input file to the specified output directory
-            os.rename(input_path, new_path)
+            # copy the file to the new location
+            shutil.copy(input_path, new_path)
             
-            logger.info(f"PDF file moved and renamed to {new_path}.")
+            logger.info(f"PDF file copied and renamed to {new_path}.")
             return new_path
         except Exception as e:
-            logger.info(f"An error occurred: {str(e)}")
+            logger.error(f"An error occurred: {str(e)}")
         
         return None
 

@@ -7,7 +7,7 @@ import logging
 from dotenv import load_dotenv
 import os
 import logging_config  # Import the logging configuration
-
+import json
 logger = logging.getLogger(__name__)
 
 
@@ -100,83 +100,17 @@ class appCreatorLinkedin:
             logger.error(f"exception: {str(E)}")
             raise
 
-def createRequest():
-    # Load environment variables from the .env file
-    load_dotenv()
-    first = os.getenv("FIRST")
-    last = os.getenv("LAST")
-    email = os.getenv("EMAIL")
-    password = os.getenv("PASSWORD")
-    cv= os.getenv("CV")
-    number = os.getenv("NUMBER")
-    otp_link = os.getenv("OTP")
-    return { 
-        "user": {
-            "email": email,
-            "password": password,
-            "otp_link": otp_link,
-            "owner": "_owner",
-            "field_id": "id",
-            "platform": "linkedin",
-            "created_date": "created_date"
-        },
-        "search_params": {
-            "job": "system engineer",
-            "location": "Germany",
-            "limit": "20",
-            "f_WT": "1,2,3" #  1 = in office, 2 = remote, 3 = hybrid
-        },
-        "candidate": {
-            "firstname": first,
-            "lastname": last,
-            "gender": "male",
-            "resume": cv,
-            "phone_number": number,
-            "address": {
-                "street": "singerstr",
-                "city": "berlin",
-                "plz": "10315"
-            },
-            "limit": "150",
-            "visa_required": "yes",
-            "years_experience": "5",
-            "desired_salary": "50000",
-            "experiences": [
-                {
-                    "job_title": "engineer",
-                    "company": "google",
-                    "duration": "2 years"
-                }
-            ],
-            "educations": [
-                {
-                    "university": "tu",
-                    "degree": "master",
-                    "duration": "2 years"
-                }
-            ],
-            "skills": {
-                "Languages": {
-                    "english": "good",
-                    "german": "good",
-                    "french": "good"
-
-                },
-                "Softwares": {
-                    "ms_word": "good",
-                    "powerpoint": "good"
-                }
-            }
-        },
-        "field_id": "id",
-        #"debug": True
-    }
+def createRequest(file_path):
+    # Load json file
+    with open(file_path, "r") as f:
+        data = json.load(f)
+    return data
 
 if __name__ == "__main__":
-    applyReq = createRequest()
-       
+
+    applyReq = createRequest("input/sami_dhiab.json")
     testapp = appCreatorLinkedin(applyReq)
     #testapp.tryCredentialsLinkedin()
-    testapp.searchJobs()
-    #testapp.applyJobs()
+    #testapp.searchJobs()
+    testapp.applyJobs()
 

@@ -15,6 +15,7 @@ from googletrans import Translator
 from .linkedinElementsAbstract import LabelElement, InputElement, SpanElement
 from datetime import date
 import logging
+import asyncio
 logger = logging.getLogger(__name__)
 
 class LinkedinUtils:
@@ -110,7 +111,7 @@ class LinkedinUtils:
                 select.select_by_visible_text(select.options[1].accessible_name)     
             if isinstance(select.options, Iterable):
                 for option in select.options:
-                    translated = googleTranslator.translate(option.accessible_name,src='de', dest='en').text.lower()
+                    translated = asyncio.run(googleTranslator.translate(option.accessible_name,src='de', dest='en')).text.lower()
                     if user_value.lower() in translated: # if user value is in any of the option
                         select.select_by_visible_text(option.accessible_name)
                         logger.info("user option selected: %s", select.first_selected_option.accessible_name)
@@ -130,7 +131,7 @@ class LinkedinQuestions:
         googleTranslator = Translator()
         qs_type= "text question"
         try:
-            label_translated:str = googleTranslator.translate(div.text, dest='en').text # translate qs to en
+            label_translated:str = asyncio.run(googleTranslator.translate(div.text, dest='en')).text # translate qs to en
             logger.info("processing translated text question: %s", label_translated)
             start_date_keywords = ["start date", "earliest", "notice period", "when", "available from"]
             platform_keywords = ["aware of us", "find out about us"]
@@ -164,8 +165,8 @@ class LinkedinQuestions:
             elements = div.find_elements(By.TAG_NAME, "label")
             for element in elements:
                 logger.info("radio option: %s", element.text)
-                source_lang = googleTranslator.translate(source_qs, dest='en').src
-                translated = googleTranslator.translate(element.text.lower().strip(), src=source_lang,dest='en').text.lower() 
+                source_lang = asyncio.run(googleTranslator.translate(source_qs, dest='en')).src
+                translated = asyncio.run(googleTranslator.translate(element.text.lower().strip(), src=source_lang,dest='en')).text.lower() 
                 if translated == "yes":
                     if not element.is_selected():
                         element.click()
@@ -179,7 +180,7 @@ class LinkedinQuestions:
         googleTranslator = Translator()
         try:
             logger.info("processing select question: %s", div.text.split('\n', 1)[0])
-            label_translated:str = googleTranslator.translate(div.text.split('\n', 1)[0], dest='en').text.lower() # translate qs to en
+            label_translated:str = asyncio.run(googleTranslator.translate(div.text.split('\n', 1)[0], dest='en')).text.lower() # translate qs to en
             # handle languages questions : basic , good etc.. 
             if "english" in label_translated.lower():
                     LinkedinUtils.select_option(div, user.skills.languages.get_level("english")) 
@@ -221,13 +222,13 @@ class LinkedinQuestions:
             for element in checkboxElems:
                 #for opt_label in label_options:
                     logger.info("checkbox option: %s", element.text)
-                    translated = googleTranslator.translate(element.text.lower(), dest='en').text.lower()
-                    if googleTranslator.translate("I Agree Terms & Conditions", dest='en').text.lower() in translated:
+                    translated = asyncio.run(googleTranslator.translate(element.text.lower(), dest='en')).text.lower()
+                    if asyncio.run(googleTranslator.translate("I Agree Terms & Conditions", dest='en')).text.lower() in translated:
                         if not element.is_selected():
                             element.click()
                             logger.info(f"element {translated} clicked successfully.")
                             return
-                    elif googleTranslator.translate("Are you willing", dest='en').text.lower() in translated:
+                    elif asyncio.run(googleTranslator.translate("Are you willing", dest='en')).text.lower() in translated:
                         if not element.is_selected():
                             element.click()
                             logger.info(f"element {translated} clicked successfully.")

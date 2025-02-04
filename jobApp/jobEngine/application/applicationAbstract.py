@@ -32,7 +32,7 @@ class Application(ABC):
         self.jobs = self.load_jobs_from_csv()
         self.lock = threading.Lock()  # Create a lock for thread-safe progress updates
         self.limit_reached_event = threading.Event()
-        self.max_browsers= 4
+        self.max_browsers= 1
         self.completed_jobs = 0  # To keep track of completed jobs
         self.success_jobs = 0
 

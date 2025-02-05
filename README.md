@@ -1,5 +1,5 @@
 # Auto Apply App
-web app to automate search and apply for jobs. 
+python app to automate search and apply for jobs. 
 
 ## Features
 - [x] user authentication 
@@ -79,3 +79,40 @@ use login command to login to linkedin (required only once), then the app will k
 use jobs-search command to search for jobs. the jobs are stored inside jobApp/data as csv file. 
 - --jobs-apply: 
 use jobs-apply command to apply for jobs saved inside jobApp/data as csv file. if the jobs are already applied, the app will not apply for them again. the app will update the csv file with the new status of the job.
+
+## user json file
+here is the most of the important fields in the json file:
+- user: contains the credentials to login to the platform
+- search_params: contains the parameters to search for jobs
+- candidate: contains the candidate information to apply for jobs
+
+### user
+- email: the email of the user
+- password: the password of the user
+- otp_link: the otp to login to the platform
+- owner: the owner of the user
+- field_id: the field id of the user
+- platform: the platform of the user
+- created_date: the date of the user
+
+### search_params
+- job: the job to search for
+- location: the location to search for the job
+- limit: the number of jobs to search for
+- f_WT: the work type to search for 1: onsite, 2: remote, 3: hybrid
+
+### candidate
+- firstname: the first name of the candidate
+- lastname: the last name of the candidate
+- gender: the gender of the candidate
+- resume: the resume of the candidate
+- phone_number: the phone number of the candidate
+- address: the address of the candidate
+- limit: the number of jobs to apply for
+- visa_required: the visa required for the job
+- years_experience: the years of experience of the candidate
+- desired_salary: the desired salary of the candidate
+- experiences: the experiences of the candidate
+- skills: the skills of the candidate
+- field_id: the field id of the candidate
+- debug: the debug mode of the candidate

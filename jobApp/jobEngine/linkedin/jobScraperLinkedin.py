@@ -222,17 +222,17 @@ class JobScraperLinkedin:
 
     def extractJobData(self, job: WebElement, jobDataExtractorObj:  JobDetailsExtractorLinkedin):
         try:
-            #div_element = job.find_element(
-            #    By.CSS_SELECTOR, 'div.scaffold-layout__detail.overflow-x-hidden.jobs-search__job-details')
+            wait = WebDriverWait(self.driver, 10)
+            element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "div.job-view-layout.jobs-details")))
             job_title = jobDataExtractorObj.getJobTitleSelenium(job)
             company = jobDataExtractorObj.getCompanySelenium(job)
-            #num_applicants = jobDataExtractorObj.getNumberApplicants(job)
-            #published = jobDataExtractorObj.getPublicationDate(job)
-            #job_description = jobDataExtractorObj.getJobDescriptionText( job)
-            #emails = jobDataExtractorObj.getCompanyEmails(job)
-            #poster_name = jobDataExtractorObj.getHiringManagerName(job)
+            num_applicants = jobDataExtractorObj.getNumberApplicants(element)
+            published = jobDataExtractorObj.getPublicationDate(element) 
+            job_description = jobDataExtractorObj.getJobDescriptionText(element)
+            emails = jobDataExtractorObj.getCompanyEmails(job_description)
+            poster_name = jobDataExtractorObj.getHiringManagerName(element)
         except:
-            logger.info("error extracting job data")
+            logger.error("error extracting job data")
 
     def createJobObj(self, index: int, job: WebElement) -> Job:
         try:
@@ -268,7 +268,7 @@ class JobScraperLinkedin:
         # find pages availables
         try:
             list_pages = element.find_element(
-                By.XPATH, '//ul[contains(@class, "artdeco-pagination__pages--number")]')
+                By.XPATH, '//ul[contains(@class, "jobs-search-pagination__pages")]')
             list_pages_availables = list_pages.find_elements(By.TAG_NAME, 'li')
             last_li = list_pages_availables[-1]
             last_p = last_li.get_attribute("data-test-pagination-page-btn")
@@ -276,7 +276,9 @@ class JobScraperLinkedin:
             logger.info(f"total pages availables: {pages_availables}")
             return pages_availables
         except:
-            logger.error("exception available pages occured")
+            pages = int(self.total_jobs/25)
+            logger.error(f"exception available pages occured, calculating total_jobs/25: {pages}")
+            return pages
 
     def getListOfJobsOnPage(self, driver: webdriver.Chrome):
         # find jobs on page

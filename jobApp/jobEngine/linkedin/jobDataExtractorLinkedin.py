@@ -67,13 +67,8 @@ class JobDetailsExtractorLinkedin:
         #find job title 
         what_data = "num of applicants"
         try:
-            div_element = element.find_element(By.CSS_SELECTOR,'div.job-details-jobs-unified-top-card__primary-description')
-            try:
-                applicants=  div_element.find_element(By.CSS_SELECTOR,'span.tvm__text--positive')
-                self.num_applicants = applicants.text
-            except:
-                applicants=  div_element.find_elements(By.CSS_SELECTOR,'span.tvm__text--neutral')
-                self.num_applicants = applicants[-1].text
+            sub_element = element.find_element(By.CLASS_NAME,"job-details-jobs-unified-top-card__primary-description-container")
+            self.num_applicants =  sub_element.find_elements(By.TAG_NAME,'span')[-1].text
             logger.info(f"num_applicants: {self.num_applicants}")
             return self.num_applicants
         except:
@@ -83,7 +78,8 @@ class JobDetailsExtractorLinkedin:
         #find job title 
         what_data = "publication date"
         try:
-            self.published  = element.find_elements(By.CLASS_NAME,'job-card-container__footer-item')[0].find_element(By.TAG_NAME, 'time').get_attribute('datetime')
+            sub_element = element.find_element(By.CLASS_NAME,"job-details-jobs-unified-top-card__primary-description-container")
+            self.published  = sub_element.find_elements(By.TAG_NAME,'span')[-5].text
             logger.info(f"published: {self.published}")
             return self.published
         except:
@@ -105,29 +101,20 @@ class JobDetailsExtractorLinkedin:
 
         what_data = "job description"
         try:
-            # Find the <div> element with the specified class and ID
-            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-description-content__text#job-details')
-            # Extract the text content of the <div> element
-            content = div_element.text
             # logger.info the extracted content
-            self.job_description = "see link directly"
+            self.job_description =  element.find_element(By.CLASS_NAME,'jobs-description__container').text
             logger.info(f"Job Details: {self.job_description}")
-            #logger.info(content)
             return self.job_description
         except:
             logger.error(f"Exceptionn occured while extracting job data: {what_data}")
 
-    def getCompanyEmails(self, element:WebElement):
+    def getCompanyEmails(self, element:str):
         #find job title 
         what_data = "company emails"
         try:
-            # Find the <div> element with the specified class and ID
-            div_element = element.find_element(By.CSS_SELECTOR,'div.jobs-description-content__text#job-details')
-            # Extract the text content of the <div> element
-            content = div_element.text
             # Use a regular expression to find email addresses
             email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-            self.emails = re.findall(email_pattern, content)
+            self.emails = re.findall(email_pattern, element)
             # logger.info the extracted email addresses
             logger.info("Extracted Email Addresses:", self.emails)
             return self.emails
@@ -139,7 +126,7 @@ class JobDetailsExtractorLinkedin:
         what_data = "hiring manager"
         try:
             # Find the <span> element with the specified class
-            span_element = element.find_element(By.CSS_SELECTOR,'span.jobs-poster__name.t-14.t-black.mb0')
+            span_element = element.find_element(By.CSS_SELECTOR, "span.t-black.jobs-poster__name.text-body-medium-bold")
             # Extract the text content of the <span> element
             self.hiring_manager = span_element.text.strip()
             # logger.info the extracted job poster's name

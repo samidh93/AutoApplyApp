@@ -26,7 +26,7 @@ class JobDetailsExtractorLinkedin:
             link_element: WebElement = WebDriverWait(job, 10).until(
                 EC.presence_of_element_located((By.TAG_NAME, 'a')))
             self.job_link = link_element.get_attribute('href')
-            logger.info("extracted job link: %s", self.job_link)
+            #logger.info("extracted job link: %s", self.job_link)
             return self.job_link
         except NoSuchElementException:
             logger.error("job link extraction error")
@@ -103,7 +103,7 @@ class JobDetailsExtractorLinkedin:
         try:
             # logger.info the extracted content
             self.job_description =  element.find_element(By.CLASS_NAME,'jobs-description__container').text
-            logger.info(f"Job Details: {self.job_description}")
+            #logger.info(f"Job Details: {self.job_description}")
             return self.job_description
         except:
             logger.error(f"Exceptionn occured while extracting job data: {what_data}")
@@ -116,7 +116,7 @@ class JobDetailsExtractorLinkedin:
             email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
             self.emails = re.findall(email_pattern, element)
             # logger.info the extracted email addresses
-            logger.info("Extracted Email Addresses:", self.emails)
+            #logger.info("Extracted Email Addresses:", self.emails)
             return self.emails
         except:
             logger.error(f"exceptionn occured while extracting job data: {what_data}")

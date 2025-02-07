@@ -186,6 +186,39 @@ class JobScraperLinkedin:
         self.job_threads = 0
         self.job_index_list = [i * jobs_per_page for i in range(page_to_visit)]
         # Create a ThreadPoolExecutor with a specified number of threads
+        # skip first page, iterate until the number of pages to visit
+        for p in range(page_to_visit):
+            if self.limit_reached_event.is_set():
+                logger.info("limit reached breaking page loop")
+                break
+            # Submit the page processing tasks to the ThreadPoolExecutor
+            self.processPage(p, page_to_visit, self.linkedinObj.saved_cookies)
+        self.job_details_list = self.sort_deque_by_id_ascending(
+            'id', self.job_details_list)
+        # sort data ascending by id: index
+        self.writeDataToCsv(self.job_details_list,
+                            self.createFileJobLocation())
+        end_time = time.time() - start_time
+        logger.info(f"job scraping took {end_time} seconds")
+        return self.job_details_list
+
+    def saveJobsListThreaded(self, page_to_visit=5): # max of 125 jobs: need to be calculated based on applications_limit
+        start_time = time.time()
+        total_pages = self.getAvailablesPages(self.driver) or 1
+        jobs_per_page = 25
+        # assume the number of pages: (app_limit)/25 + 1, we add extra one
+        #page_to_visit = (self.application_limit // jobs_per_page) + (2 if self.application_limit % jobs_per_page > 0 else 1) 
+        page_to_visit = int((self.application_limit/jobs_per_page) + 1)
+        if page_to_visit > total_pages:
+            page_to_visit = total_pages
+        logger.info(f"number of pages available to visit: {page_to_visit}")
+        logger.info(f"number of applications limited by user: {self.application_limit}")
+        # to be sure we are in the limit of pages
+        self.page_threads = page_to_visit
+        # need more investigation how driver handles threads, for now 2 seems to be ok
+        self.job_threads = 0
+        self.job_index_list = [i * jobs_per_page for i in range(page_to_visit)]
+        # Create a ThreadPoolExecutor with a specified number of threads
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.page_threads) as executor:
             futures = []
             # skip first page, iterate until the number of pages to visit

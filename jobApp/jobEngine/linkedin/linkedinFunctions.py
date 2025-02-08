@@ -171,8 +171,7 @@ class LinkedinQuestions:
             elements = div.find_elements(By.TAG_NAME, "label")
             for element in elements:
                 logger.info("radio option: %s", element.text)
-                source_lang = asyncio.run(googleTranslator.translate(source_qs, dest='en')).src
-                translated = asyncio.run(googleTranslator.translate(element.text.lower().strip(), src=source_lang,dest='en')).text.lower() 
+                translated = asyncio.run(googleTranslator.translate(element.text.lower().strip(),dest='en')).text.lower() 
                 if translated == "yes":
                     if not element.is_selected():
                         element.click()
@@ -180,6 +179,8 @@ class LinkedinQuestions:
                         return
         except:
             logger.warning(f"unable to process {qs_type}") 
+            elements[0].click()
+            logger.info(f"element {elements[0].text} clicked instead.")
     @staticmethod
     def process_select_question( div: WebElement, user:CandidateProfile ):
         qs_type= "select question"

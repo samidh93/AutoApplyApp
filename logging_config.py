@@ -23,7 +23,7 @@ formatter = logging.Formatter(
 logging.basicConfig(
     level=logging.INFO,
     handlers=[
-        logging.FileHandler('coreApp.log', mode='a'),  # 'a' for append mode
+        logging.FileHandler('coreApp.log', mode='w'),  # 'a' for append mode
         handler,
     ]
 )

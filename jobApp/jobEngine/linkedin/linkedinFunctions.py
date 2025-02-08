@@ -67,6 +67,7 @@ class LinkedinUtils:
                 logger.info(f"sending file path: {value}")
                 inputElem.send_keys(value)
             elif element_type == "text":
+                logger.info(f"sending text: {value}")
                 inputElem.clear()
                 inputElem.send_keys(value)
         except:
@@ -108,17 +109,22 @@ class LinkedinUtils:
             select = Select(select_element)
             if user_value == "first" or None:
                 logger.info("no user data to the qs, selecting default first option: %s", select.options[1].accessible_name)
-                select.select_by_visible_text(select.options[1].accessible_name)     
+                select.select_by_visible_text(select.options[1].text)     
             if isinstance(select.options, Iterable):
                 for option in select.options:
-                    translated = asyncio.run(googleTranslator.translate(option.accessible_name,src='de', dest='en')).text.lower()
+                    try:
+                        translated = asyncio.run(googleTranslator.translate(option.text.strip(),src='auto', dest='en')).text.lower()
+                    except:
+                        logger.info("unable to translate option text: %s", option.text)
+                        #continue
                     if user_value.lower() in translated: # if user value is in any of the option
-                        select.select_by_visible_text(option.accessible_name)
-                        logger.info("user option selected: %s", select.first_selected_option.accessible_name)
+                        select.select_by_visible_text(option.text)
+                        logger.info("user option selected: %s", select.first_selected_option.text)
                         return 
                 # if user value (yes or no or any ) is not part of the option, select first option
-                logger.info("user data not found, selecting default first option: %s", select.options[1].accessible_name)
-                select.select_by_visible_text(select.options[1].accessible_name)
+                first_option = select.options[1].text
+                logger.info("user data not found, selecting default first option: %s", first_option)
+                select.select_by_visible_text(first_option)
         except Exception as e:
             logger.error(f"select option error: {e}")
 
@@ -173,7 +179,7 @@ class LinkedinQuestions:
                         logger.info(f"element {translated} clicked successfully.")
                         return
         except:
-            logger.info(f"unable to process {qs_type}") 
+            logger.warning(f"unable to process {qs_type}") 
     @staticmethod
     def process_select_question( div: WebElement, user:CandidateProfile ):
         qs_type= "select question"

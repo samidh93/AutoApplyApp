@@ -31,7 +31,7 @@ class DivsContactInfo(Divs):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
-                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -44,8 +44,8 @@ class DivsContactInfo(Divs):
             try:
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
-                translation = google_translator.translate(
-                    text, src='de',dest='en').text.lower()
+                translation = asyncio.run(google_translator.translate(
+                    text, src='de', dest='en')).text.lower()
                 if translation == 'first name':
                     LinkedinUtils.send_value(div, user.firstname)
                     logger.info(f"firstname to send: {user.firstname}")
@@ -53,7 +53,7 @@ class DivsContactInfo(Divs):
                     LinkedinUtils.send_value(div, user.lastname)
                     logger.info(f"lastname to send: {user.lastname}")
                 elif translation == 'phone country code' or translation == 'country code':
-                    logger.info("selecting user phone country code: ", user.phone_code)
+                    #logger.info("selecting user phone country code: ", user.phone_code)
                     LinkedinUtils.select_option(div, user.phone_code)
                 elif translation == 'mobile phone number' or translation == 'mobile number':
                     LinkedinUtils.send_value(div, user.phone_number)
@@ -86,7 +86,7 @@ class DivsHomeAddress(Divs):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
-                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -98,7 +98,7 @@ class DivsHomeAddress(Divs):
             try:
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
-                translation = google_translator.translate(text, dest='en').text.lower()
+                translation = asyncio.run(google_translator.translate(text, dest='en')).text.lower()
                 if translation == 'city':
                     LinkedinUtils.send_value(div, user.address.city)
                     time.sleep(1)  # wait for the suggestion to appear
@@ -120,8 +120,7 @@ class DivsHomeAddress(Divs):
 class DivsDocumentUpload(Divs):
     def find(self, form: WebElement):
         try:
-            div_elements = form.find_elements(
-                By.XPATH, "//div[contains(@class, 'js-jobs-document-upload__container') and contains(@class, 'display-flex') and contains(@class, 'flex-wrap')]")
+            div_elements = form.find_elements(By.CSS_SELECTOR, "div.js-jobs-document-upload__container.display-flex.flex-wrap")
             if div_elements != None:
                 return div_elements
 
@@ -134,12 +133,12 @@ class DivsDocumentUpload(Divs):
             try:
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
-                translation = google_translator.translate(
-                    text, dest='en').text.lower()
-                if translation == 'Upload resume'.lower():
+                translation = asyncio.run(google_translator.translate(
+                    text, dest='en')).text.lower()
+                if 'Upload resume'.lower() in translation:
                     LinkedinUtils.send_value(div, user.resume)
-                elif translation == "Upload cover letter".lower():
-                    pass
+                elif 'Upload cover letter'.lower() in translation:
+                    LinkedinUtils.send_value(div, user.cover_letter)
             except:
                 raise ValueError("Unsupported label: {}".format(div.text))
 
@@ -150,7 +149,7 @@ class DivsAdditionalQuestions(Divs):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
-                By.CLASS_NAME, 'fb-dash-form-element')
+                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -190,7 +189,7 @@ class DivsPrivacyPolicy(Divs):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
-                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
             logger.info("found divs privacy policy")
             if divs != None:
                 return divs
@@ -218,7 +217,7 @@ class DivsVoluntarySelfIdentification(Divs):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
             divs = form.find_elements(
-                By.CSS_SELECTOR, 'div.jobs-easy-apply-form-section__grouping')
+                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
             logger.info("found divs privacy policy")
             if divs != None:
                 return divs

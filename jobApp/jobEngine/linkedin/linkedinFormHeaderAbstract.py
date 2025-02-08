@@ -51,7 +51,7 @@ class ContactInfoHeader(Header):
             if translated == self.header.lower():
                 return True
         except:
-            logger.info(f"no {self.header} header found")
+            logger.warning(f"no {self.header} header found")
             return False
 
     def fill(self, form, data: CandidateProfile):
@@ -63,7 +63,7 @@ class ContactInfoHeader(Header):
                 DivHandler.send_user_contact_infos(
                     data, divs)
         except:
-            logger.info("no contact infos to fill")
+            logger.warning("no contact infos to fill")
 
 
 class ResumeHeader(Header):
@@ -93,7 +93,7 @@ class ResumeHeader(Header):
                 DivHandler.send_user_documents(
                     data, divs)
         except:
-            logger.info("no resume to fill")
+            logger.warning("no resume to fill")
 
 
 class HomeAddressHeader(Header):
@@ -124,7 +124,7 @@ class HomeAddressHeader(Header):
                 DivHandler.send_user_contact_infos(
                     data, divs)
         except:
-            logger.info("no home address to fill")
+            logger.warning("no home address to fill")
 
 
 class WorkExperienceHeader(Header):
@@ -233,7 +233,7 @@ class AdditionalQuestionsHeader(Header):
                 DivHandler.send_user_questions_answers(
                     data, divs)
         except:
-            logger.info("no additional questions to fill")
+            logger.warning("no additional questions to fill")
 
 
 class PrivacyPolicyHeader(Header):
@@ -264,7 +264,7 @@ class PrivacyPolicyHeader(Header):
                 DivHandler.select_privacy_policy(
                     divs)
         except:
-            logger.info("no privacy policy to fill")
+            logger.warning("no privacy policy to fill")
 
 
 class ReviewApplicationHeader(Header):
@@ -319,7 +319,7 @@ class VoluntarySelfIdentification(Header):
                 DivHandler.select_gender(
                     divs, data)
         except:
-            logger.info("no privacy policy to fill")
+            logger.warning("no privacy policy to fill")
 
 
 class UnknownHeader(Header):
@@ -337,7 +337,7 @@ class UnknownHeader(Header):
             translated = translation_result.text.lower()
             logger.info("new header translated: %s", translated)
         except:
-            logger.info("no header found")
+            logger.warning("no header found")
 
     def fill(self, form, data: CandidateProfile):
         # Logic to fill in Additional Info data:CandidateProfile
@@ -350,7 +350,7 @@ class UnknownHeader(Header):
                 DivHandler.send_user_questions_answers(
                     data, divs)
         except:
-            logger.info("no data to fill")
+            logger.warning("no data to fill")
 
 
 class HeaderFactory:

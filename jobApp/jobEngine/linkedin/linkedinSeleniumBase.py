@@ -29,8 +29,11 @@ class LinkedinSeleniumBase:
          # driver 
 
     def _create_selenium_driver(self, config_file,implicit_wait=5 ):
-        
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+        config_options = self.config['driver']['options']
+        options = webdriver.ChromeOptions()
+        for opt in config_options:
+            options.add_argument(opt)
+        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
         driver.implicitly_wait(implicit_wait)
         return driver
     

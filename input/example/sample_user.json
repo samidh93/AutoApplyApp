@@ -1,0 +1,99 @@
+{
+    "user": {
+      "email": "example.user@example.com",
+      "password": "Password123!",
+      "otp_link": "654321",
+      "owner": "_sample_owner",
+      "field_id": "sample_id",
+      "platform": "github",
+      "created_date": "2025-12-31"
+    },
+    "search_params": {
+      "job": "data scientist",
+      "location": "United States",
+      "limit": "100",
+      "f_WT": "2,4,6"
+    },
+    "candidate": {
+      "firstname": "Jane",
+      "lastname": "Doe",
+      "gender": "female",
+      "resume": "/home/jane/resume.pdf",
+      "phone_number": "+11234567890",
+      "address": {
+        "street": "123 Main St",
+        "city": "New York",
+        "plz": "10001",
+        "country": "USA"
+      },
+      "limit": "100",
+      "visa_required": "yes",
+      "years_experience": "8",
+      "desired_salary": "95000",
+      "experiences": [
+        {
+          "job_title": "Data Analyst",
+          "company": "TechCorp",
+          "duration": "1 year"
+        },
+        {
+          "job_title": "Data Scientist",
+          "company": "Data Inc",
+          "duration": "2 years"
+        },
+        {
+          "job_title": "ML Engineer",
+          "company": "InnovateX",
+          "duration": "3 years"
+        },
+        {
+          "job_title": "Research Scientist",
+          "company": "University Labs",
+          "duration": "1 year"
+        },
+        {
+          "job_title": "Senior Data Scientist",
+          "company": "Analytics Plus",
+          "duration": "2 years"
+        }
+      ],
+      "educations": [
+        {
+          "university": "MIT",
+          "degree": "Ph.D. in Computer Science",
+          "duration": "4 years"
+        },
+        {
+          "university": "Stanford University",
+          "degree": "Bachelor of Science",
+          "duration": "4 years"
+        }
+      ],
+      "skills": {
+        "Languages": {
+          "english": "fluent",
+          "german": "basic",
+          "french": "intermediate",
+          "spanish": "basic",
+          "arabic": "none"
+        },
+        "Softwares": {
+          "Python": "Advanced",
+          "Java": "Intermediate",
+          "javascript": "Intermediate",
+          "C++": "Basic",
+          "SysML and UML": "Intermediate",
+          "AWS": "Intermediate",
+          "Docker": "Intermediate",
+          "Git": "Advanced",
+          "Jira": "Basic",
+          "Cmake": "Basic",
+          "Windsurf": "None",
+          "Copilot": "Advanced"
+        }
+      },
+      "field_id": "sample_id",
+      "debug": "false"
+    }
+  }
+  

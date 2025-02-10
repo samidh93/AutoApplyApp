@@ -179,4 +179,5 @@ resume*.pdf
 
 # ignore output/
 output/*
-input/*
+input/*.pdf
+input/*.json

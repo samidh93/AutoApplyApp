@@ -12,8 +12,11 @@
       "job": "data scientist",
       "location": "United States",
       "limit": "100",
-      "f_WT": "2,4,6"
-    },
+      "work_type": "remote",
+      "easy_apply": "true",
+      "job_type": "fulltime",
+      "posted_date": "last-day"
+      },
     "candidate": {
       "firstname": "Jane",
       "lastname": "Doe",
@@ -28,7 +31,7 @@
       },
       "limit": "100",
       "visa_required": "yes",
-      "years_experience": "8",
+      "years_experience": 8,
       "desired_salary": "95000",
       "experiences": [
         {

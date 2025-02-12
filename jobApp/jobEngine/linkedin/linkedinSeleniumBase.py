@@ -101,8 +101,11 @@ class LinkedinSeleniumBase:
         self.start_pos=0
         self.page_num = search_params.get('pageNum', default_user_json["search_params"]["pageNum"])
         self.job_pos = search_params.get('start' , default_user_json["search_params"]["start"])
-        work_type_json={"onsite":1, "remote":2, "hybrid":3}
-        posted_date_json={"last-day": "r86400", "last-week": "r604800", "last-month": "r2592000"}
+        # verify input
+        work_type_json={"onsite":1, "remote":2, "hybrid":3, "":""}
+        posted_date_json={"last-day": "r86400", "last-week": "r604800", "last-month": "r2592000", "":""}
+        job_type_json={"fulltime":"F", "parttime":"P", "contract":"C", "temporary":"T", "internship":"I", "":""}
+
         # Create params dictionary
         self.params = {
             'keywords': self.job_title,
@@ -111,7 +114,7 @@ class LinkedinSeleniumBase:
             'f_WT': work_type_json[self.work_type],
             'start': self.start_pos,
             'f_TPR': posted_date_json[self.posted_date],
-            'f_JT': self.job_type[0] # first element of the list
+            'f_JT': job_type_json[self.job_type]
         }
 
 

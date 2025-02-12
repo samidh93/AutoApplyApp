@@ -101,7 +101,7 @@ here is the most of the important fields in the json file:
 - limit: the number of jobs to search for
 - work_type: the work type to search: onsite, remote and hybrid
 - posted_date: the job posted date, last-day, last-week and last-month
-- job_type:  fulltime, parttime, Contract, temporary, Internship
+- job_type:  fulltime, parttime, contract, temporary, internship
 - easy_apply: easy apply filter, true: enabled, false: disabled
 
 ### candidate

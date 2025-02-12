@@ -90,21 +90,28 @@ class LinkedinSeleniumBase:
         search_params:dict = incomingJsondata.get("search_params", default_user_json.get("search_params"))
         self.job_title = search_params.get('job', default_user_json["search_params"]["job"])
         self.location = search_params.get('location', default_user_json["search_params"]["location"])
+        self.posted_date = search_params.get('posted_date', default_user_json["search_params"]["posted_date"])
+        self.job_type = search_params.get('job_type', default_user_json["search_params"]["job_type"])
+        self.filter_easy_apply = search_params.get('easy_apply', default_user_json["search_params"]["easy_apply"])
+        self.work_type = search_params.get('work_type', default_user_json["search_params"]["work_type"])
+        
         # extra: applications limit:
         self.applications_limit = search_params.get("limit", "10")
         # internal params
         self.start_pos=0
         self.page_num = search_params.get('pageNum', default_user_json["search_params"]["pageNum"])
         self.job_pos = search_params.get('start' , default_user_json["search_params"]["start"])
-        self.filter_easy_apply = search_params.get('f_AL', default_user_json["search_params"]["f_AL"])
-        self.work_type = search_params.get('f_WT', default_user_json["search_params"]["f_WT"])
+        work_type_json={"onsite":1, "remote":2, "hybrid":3}
+        posted_date_json={"last-day": "r86400", "last-week": "r604800", "last-month": "r2592000"}
         # Create params dictionary
         self.params = {
             'keywords': self.job_title,
             'location': self.location,
             'f_AL': self.filter_easy_apply,
-            'f_WT': self.work_type,
-            'start': self.start_pos
+            'f_WT': work_type_json[self.work_type],
+            'start': self.start_pos,
+            'f_TPR': posted_date_json[self.posted_date],
+            'f_JT': self.job_type[0] # first element of the list
         }
 
 

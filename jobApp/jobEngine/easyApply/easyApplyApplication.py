@@ -33,7 +33,7 @@ class EasyApplyApplication(Application):
         # process handler
         self.procHandle = ProcessHandler("C:/Users/user1/dev/soft_linkedin_easyAutoApply_Api/jobApp/jobEngine/linkedinLoginSession.py")
         # start login session 
-        self.pid_login = self.procHandle.start_process() # start a login session process
+        self.pid_login = self.procHandle.start_process() or None# start a login session process
         # wait for login session to finish
 
     def __del__(self):

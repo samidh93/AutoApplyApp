@@ -99,7 +99,10 @@ here is the most of the important fields in the json file:
 - job: the job to search for
 - location: the location to search for the job
 - limit: the number of jobs to search for
-- f_WT: the work type to search for 1: onsite, 2: remote, 3: hybrid
+- work_type: the work type to search: onsite, remote and hybrid
+- posted_date: the job posted date, last-day, last-week and last-month
+- job_type:  fulltime, parttime, Contract, temporary, Internship
+- easy_apply: easy apply filter, true: enabled, false: disabled
 
 ### candidate
 - firstname: the first name of the candidate

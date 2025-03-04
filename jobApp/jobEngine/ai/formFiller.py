@@ -6,8 +6,11 @@ from pathlib import Path
 import ast
 
 class FormFiller:
-    def __init__(self, api_key, user_context):
+    def __init__(self, user_context):
         # Set up the API key
+        secrets_path = Path('input/secrets.yaml')
+        secrets = yaml.safe_load(open(secrets_path, 'r'))
+        api_key = secrets['api_key']
         openai.api_key = api_key
         
         # Initialize conversation history with user context as a system message
@@ -57,15 +60,14 @@ if __name__ == "__main__":
     api_key = secrets['api_key']
     # Initialize the FormFiller with your OpenAI API key and user context
     form_filler = FormFiller(api_key=api_key, user_context=user_context)
-    # Ask a question and print the answer
     question1 = "How many years of work experience do you have with Amazon Web Services (AWS)?"
-    # Ask another question without resending the user context
     question2 = "Are you comfortable working in a hybrid setting? Options are 'Yes' or 'No'."
-    # Ask another question without resending the user context
     question3 = "Are you legally authorized to work in Germany? Options are 'Yes' or 'No'."
     question4 = "What is your level of proficiency in English? Options are 'Native', 'Professional', 'Convertional', 'None'."
     question5 = "How many years of work experience do you have with Architectural Design?"
-    questions = "\n".join([question1, question2, question3, question4, question5])
+    question6 = "What is your level of proficiency in German? Options are 'Native', 'Professional', 'Convertional', 'None'."
+    question7 = "Do you have any professional leadership experience? Options are 'Yes' or 'No'."
+    questions = "\n".join([question1, question2, question3, question4, question5, question6, question7])
     print(questions)
     answers = form_filler.answer_question(questions)
     for answer in answers:  

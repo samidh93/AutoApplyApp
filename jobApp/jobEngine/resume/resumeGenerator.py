@@ -2,9 +2,8 @@
 import os   
 
 class ResumeGenerator:
-    def __init__(self, job_description_url, resume_path):
+    def __init__(self, job_description_url):
         self.job_description = job_description_url
-        self.resume_path = resume_path
     
     def run(self):
         # run the docker container
@@ -26,16 +25,31 @@ class ResumeGenerator:
         print("running command")
         print(command)
         os.system(command)
+        print("resume generated successfully")
+    
+    def get_resume(self):
+        # locate the latest created *.pdf files in the output folder 
+        output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/output")
+        pdf_files = [f for f in os.listdir(output_folder) if f.endswith('.pdf')]
+        if not pdf_files:
+            raise FileNotFoundError("No PDF files found in the output folder.")
+        
+        latest_pdf = max(pdf_files, key=lambda f: os.path.getctime(os.path.join(output_folder, f)))
+        generated_resume_path = os.path.join(output_folder, latest_pdf)
 
+        print(f"Generated resume located at: {generated_resume_path}")
+        return generated_resume_path
 
 # Example usage
 if __name__ == "__main__":
     # Define the URL of the job description and the path to the resume
-    job_description_url = "https://www.linkedin.com/jobs/view/4143254223"
-    resume_path = "path/to/resume.yaml"
+    job_description_url = "https://www.linkedin.com/jobs/view/4139695980"
     
     # Initialize the ResumeGenerator with the job description URL and resume path
-    resume_generator = ResumeGenerator(job_description_url, resume_path)
+    resume_generator = ResumeGenerator(job_description_url)
     
     # Run the resume generator
     resume_generator.run()
+
+    # Get the path to the generated resume
+    resume_path = resume_generator.get_resume()

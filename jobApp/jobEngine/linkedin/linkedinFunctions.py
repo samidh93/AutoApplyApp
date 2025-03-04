@@ -16,12 +16,12 @@ from .linkedinElementsAbstract import LabelElement, InputElement, SpanElement
 from datetime import date
 import logging
 import asyncio
+from ..ai.formFiller import FormFiller
 logger = logging.getLogger(__name__)
 
 class LinkedinUtils:
     def __init__(self) -> None:
         pass
-
     @staticmethod
     def isTextElment(div:WebElement)->bool:
         try:
@@ -215,6 +215,7 @@ class LinkedinQuestions:
     def process_checkbox_question( div: WebElement, user:CandidateProfile):
         qs_type= "checkbox question"
         googleTranslator = Translator()
+        formfiller = FormFiller()
 
         try:
             legend = div.find_element(By.TAG_NAME, "legend")

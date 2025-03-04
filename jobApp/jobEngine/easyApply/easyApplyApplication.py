@@ -37,12 +37,13 @@ class EasyApplyApplication(Application):
         # wait for login session to finish
 
     def __del__(self):
-        if self.pid_login != None:
-            logger.info(f"killing process with pid {self.pid_login} after job application is done")
-            self.procHandle.kill_last_process()
-        else:
-            logger.info("terminating login thread ")
-            self.login_task_killed.set()
+        pass
+        #if self.pid_login != None:
+        #    logger.info(f"killing process with pid {self.pid_login} after job application is done")
+        #    self.procHandle.kill_last_process()
+        #else:
+        #    logger.info("terminating login thread ")
+        #    self.login_task_killed.set()
         
     def ApplyForJob(self, job:Job, cookies:list ):
         applied = False

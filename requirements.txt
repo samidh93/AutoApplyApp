@@ -20,3 +20,4 @@ phonenumbers
 googletrans
 python-dotenv
 webdriver-manager
+pyyaml

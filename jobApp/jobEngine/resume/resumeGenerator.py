@@ -1,10 +1,14 @@
 # create a class which will generate a resume based on the job description
 import os   
-
+import re
 class ResumeGenerator:
     def __init__(self, job_description_url):
-        self.job_description = job_description_url
-    
+        match = re.match(r"(https://www\.linkedin\.com/jobs/view/\d+)", job_description_url)
+        self.job_description = match.group(1) if match else None
+        if not self.job_description:
+            raise ValueError("Invalid job description URL. Please provide a valid LinkedIn job description URL.")
+        print(f"Job description URL: {self.job_description}")
+        
     def run(self):
         # run the docker container
         folder = "../../../AI_Resume_Creator"
@@ -43,7 +47,7 @@ class ResumeGenerator:
 # Example usage
 if __name__ == "__main__":
     # Define the URL of the job description and the path to the resume
-    job_description_url = "https://www.linkedin.com/jobs/view/4139695980"
+    job_description_url = "https://www.linkedin.com/jobs/view/4139695980/jkdnfbkdbfbnbjrsfnrjnkfbsr"
     
     # Initialize the ResumeGenerator with the job description URL and resume path
     resume_generator = ResumeGenerator(job_description_url)

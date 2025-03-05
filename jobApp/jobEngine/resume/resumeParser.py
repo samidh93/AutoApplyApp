@@ -23,6 +23,7 @@ class Resume:
             self.resume = self.download_pdf(file_path, UserConfig.get_data_path(), candidate_firstname, candidate_lastname)
         else: # file system case: copy to config data with renaming to candidate name
             self.resume = self.move_and_rename_pdf(file_path, UserConfig.get_data_path(), candidate_firstname, candidate_lastname )
+            #self.resume_text = self.generate_resume()
         ## the section must be defined in higher level apis
         self.sections = ["PROFESSIONAL EXPERIENCE", "EDUCATION", "VOLUNTEER EXPERIENCE", "TRAINING", "ACCOMPLISHMENT", "KEY COMPETENCIES"]
 
@@ -82,6 +83,7 @@ class Resume:
         resume_generator.run()
         # return the resume path
         return resume_generator.get_resume()
+    
     def move_and_rename_pdf(self, input_path, output_directory, first_name, last_name):
         """
         Move and rename a PDF file to a specific location.

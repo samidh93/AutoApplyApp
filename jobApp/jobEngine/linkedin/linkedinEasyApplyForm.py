@@ -13,6 +13,8 @@ from collections.abc import Iterable
 from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinkedin
 from .linkedinSeleniumBase import LinkedinSeleniumBase
 from .linkedinFormButtonAbstract import ButtonFactory, Button
+from ..resume.resumeGenerator import ResumeGenerator
+
 ''' handle linkedin easy apply form template'''
 import logging
 logger = logging.getLogger(__name__)
@@ -46,6 +48,11 @@ class LinkedInEasyApplyFormHandler:
         if not self.clickApplyPage(driver):
             return False
         # return false if button is not clicked
+        # generate the resume for this job
+        resume_gen = ResumeGenerator(job_link)
+        resume_gen.run()
+        # get the resume path
+        self.candidate.resume=resume_gen.get_resume()
         # find the form
         form = self.find_application_form(driver)
         # handle form page

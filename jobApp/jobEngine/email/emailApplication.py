@@ -1,6 +1,5 @@
 from ..application.applicationAbstract import Application
 from ..user.candidateProfile import CandidateProfile
-from ..ai.chatgpt import ChatGPT
 from ..resume.resumeParser import Resume
 from ..job.job import Job
 from ..email.gmail import Gmail
@@ -46,16 +45,7 @@ class EmailApplication(Application):
     def ApplyForAll(self):
         return super().ApplyForAll()
 
-    # generate application email specific for job: use ai to generate 
-    @deprecated(reason="generate application email deprecated, use generateApplicationTemplate instead")
-    def generateApplicationEmail(self, job:Job):
-        query = f"create a job application email draft for the job {job.job_title} at {job.company_name} in {job.job_location} to the hiring manager. \
-        use my personal infos: {self.candidate_infos} , experiences: {self.candidate_experiences} and educations: {self.candidate_educations} to highlight my worth\
-        here is the job description to apply for: {job.job_description}. close the draft by leaving my contact details. ignore the adress and driving licence."
-        chatgpt = ChatGPT("jobApp/secrets/openai.json")
-        email_tosend = chatgpt.ask(query)
-        return email_tosend
-    
+
     # generate application email as a template for all: create one template with ai
     def generateApplicationTemplate(self, job:Job,  output_file:str='jobApp/data/sample_cover.json')-> str:
         email_data = {

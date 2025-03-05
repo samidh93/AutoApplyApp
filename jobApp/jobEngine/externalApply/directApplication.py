@@ -1,6 +1,6 @@
 from ..application.applicationAbstract import Application
 from ..job.job import  Job
-from ..user.candidateProfile import CandidateProfile, ChatGPT, Resume
+from ..user.candidateProfile import CandidateProfile, Resume
 import json
 import os
 from deprecated import deprecated

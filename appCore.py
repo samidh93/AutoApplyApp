@@ -108,7 +108,7 @@ def createRequest(file_path):
 
 if __name__ == "__main__":
 
-    applyReq = createRequest("input/zayneb_dhieb.json")
+    applyReq = createRequest("input/sami_dhiab.json")
     testapp = appCreatorLinkedin(applyReq)
     #testapp.tryCredentialsLinkedin()
     testapp.searchJobs()

@@ -1,5 +1,4 @@
 from ..resume.resumeParser import Resume
-from ..ai.chatgpt import ChatGPT
 import json
 from deprecated import deprecated
 import phonenumbers

@@ -181,3 +181,4 @@ resume*.pdf
 output/*
 input/*.pdf
 input/*.json
+input/*.yaml

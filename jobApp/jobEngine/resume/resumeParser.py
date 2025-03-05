@@ -11,7 +11,6 @@ from urllib.parse import urlparse
 from datetime import date
 from ..config.config import UserConfig
 import shutil
-from resumeGenerator import ResumeGenerator
 import logging
 logger = logging.getLogger(__name__)
 
@@ -76,13 +75,6 @@ class Resume:
         
         return None
 
-    def generate_resume(self, job_description_url):
-        # Initialize the ResumeGenerator with the job description URL and resume path
-        resume_generator = ResumeGenerator(job_description_url, self.resume)
-        # Run the resume generator
-        resume_generator.run()
-        # return the resume path
-        return resume_generator.get_resume()
     
     def move_and_rename_pdf(self, input_path, output_directory, first_name, last_name):
         """

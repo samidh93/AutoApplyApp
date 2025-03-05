@@ -133,114 +133,149 @@ class LinkedinQuestions:
         pass
 
     @staticmethod
-    def process_text_question( div: WebElement, user:CandidateProfile ):
-        googleTranslator = Translator()
-        qs_type= "text question"
+    def process_text_question(div: WebElement, user: CandidateProfile):
+        qs_type = "text question"
         try:
-            label_translated:str = asyncio.run(googleTranslator.translate(div.text, dest='en')).text # translate qs to en
-            logger.info("processing translated text question: %s", label_translated)
-            start_date_keywords = ["start date", "earliest", "notice period", "when", "available from"]
-            platform_keywords = ["aware of us", "find out about us"]
-            experience_keywords =["how many", "years", "experience", "how long"]
-            if "salary" in label_translated.lower():
-                LinkedinUtils.send_value(div, user.desired_salary)
-            elif any(keyword in label_translated.lower() for keyword in experience_keywords):
-                LinkedinUtils.send_value(div, user.years_experience)
-            elif any(keyword in label_translated.lower() for keyword in start_date_keywords):
-                LinkedinUtils.send_value(div, user.earliest_start_date )
-            elif any(keyword in label_translated.lower() for keyword in platform_keywords):
-                LinkedinUtils.send_value(div, user.current_job.platform )
-            elif "city" in label_translated.lower():
-                LinkedinUtils.send_value(div, user.address.city)
-            elif "country" in label_translated.lower():
-                LinkedinUtils.send_value(div, user.country_name)
-            elif "name" in label_translated.lower():
-                LinkedinUtils.send_value(div, user.firstname)
-            elif "willing" or "move" in label_translated.lower():
-                LinkedinUtils.send_value(div, "yes" )
-        except:
-            logger.info(f"unable to process {qs_type}") 
+            source_qs = div.text.split('\n', 1)[0] or div.text
+            logger.info("processing text question: %s", source_qs)
+            
+            # Send question to AI
+            answer = user.formfiller.answer_question(source_qs)
+            
+            # If answer is not empty, send the value to the input field
+            if answer and len(answer) > 0:
+                LinkedinUtils.send_value(div, answer[0])
+                logger.info(f"Text field filled with: {answer[0]}")
+                return
+            
+            # Fallback to default value if AI didn't provide an answer
+            LinkedinUtils.send_value(div, "Yes")
+            logger.info("Used default value: Yes")
+            
+        except Exception as e:
+            logger.warning(f"Unable to process {qs_type}: {e}")
 
     @staticmethod
-    def process_radio_question( div: WebElement, user:CandidateProfile ):
+    def process_radio_question(div: WebElement, user: CandidateProfile):
         googleTranslator = Translator()
-        qs_type= "radio question"
+        qs_type = "radio question"
         try:
             source_qs = div.text.split('\n', 1)[0] or div.text
             logger.info("processing radio question: %s", source_qs)
             elements = div.find_elements(By.TAG_NAME, "label")
-            for element in elements:
-                logger.info("radio option: %s", element.text)
-                translated = asyncio.run(googleTranslator.translate(element.text.lower().strip(),dest='en')).text.lower() 
-                if translated == "yes":
-                    if not element.is_selected():
-                        element.click()
-                        logger.info(f"element {translated} clicked successfully.")
+            options = ", ".join([element.text for element in elements])
+            # send question to ai
+            question_with_options = source_qs + " options: " + options
+            answer = user.formfiller.answer_question(question_with_options)
+            # if answer is not empty, click the option
+            if answer:
+                for element in elements:
+                    if answer[0].lower() in element.text.lower():
+                        if not element.is_selected():
+                            element.click()
+                            logger.info(f"element {answer[0]} clicked successfully.")
+                            return
+        except Exception as e:
+            logger.warning(f"Unable to process {qs_type}: {e}")
+            try:
+                elements = div.find_elements(By.TAG_NAME, "label")
+                elements[0].click()
+                logger.info(f"element {elements[0].text} clicked instead.")
+            except Exception as e2:
+                logger.error(f"Failed to click default option: {e2}")
+
+    @staticmethod
+    def process_select_question(div: WebElement, user: CandidateProfile):
+        qs_type = "select question"
+        try:
+            source_qs = div.text.split('\n', 1)[0] or div.text
+            logger.info("processing select question: %s", source_qs)
+            
+            # Get all available options
+            select_element = div.find_element(By.TAG_NAME, "select")
+            select = Select(select_element)
+            options = [option.text for option in select.options if option.text.strip()]
+            options_text = ", ".join(options)
+            
+            # Send question with options to AI
+            question_with_options = source_qs + " options: " + options_text
+            answer = user.formfiller.answer_question(question_with_options)
+            
+            # If answer is not empty, select the option
+            if answer and len(answer) > 0:
+                for option in select.options:
+                    if answer[0].lower() in option.text.lower():
+                        select.select_by_visible_text(option.text)
+                        logger.info(f"Selected option: {option.text}")
                         return
-        except:
-            logger.warning(f"unable to process {qs_type}") 
-            elements[0].click()
-            logger.info(f"element {elements[0].text} clicked instead.")
-    @staticmethod
-    def process_select_question( div: WebElement, user:CandidateProfile ):
-        qs_type= "select question"
-        googleTranslator = Translator()
-        try:
-            logger.info("processing select question: %s", div.text.split('\n', 1)[0])
-            label_translated:str = asyncio.run(googleTranslator.translate(div.text.split('\n', 1)[0], dest='en')).text.lower() # translate qs to en
-            # handle languages questions : basic , good etc.. 
-            if "english" in label_translated.lower():
-                    LinkedinUtils.select_option(div, user.skills.languages.get_level("english")) 
-            elif "german" in label_translated.lower():
-                    LinkedinUtils.select_option(div, user.skills.languages.get_level("german")) 
-            elif "experience" in label_translated.lower():
-                LinkedinUtils.select_option(div, user.years_experience)
-            elif "visa" in label_translated.lower():
-                LinkedinUtils.select_option(div, user.visa_required)
-            elif "how did you" in label_translated.lower():
-                LinkedinUtils.select_option(div, user.current_job.platform)
-            elif "gender" in label_translated.lower():
-                LinkedinUtils.select_option(div, user.gender)
-            # handle questions that can be answered by yes or no
-            elif "do you" in label_translated.lower() or "have you" in label_translated.lower() or "are your" in label_translated.lower():
-                LinkedinUtils.select_option(div, "yes")
-            else:
-                LinkedinUtils.select_option(div, "first")
-
-        except:
-            logger.info(f"unable to process {qs_type}") 
-
+            
+            # Fallback: select the first non-empty option
+            for option in select.options:
+                if option.text.strip():
+                    select.select_by_visible_text(option.text)
+                    logger.info(f"Selected default option: {option.text}")
+                    return
+                    
+        except Exception as e:
+            logger.warning(f"Unable to process {qs_type}: {e}")
+            try:
+                # Try to select the first option as fallback
+                select_element = div.find_element(By.TAG_NAME, "select")
+                select = Select(select_element)
+                first_option = select.options[1].text if len(select.options) > 1 else select.options[0].text
+                select.select_by_visible_text(first_option)
+                logger.info(f"Selected fallback option: {first_option}")
+            except Exception as e2:
+                logger.error(f"Failed to select default option: {e2}")
 
     @staticmethod
-    def process_checkbox_question( div: WebElement, user:CandidateProfile):
-        qs_type= "checkbox question"
-        googleTranslator = Translator()
-        formfiller = FormFiller()
-
+    def process_checkbox_question(div: WebElement, user: CandidateProfile):
+        qs_type = "checkbox question"
         try:
-            legend = div.find_element(By.TAG_NAME, "legend")
-            logger.info("checkbox question: %s", legend.text.strip() )
-            # if only one checkbox to click, just click it if is not already clicked
-            checkboxElems:[WebElement] = div.find_elements(By.TAG_NAME, "label")
+            # Try to get the question text from legend or div text
+            try:
+                legend = div.find_element(By.TAG_NAME, "legend")
+                source_qs = legend.text.strip()
+            except:
+                source_qs = div.text.split('\n', 1)[0] or div.text
+            
+            logger.info("processing checkbox question: %s", source_qs)
+            
+            # Get all checkbox options
+            checkboxElems = div.find_elements(By.TAG_NAME, "label")
+            options = [elem.text for elem in checkboxElems]
+            options_text = ", ".join(options)
+            
+            # Special case for single checkbox
             if len(checkboxElems) == 1:
                 if not checkboxElems[0].is_selected():
                     checkboxElems[0].click()
-                    logger.info(f"element clicked successfully.")
-                    return 
-            for element in checkboxElems:
-                #for opt_label in label_options:
-                    logger.info("checkbox option: %s", element.text)
-                    translated = asyncio.run(googleTranslator.translate(element.text.lower(), dest='en')).text.lower()
-                    if asyncio.run(googleTranslator.translate("I Agree Terms & Conditions", dest='en')).text.lower() in translated:
-                        if not element.is_selected():
-                            element.click()
-                            logger.info(f"element {translated} clicked successfully.")
-                            return
-                    elif asyncio.run(googleTranslator.translate("Are you willing", dest='en')).text.lower() in translated:
-                        if not element.is_selected():
-                            element.click()
-                            logger.info(f"element {translated} clicked successfully.")
-                            return          
+                    logger.info(f"Single checkbox clicked: {checkboxElems[0].text}")
+                return
+            
+            # For multiple checkboxes, ask AI which ones to select
+            question_with_options = source_qs + " options: " + options_text
+            answer = user.formfiller.answer_question(question_with_options)
+            
+            if answer and len(answer) > 0:
+                selected_options = [opt.strip() for opt in answer[0].split(',')]
+                selected_count = 0
+                
+                for element in checkboxElems:
+                    for selected_option in selected_options:
+                        if selected_option.lower() in element.text.lower():
+                            if not element.is_selected():
+                                element.click()
+                                selected_count += 1
+                                logger.info(f"Checkbox selected: {element.text}")
+                
+                if selected_count > 0:
+                    return
+            
+            # If nothing was selected, select the first option as fallback
+            if len(checkboxElems) > 0 and not any(elem.is_selected() for elem in checkboxElems):
+                checkboxElems[0].click()
+                logger.info(f"Selected default checkbox: {checkboxElems[0].text}")
+                
         except Exception as e:
-            logger.error(f"unable to process {qs_type}, error {e}") 
-    
+            logger.warning(f"Unable to process {qs_type}: {e}")

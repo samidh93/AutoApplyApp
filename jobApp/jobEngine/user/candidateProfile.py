@@ -5,6 +5,7 @@ import phonenumbers
 from phonenumbers import geocoder
 from datetime import datetime, timedelta
 from ..job.job import Job
+from ..ai.formFiller import FormFiller
 import logging
 logger = logging.getLogger(__name__)
 """
@@ -36,6 +37,8 @@ class CandidateProfile:
         self.earliest_start_date = self.get_start_date() # we give per default 3 months
         self.gender = gender
         self.current_job = None # we set this to current jo if any infos from current job is need without passing job obj around
+        self.resume_content = None
+        self.formfiller = FormFiller()
 
     def set_current_job(self, job:Job):
         self.current_job = job

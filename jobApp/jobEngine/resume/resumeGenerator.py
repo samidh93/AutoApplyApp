@@ -43,6 +43,19 @@ class ResumeGenerator:
         resume_path = os.path.abspath(generated_resume_path)
         print(f"Generated resume located at: {resume_path}")
         return resume_path
+    
+    def get_resume_content(self, firstname, lastname):
+        # locate the yaml file in the input folder
+        # read the content of the yaml file
+        # return the content
+        input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/input")
+        resume_yaml =  f"{firstname}_{lastname}_resume.yaml"
+        resume_yaml_path = os.path.join(input_folder, resume_yaml)
+        with open(resume_yaml_path, 'r') as file:
+            resume_content = file.read()
+        print(f"Resume content read from {resume_yaml_path}")
+        print(resume_content)
+        return resume_content
 
 # Example usage
 if __name__ == "__main__":
@@ -53,7 +66,10 @@ if __name__ == "__main__":
     resume_generator = ResumeGenerator(job_description_url)
     
     # Run the resume generator
-    resume_generator.run()
+    #resume_generator.run()
 
     # Get the path to the generated resume
     resume_path = resume_generator.get_resume()
+
+    # Get the content of the generated resume
+    resume_content = resume_generator.get_resume_content("sami", "dhiab")

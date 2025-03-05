@@ -6,13 +6,14 @@ from pathlib import Path
 import ast
 
 class FormFiller:
-    def __init__(self, user_context):
+    def __init__(self):
         # Set up the API key
         secrets_path = Path('input/secrets.yaml')
         secrets = yaml.safe_load(open(secrets_path, 'r'))
         api_key = secrets['api_key']
         openai.api_key = api_key
-        
+    
+    def set_user_context(self, user_context):
         # Initialize conversation history with user context as a system message
         self.conversation_history = [
             {
@@ -29,7 +30,8 @@ class FormFiller:
             }
         ]
 
-    def answer_question(self, question):
+    def answer_question(self, question)->list:
+        """return a list of answers of one or many questions in the same order"""
         # Append the new question to the conversation history
         self.conversation_history.append({"role": "user", "content": question})
         # Call the OpenAI API using the correct method and model
@@ -49,17 +51,12 @@ class FormFiller:
 if __name__ == "__main__":
     # Define your user context (sent only once)
     user_context = """
-    Name: John Doe
-    Experience: 5 years as a Software Engineer
-    Skills: Python, JavaScript, DevOps
-    Certifications: AWS Certified Solutions Architect
-    Languages: English (Fluent), German (Intermediate)
+    provide example user context here
     """
-    secrets_path = Path('input/secrets.yaml')
-    secrets = yaml.safe_load(open(secrets_path, 'r'))
-    api_key = secrets['api_key']
     # Initialize the FormFiller with your OpenAI API key and user context
-    form_filler = FormFiller(api_key=api_key, user_context=user_context)
+    form_filler = FormFiller()
+    form_filler.set_user_context(user_context)
+
     question1 = "How many years of work experience do you have with Amazon Web Services (AWS)?"
     question2 = "Are you comfortable working in a hybrid setting? Options are 'Yes' or 'No'."
     question3 = "Are you legally authorized to work in Germany? Options are 'Yes' or 'No'."

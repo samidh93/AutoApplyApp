@@ -40,9 +40,9 @@ class ResumeGenerator:
         
         latest_pdf = max(pdf_files, key=lambda f: os.path.getctime(os.path.join(output_folder, f)))
         generated_resume_path = os.path.join(output_folder, latest_pdf)
-
-        print(f"Generated resume located at: {generated_resume_path}")
-        return generated_resume_path
+        resume_path = os.path.abspath(generated_resume_path)
+        print(f"Generated resume located at: {resume_path}")
+        return resume_path
 
 # Example usage
 if __name__ == "__main__":

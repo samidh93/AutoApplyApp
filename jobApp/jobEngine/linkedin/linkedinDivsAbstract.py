@@ -120,7 +120,7 @@ class DivsHomeAddress(Divs):
 class DivsDocumentUpload(Divs):
     def find(self, form: WebElement):
         try:
-            div_elements = form.find_elements(By.CSS_SELECTOR, "div.js-jobs-document-upload__container.display-flex.flex-wrap")
+            div_elements = form.find_elements(By.CSS_SELECTOR, "div.js-jobs-document-upload__container")
             if div_elements != None:
                 return div_elements
 
@@ -129,15 +129,16 @@ class DivsDocumentUpload(Divs):
             return False
 
     def send_user_documents(self, user: CandidateProfile, divs: dict[WebElement]):
+        keywords= ["resume", "cv", "curriculum vitae"]
         for div in divs:
             try:
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
                 translation = asyncio.run(google_translator.translate(
                     text, dest='en')).text.lower()
-                if 'Upload resume'.lower() in translation:
+                if any(word in translation for word in keywords):
                     LinkedinUtils.send_value(div, user.resume)
-                elif 'Upload cover letter'.lower() in translation:
+                elif 'cover letter'.lower() in translation:
                     LinkedinUtils.send_value(div, user.cover_letter)
             except:
                 raise ValueError("Unsupported label: {}".format(div.text))

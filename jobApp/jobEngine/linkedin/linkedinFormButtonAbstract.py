@@ -89,8 +89,7 @@ class ReviewButton(Button):
     def detect(self, form: WebElement, driver):
         # Find the button using its aria-label attribute
         try:
-            self.button = form.find_element(
-                By.XPATH,  "//span[text()='Review']")
+            self.button = form.find_element(By.XPATH,  "//span[text()='Review']")
             logger.info("page form with review detected")
             self.driver = driver
             return True

@@ -30,8 +30,7 @@ class DivsContactInfo(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(
-                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
+            divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -85,8 +84,7 @@ class DivsHomeAddress(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(
-                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
+            divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -148,9 +146,8 @@ class DivsDocumentUpload(Divs):
 class DivsAdditionalQuestions(Divs):
     def find(self, form: WebElement):
         try:
-            # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(
-                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
+            # Find the div fb-dash-form-element
+            divs = form.find_elements(By.CSS_SELECTOR, 'div.fb-dash-form-element')
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -184,13 +181,23 @@ class DivsAdditionalQuestions(Divs):
         for div in divs:
             process_elements(div, user)
 
+    
+    def collect_questions(divs: WebElement)->list:
+        questions = []
+        try:
+            for div in divs:
+                source_qs = div.text.split('\n', 1)[0] or div.text
+                logger.info("Processing select question: %s", source_qs)
+                questions.append(source_qs)
+        except Exception as e:
+            pass
+        
 
 class DivsPrivacyPolicy(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(
-                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
+            divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
             logger.info("found divs privacy policy")
             if divs != None:
                 return divs
@@ -217,8 +224,7 @@ class DivsVoluntarySelfIdentification(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(
-                By.CLASS_NAME, "xsdBMoVEWqXjiPQwTAuhwgcmmXyVOGI")
+            divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
             logger.info("found divs privacy policy")
             if divs != None:
                 return divs

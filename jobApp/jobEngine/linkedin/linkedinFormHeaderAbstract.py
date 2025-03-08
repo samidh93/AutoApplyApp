@@ -60,8 +60,9 @@ class ContactInfoHeader(Header):
             divs = DivHandler.find(form)  # return divs
             if len(divs) != 0:
                 # fill the form with candidate data:CandidateProfile
-                DivHandler.send_user_contact_infos(
-                    data, divs)
+                logger.info("skip filling contact info")
+                #DivHandler.send_user_contact_infos(
+                #    data, divs)
         except:
             logger.warning("no contact infos to fill")
 
@@ -232,6 +233,7 @@ class AdditionalQuestionsHeader(Header):
                 # fill the form with candidate data:CandidateProfile
                 DivHandler.send_user_questions_answers(
                     data, divs)
+            logger.info("finished filling header additional questions")
         except:
             logger.warning("no additional questions to fill")
 
@@ -356,10 +358,12 @@ class UnknownHeader(Header):
 class HeaderFactory:
 
     def create_header(self, form: WebElement):
-        headers = [ContactInfoHeader(), ResumeHeader(), HomeAddressHeader(),
-                   EducationHeader(), WorkExperienceHeader(), ScreeningQuestionsHeader(),
-                   AdditionalQuestionsHeader(), PrivacyPolicyHeader(), ReviewApplicationHeader(),
-                   VoluntarySelfIdentification()]
+        #ContactInfoHeader(),
+        headers = [ ContactInfoHeader(),ResumeHeader(), 
+                   HomeAddressHeader(),EducationHeader(), 
+                   WorkExperienceHeader(), ScreeningQuestionsHeader(), 
+                   AdditionalQuestionsHeader(), PrivacyPolicyHeader(), 
+                   ReviewApplicationHeader(),VoluntarySelfIdentification()]
 
         def create_header_task(header: Header):
             try:

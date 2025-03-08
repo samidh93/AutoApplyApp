@@ -54,7 +54,7 @@ class LinkedInEasyApplyFormHandler:
         # get the resume path
         self.candidate.resume=resume_gen.get_resume()
         #self.candidate.resume_content = resume_gen.get_resume_content()
-        self.candidate.formfiller.set_user_context(resume_gen.get_resume_content())
+        self.candidate.formfiller.set_user_context(resume_gen.get_resume_content(self.candidate.firstname, self.candidate.lastname))
         # find the form
         form = self.find_application_form(driver)
         # handle form page

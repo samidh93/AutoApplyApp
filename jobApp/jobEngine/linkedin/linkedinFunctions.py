@@ -6,8 +6,7 @@ from selenium.common.exceptions import NoSuchElementException, NoSuchElementExce
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
-import os
-import csv
+from selenium.common.exceptions import StaleElementReferenceException
 import time
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
@@ -17,6 +16,11 @@ from datetime import date
 import logging
 import asyncio
 from ..ai.formFiller import FormFiller
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait, Select
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
+import time
 logger = logging.getLogger(__name__)
 
 class LinkedinUtils:
@@ -187,46 +191,28 @@ class LinkedinQuestions:
     @staticmethod
     def process_select_question(div: WebElement, user: CandidateProfile):
         qs_type = "select question"
+        
         try:
             source_qs = div.text.split('\n', 1)[0] or div.text
-            logger.info("processing select question: %s", source_qs)
-            
-            # Get all available options
-            select_element = div.find_element(By.TAG_NAME, "select")
-            select = Select(select_element)
+            logger.info("Processing select question: %s", source_qs)
+            driver = div._parent
+            wait = WebDriverWait(driver, 10)  # Adjust timeout if needed
+            select = Select(div.find_element(By.TAG_NAME, "select"))
             options = [option.text for option in select.options if option.text.strip()]
             options_text = ", ".join(options)
-            
-            # Send question with options to AI
             question_with_options = source_qs + " options: " + options_text
             answer = user.formfiller.answer_question(question_with_options)
-            
-            # If answer is not empty, select the option
+            logger.info(f"AI answer: {answer}")
             if answer and len(answer) > 0:
                 for option in select.options:
                     if answer[0].lower() in option.text.lower():
-                        select.select_by_visible_text(option.text)
-                        logger.info(f"Selected option: {option.text}")
-                        return
-            
-            # Fallback: select the first non-empty option
-            for option in select.options:
-                if option.text.strip():
-                    select.select_by_visible_text(option.text)
-                    logger.info(f"Selected default option: {option.text}")
-                    return
-                    
+                        option_text = option.text.strip()
+                        option.click()
+                        logger.info(f"Selected default option: {option_text}")
+                        break
         except Exception as e:
             logger.warning(f"Unable to process {qs_type}: {e}")
-            try:
-                # Try to select the first option as fallback
-                select_element = div.find_element(By.TAG_NAME, "select")
-                select = Select(select_element)
-                first_option = select.options[1].text if len(select.options) > 1 else select.options[0].text
-                select.select_by_visible_text(first_option)
-                logger.info(f"Selected fallback option: {first_option}")
-            except Exception as e2:
-                logger.error(f"Failed to select default option: {e2}")
+
 
     @staticmethod
     def process_checkbox_question(div: WebElement, user: CandidateProfile):
@@ -279,3 +265,6 @@ class LinkedinQuestions:
                 
         except Exception as e:
             logger.warning(f"Unable to process {qs_type}: {e}")
+
+
+      

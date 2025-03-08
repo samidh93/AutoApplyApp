@@ -111,6 +111,6 @@ if __name__ == "__main__":
     applyReq = createRequest("input/sami_dhiab.json")
     testapp = appCreatorLinkedin(applyReq)
     #testapp.tryCredentialsLinkedin()
-    testapp.searchJobs()
+    #testapp.searchJobs()
     testapp.applyJobs()
 

@@ -21,3 +21,4 @@ googletrans
 python-dotenv
 webdriver-manager
 pyyaml
+ollama

@@ -142,13 +142,25 @@ class LinkedinQuestions:
         try:
             source_qs = div.text.split('\n', 1)[0] or div.text
             logger.info("processing text question: %s", source_qs)
-            
             # Send question to AI
             answer = user.formfiller.answer_question(source_qs)
-            
             # If answer is not empty, send the value to the input field
             if answer and len(answer) > 0:
                 LinkedinUtils.send_value(div, answer[0])
+                # check if there is a feedback message artdeco-inline-feedback__message
+                try:
+                    # Find the element by class name
+                    element = div.find_element(By.CLASS_NAME, "artdeco-inline-feedback__message")
+                    feedback = element.text.strip()  # Extract and clean the text
+                    logger.warning(f"Feedback: {feedback}")
+                    # correct the ai answer with this feedback
+                    new_qs = source_qs + " feedback: " + feedback
+                    answer = user.formfiller.answer_question(new_qs)
+                    if answer and len(answer) > 0:
+                        LinkedinUtils.send_value(div, answer[0])
+                        logger.info(f"Feedback used to correct answer: {answer[0]}")
+                except:
+                    pass
                 logger.info(f"Text field filled with: {answer[0]}")
                 return
             

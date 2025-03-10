@@ -1,109 +1,140 @@
-import openai
-import os
-import json
+import ollama
+import numpy as np
 import yaml
+import re
 from pathlib import Path
-import ast
 import logging
+from dotenv import load_dotenv
+import os
 
 logger = logging.getLogger(__name__)
 
+class MemoryStore:
+    def __init__(self):
+        """Initialize a dictionary to store text and corresponding embeddings."""
+        self.data = {}
+
+    def add_entry(self, key, text):
+        """Generate and store embeddings for fast retrieval."""
+        if text:
+            embedding = ollama.embeddings(model="nomic-embed-text", prompt=text)["embedding"]
+            self.data[key] = {"text": text, "embedding": np.array(embedding)}
+
+    def search(self, query, top_k=3):
+        """Retrieve the most relevant stored entries using cosine similarity."""
+        if not self.data:
+            return []
+
+        query_embedding = np.array(ollama.embeddings(model="nomic-embed-text", prompt=query)["embedding"])
+        similarities = {
+            key: np.dot(entry["embedding"], query_embedding) / (np.linalg.norm(entry["embedding"]) * np.linalg.norm(query_embedding))
+            for key, entry in self.data.items()
+        }
+        return sorted(similarities, key=similarities.get, reverse=True)[:top_k]
+
 class FormFiller:
     def __init__(self):
-        # Set up the API key
         secrets_path = Path('input/secrets.yaml')
         secrets = yaml.safe_load(open(secrets_path, 'r'))
-        api_key = secrets['api_key']
-        openai.api_key = api_key
+        self.model = "mistral:latest"#"deepseek-r1:1.5b"  # Ollama model 
+        self.memory = MemoryStore()
+        self.conversation_history = []
+        self.set_system_context()
+
+    def load_from_yaml(self, yaml_path):
+        # Load YAML file and convert it to a formatted string
+        yaml_file = Path(yaml_path)
+        if not yaml_file.exists():
+            raise FileNotFoundError(f"YAML file not found: {yaml_path}")
+        with open(yaml_file, "r", encoding="utf-8") as file:
+            user_data = yaml.safe_load(file)
+        # Convert dictionary to a YAML-style string
+        user_context = yaml.dump(user_data, default_flow_style=False)
+        return user_context
     
-    def set_user_context(self, user_context):
-        # Initialize conversation history with user context as a system message
+    def set_system_context(self, system_context=None):
+        if system_context is None:
+            system_context = """You are an AI expert in filling out job application forms. 
+            Your goal is to make the user stand out in a positive and professional way.
+            
+            STRICT RULES:
+            - ALWAYS return an answer that BENEFITS the user. If information is missing, MAKE AN EDUCATED GUESS in their favor.
+            - Return ONLY the answer as a plain string. Do NOT add explanations or additional text.
+            - If the question requires a number (e.g., 'Zahl angeben' or 'give number'), return ONLY a number.
+            - If the question provides options, return ONLY one option from the given options.
+            - If the question asks "how many," return ONLY a number.
+            - If options are provided, return one EXACTLY as written.
+            - If insufficient data is found, assume the user has solid experience and provide a reasonable answer.
+            - If asked about skills or years of experience, do NOT return 0. Instead, estimate a positive but realistic number.
+            - If asked about legal status or certifications, assume the best reasonable scenario for the user.
+            """
         self.conversation_history = [
-            {
-                "role": "developer",
-                "content": (
-                    "You are an AI assistant helping to fill out a job application form. "
-                    "Use the following user context to generate accurate and professional responses.\n\n"
-                    "Instructions:\n"
-                    "- If you lack the necessary information, provide the best possible response to pass the question, even if it requires fabricating an answer.\n"
-                    "- If a question requires a numerical response, return only the number without any additional text.\n"
-                    "- If a question provides options to choose from, return only one of the given options exactly as it appears, without modifications, additional text, or synonyms.\n"
-                    "Example Questions: What is your level of proficiency in English? Options are Native, Professional, Conversational, None.\n"
-                    "Example Response: [Professional]\n"
-                    "- Return all responses as strings inside a list.\n\n"
-                    f"{user_context}"
-                )
-            }
+            {"role": "system", "content": system_context}
         ]
 
-    def answer_question(self, question) -> list:
-        """Return a list of answers for one or multiple questions in the same order."""
-        self.conversation_history.append({"role": "user", "content": question})
-        #logger.info(f"AI Conversation History: {self.conversation_history}")
-        
-        response = openai.chat.completions.create(
-            model="gpt-4o-mini",
-            temperature=0.7,
-            messages=self.conversation_history
+    def set_user_context(self, user_context):
+        """Stores user data as embeddings for retrieval instead of dumping it in the prompt."""
+        parsed_data = yaml.safe_load(user_context)  # Convert YAML to dictionary
+        for key, value in parsed_data.items():
+            if isinstance(value, dict):
+                for sub_key, sub_value in value.items():
+                    self.memory.add_entry(f"{key}.{sub_key}", str(sub_value))
+            else:
+                self.memory.add_entry(key, str(value))
+
+    def answer_question(self, question) -> str:
+        """Finds the most relevant context and answers the question in a way that benefits the user."""
+        relevant_keys = self.memory.search(question, top_k=3)
+        relevant_context = " ".join([self.memory.data[k]["text"] for k in relevant_keys])
+
+        if not relevant_context:
+            # If no relevant data, assume a strong positive answer
+            relevant_context = "The user has significant experience and qualifications suitable for this question."
+
+        prompt = f"User Context: {relevant_context}\n Form Question: {question}"
+        self.conversation_history.append({"role": "user", "content": prompt})
+
+        response = ollama.chat(
+            model=self.model,
+            messages=self.conversation_history,
+            options={"temperature": 0.0},  # Keeps responses strict and deterministic
         )
 
-        answer = response.choices[0].message.content.strip()
-        answer = ast.literal_eval(answer)
-        # Validate the answer if the question contains options
-        if "options:" in question.lower():
-            options_part = question.split("options:")[-1].strip()
-            choices = [opt.strip() for opt in options_part.split(",")]
+        self.conversation_history.pop()
 
-            # Check if the answer is in the list
-            if answer not in choices:
-                logger.warning(f"Invalid response '{answer[0]}'. Selecting closest valid option.")
-                answer[0] = next((opt for opt in choices if opt.lower() in answer[0].lower()), choices[0])
+        answer = response['message']['content'].strip()
 
-        
+        # Remove <think> tags if present
+        answer = re.sub(r"<think>.*?</think>", "", answer, flags=re.DOTALL).strip()
+
         return answer
 
 
-# Example usage
+# Example Usage
 if __name__ == "__main__":
-    # Define your user context (sent only once)
-    context = """
-    personal_information:
-    name: "Alex"
-    surname: "Embrata"
-    country: "Germany"
-    city: "Munich"
-    phone_prefix: "+49"
-    phone: "1766604"
-    email: "Alex.Embrata@gmail.com"
-    citizenship: "German Citizenship"
-    summary: "
-        Innovative System Engineer with a strong background in mechatronics, robotics, and automation, 
-        specializing in software development, system architecture, and industrial automation. 
-        Over 6 years of experience working on cutting-edge technologies across automotive, Robotics, 
-        Energie and advanced manufacturing industries. 
-        Adept at designing and implementing high-performance software solutions for autonomous systems, 
-        cloud-based infrastructures, and embedded applications.
-        Proven ability to lead cross-functional teams, optimize processes, and integrate software with 
-        hardware to enhance system efficiency and reliability. Strong expertise in Python, C++, 
-        cloud technologies (AWS), DevOps, and software testing automation. Passionate about AI-driven solutions, 
-        sustainable technologies, and open-source development.  
-        Holds multiple industry-recognized certifications, including AWS Certified Solutions Architect, 
-        EXIN Agile Scrum Master, and Clean Code & SOLID Principles. Fluent in French, Arabic, German, and English, 
-        with excellent problem-solving and leadership skills.
-        "
-    """
-    
-    # Initialize the FormFiller with your OpenAI API key and user context
+    load_dotenv()
     form_filler = FormFiller()
+    context = form_filler.load_from_yaml(os.environ.get("YAML_PATH"))
+    form_filler.set_system_context()
     form_filler.set_user_context(context)
 
-    qs1 = "What is your level of proficiency in German? options: Select an option, None, Conversational, Professional, Native or bilingual"
-    qs2 = "How many years do you have in hardware manufacturing?"
-    answers = form_filler.answer_question(qs1)
-    for answer in answers:  
-        print("Answer:", answers[0])
+    qs1 = "What is your level of proficiency in German? choose from these options: Select an option, None, Conversational, Professional, Native or bilingual"
+    print("Answer:", form_filler.answer_question(qs1))
 
     qs2 = "How many years do you have in hardware manufacturing?"
-    answers = form_filler.answer_question(qs2)
-    for answer in answers:  
-        print("Answer:", answers[0])
+    print("Answer:", form_filler.answer_question(qs2))
+
+    qs3 = "Sind Sie rechtlich befugt, in diesem Land zu arbeiten: Deutschland? choose from these options: Ja, Nein"
+    print("Answer:", form_filler.answer_question(qs3))
+
+    qs4 = "What experience do you have in managing Jenkins and DevOps Tools? The answer must respect this condition: Geben Sie eine decimal Zahl größer als 6.0 ein"
+    print("Answer:", form_filler.answer_question(qs4))
+
+    qs5 = "Wie viele Jahre Berufserfahrung als Frontend Web Entwickler:in bringst Du mit? (bitte Zahl angeben) The answer must respect this condition: Geben Sie eine decimal Zahl größer als 0.0 ein"
+    print("Answer:", form_filler.answer_question(qs5))
+
+    qs6 = "Wie viele Jahre Erfahrung haben Sie mit: Vue.js? The answer must respect this condition: Geben Sie eine whole Zahl zwischen 0 und 99 ein"
+    print("Answer:", form_filler.answer_question(qs6))
+
+    qs7 = "Wie viele Jahre Erfahrung im Bereich Projektmanagement haben Sie?"
+    print("Answer:", form_filler.answer_question(qs7))

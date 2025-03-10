@@ -146,7 +146,7 @@ class LinkedinQuestions:
             answer = user.formfiller.answer_question(source_qs)
             # If answer is not empty, send the value to the input field
             if answer and len(answer) > 0:
-                LinkedinUtils.send_value(div, answer[0])
+                LinkedinUtils.send_value(div, answer)
                 # check if there is a feedback message artdeco-inline-feedback__message
                 try:
                     # Find the element by class name
@@ -154,14 +154,15 @@ class LinkedinQuestions:
                     feedback = element.text.strip()  # Extract and clean the text
                     logger.warning(f"Feedback: {feedback}")
                     # correct the ai answer with this feedback
-                    new_qs = source_qs + " feedback: " + feedback
+                    new_qs = source_qs + " The answer must respect this condition: " + feedback
+                    logger.info(f"Feedback question: {new_qs}")
                     answer = user.formfiller.answer_question(new_qs)
                     if answer and len(answer) > 0:
-                        LinkedinUtils.send_value(div, answer[0])
-                        logger.info(f"Feedback used to correct answer: {answer[0]}")
+                        LinkedinUtils.send_value(div, answer)
+                        logger.info(f"Feedback used to correct answer: {answer}")
                 except:
                     pass
-                logger.info(f"Text field filled with: {answer[0]}")
+                logger.info(f"Text field filled with: {answer}")
                 return
             
             # Fallback to default value if AI didn't provide an answer
@@ -181,15 +182,15 @@ class LinkedinQuestions:
             elements = div.find_elements(By.TAG_NAME, "label")
             options = ", ".join([element.text for element in elements])
             # send question to ai
-            question_with_options = source_qs + " options: " + options
+            question_with_options = source_qs + "choose from these options:" + options
             answer = user.formfiller.answer_question(question_with_options)
             # if answer is not empty, click the option
             if answer:
                 for element in elements:
-                    if answer[0].lower() in element.text.lower():
+                    if answer.lower() in element.text.lower():
                         if not element.is_selected():
                             element.click()
-                            logger.info(f"element {answer[0]} clicked successfully.")
+                            logger.info(f"element {answer} clicked successfully.")
                             return
         except Exception as e:
             logger.warning(f"Unable to process {qs_type}: {e}")
@@ -212,12 +213,12 @@ class LinkedinQuestions:
             select = Select(div.find_element(By.TAG_NAME, "select"))
             options = [option.text for option in select.options if option.text.strip()]
             options_text = ", ".join(options)
-            question_with_options = source_qs + " options: " + options_text
+            question_with_options = source_qs + "choose from these options:" + options_text
             answer = user.formfiller.answer_question(question_with_options)
             logger.info(f"AI answer: {answer}")
             if answer and len(answer) > 0:
                 for option in select.options:
-                    if answer[0].lower() in option.text.lower():
+                    if answer.lower() in option.text.lower():
                         option_text = option.text.strip()
                         option.click()
                         logger.info(f"Selected default option: {option_text}")
@@ -252,11 +253,11 @@ class LinkedinQuestions:
                 return
             
             # For multiple checkboxes, ask AI which ones to select
-            question_with_options = source_qs + " options: " + options_text
+            question_with_options = source_qs + "choose from these options:" + options_text
             answer = user.formfiller.answer_question(question_with_options)
             
             if answer and len(answer) > 0:
-                selected_options = [opt.strip() for opt in answer[0].split(',')]
+                selected_options = [opt.strip() for opt in answer.split(',')]
                 selected_count = 0
                 
                 for element in checkboxElems:

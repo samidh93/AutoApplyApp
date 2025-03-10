@@ -22,3 +22,4 @@ python-dotenv
 webdriver-manager
 pyyaml
 ollama
+numpy

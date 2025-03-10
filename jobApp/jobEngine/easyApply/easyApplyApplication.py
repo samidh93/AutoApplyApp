@@ -50,7 +50,7 @@ class EasyApplyApplication(Application):
         driver = LinkedinSeleniumBase(self.linkedin_data).driver
         logger.info(f"sending easy application for {job.job_title} at {job.company_name} in {job.job_location}")
         try:
-            applied = self.easyApplyFormObj.applyForJob(job.link,driver, cookies, True)
+            applied = self.easyApplyFormObj.applyForJob(job.link,driver, cookies, True, 900)
             if applied:
                 job.setJobApplied(True) # applied for job
                 logger.info(f"is job success applied: {job.applied}")

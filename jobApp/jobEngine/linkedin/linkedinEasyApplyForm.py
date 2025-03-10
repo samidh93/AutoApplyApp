@@ -28,7 +28,7 @@ class LinkedInEasyApplyFormHandler:
         self.button_apply_clicked = False
 
     ###### Apply Phase #####
-    def applyForJob(self, job_link: str, driver: webdriver, cookies, use_timeout=False, timeout=300) -> bool:
+    def applyForJob(self, job_link: str, driver: webdriver, cookies, use_timeout=False, timeout=900) -> bool:
         # keep track of the time for application, do not exceed max 3 minutes:
         self.cookies = cookies
         start_time = None
@@ -65,12 +65,12 @@ class LinkedInEasyApplyFormHandler:
         return True
 
     ####### Detect PAge #############
-    def handleFormPage(self, form: WebElement, start_time=None, driver: webdriver = None, timeout=300):
+    def handleFormPage(self, form: WebElement, start_time=None, driver: webdriver = None, timeout=900):
         if start_time != None:
             # start_time = time.time()  # Record the start time
             elapsed_time = time.time() - start_time  # Calculate elapsed time in seconds
             if elapsed_time >= timeout:  # 180 seconds = 3 minutes
-                logger.info(f"Time limit {timeout} seconds per job app exceeded. quitting ..")
+                logger.warning(f"Time limit {timeout} seconds per job app exceeded. quitting ..")
                 return False
         buttonfactory = ButtonFactory()
         try:

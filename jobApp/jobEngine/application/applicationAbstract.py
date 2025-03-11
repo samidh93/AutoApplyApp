@@ -54,16 +54,16 @@ class Application(ABC):
         logger.info("number of jobs to apply for: %s", len(self.jobs))
         return len(self.jobs)
 
-    def executeJobs(self, application_type="internal" or "external"):
+    def executeJobsMultiThreaded(self, application_type="internal", application_limit=100):
     # login task here
         start_time = time.time()
         baseObj = LinkedinSeleniumBase(self.linkedin_data)
         log_driver = baseObj.login_linkedin(save_cookies=True)
         self.cookies = baseObj.saved_cookies
         log_driver.quit()
+        futures = []
         # Create a ThreadPoolExecutor with a specified number of threads
         with concurrent.futures.ThreadPoolExecutor(max_workers=self.max_browsers) as executor:
-            futures = []
             for i, j in enumerate(self.jobs):
                 if self.limit_reached_event.is_set():
                     logger.info("application limit reached breaking job loop")
@@ -73,7 +73,7 @@ class Application(ABC):
                     logger.info(f"skipping applied job: {j.job_id}")
                     continue
                 if application_type == j.application_type:
-                    #logger.info(f"\n################ applying for job number {j.id} ##################\n")
+                    logger.info(f"\n################ applying for job number {j.id} ##################\n")
                     self.candidate_profile.set_current_job(job=j)
                     # Submit the job application task to the ThreadPoolExecutor
                     futures.append(executor.submit(self.ApplyForJob, j, self.cookies))
@@ -82,7 +82,41 @@ class Application(ABC):
                     continue
             # Wait for all submitted tasks to complete
             concurrent.futures.wait(futures)
-        logger.info("\nApplying Task completed!")
+        logger.info(":::::::::Applying Task completed!:::::::::")
+        end_time = time.time() - start_time
+        logger.info(f"job apply service took: {end_time} seconds")
+        #return succefull jobs
+        self.success_jobs = [job.to_dict() for job in self.jobs if job.applied]
+        #logger.info(f"succeded job dict: {self.success_jobs}")
+        self.save_applied_jobs_file(self.success_jobs, UserConfig.get_jobs_result_json_path(self.csv_file))
+        return self.success_jobs
+
+    def executeJobs(self, application_type="internal", application_limit=100):
+    # login task here
+        start_time = time.time()
+        baseObj = LinkedinSeleniumBase(self.linkedin_data)
+        log_driver = baseObj.login_linkedin(save_cookies=True)
+        self.cookies = baseObj.saved_cookies
+        log_driver.quit()
+        # Create a ThreadPoolExecutor with a specified number of threads
+        for i, j in enumerate(self.jobs):
+            if self.limit_reached_event.is_set():
+                logger.info("application limit reached breaking job loop")
+                break
+            if j.applied:
+                # we already applied for this job
+                logger.info(f"skipping applied job: {j.job_id}")
+                continue
+            if application_type == j.application_type:
+                logger.info(f"\n################ applying for job number {j.id} ##################\n")
+                self.candidate_profile.set_current_job(job=j)
+                # Submit the job application task to the ThreadPoolExecutor
+                self.ApplyForJob(j, self.cookies)
+            else:
+                logger.info(f"Ignoring {j.application_type}")
+                continue
+
+        logger.info(":::::::::Applying Task completed!:::::::::")
         end_time = time.time() - start_time
         logger.info(f"job apply service took: {end_time} seconds")
         #return succefull jobs
@@ -92,19 +126,26 @@ class Application(ABC):
         return self.success_jobs
     
     # use multihtreading context for incoming request
-    def ApplyForAll(self, application_type="internal" or "external", application_limit=10):
+    def ApplyForAllMultiThreaded(self, application_type="internal" or "external", application_limit=100):
         # Create and start the first thread
-        thread1 = threading.Thread(target=self.get_jobs_to_apply_count,  args=[
-                                   application_limit],)
-        thread1.start()
-        # Wait for the first thread to finish
-        thread1.join()
+        #thread1 = threading.Thread(target=self.get_jobs_to_apply_count,  args=[
+        #                           application_limit],)
+        #thread1.start()
+        ## Wait for the first thread to finish
+        #thread1.join()
         # Create and start the second thread (background thread)
+        self.application_limit = int(application_limit)
+        logger.info("candidate applications limit: %d", self.application_limit)
         thread2 = threading.Thread(target=self.executeJobs, args=[
-                                   application_type], daemon=False)
+                                   application_type, application_limit], daemon=False)
         thread2.start()
         thread2.join()
-    
+
+    # use multihtreading context for incoming request
+    def ApplyForAll(self, application_type="internal" or "external", application_limit=100):
+        self.application_limit = int(application_limit)
+        jobs = self.executeJobs(application_type, application_limit)
+
     def load_jobs_from_csv(self)->list[Job]:
         flocker = FileLocker()
         jobs = [] #list of jobs

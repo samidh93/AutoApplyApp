@@ -141,9 +141,8 @@ class AppConfig(BaseConfig):
     
 
 if __name__ == "__main__":
-    #baseconfig = BaseConfig()
-    #baseconfig.print_files()
-    userconfig = UserConfig()
-    file = userconfig.secrets_path
-    print("file path returned: ", file)
+    print("BaseConfig Path:", BaseConfig().get_secrets_path())
+    #userconfig = UserConfig()
+    #file = userconfig.secrets_path
+    #print("file path returned: ", file)
     

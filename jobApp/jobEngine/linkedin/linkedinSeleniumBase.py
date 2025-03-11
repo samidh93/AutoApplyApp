@@ -5,9 +5,11 @@ import json
 import time
 import logging
 from urllib.parse import urlparse
-from ..config.config import UserConfig
+from ..config.config import UserConfig, BaseConfig
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.chrome.service import Service as ChromeService
+from pathlib import Path
+
 
 logger = logging.getLogger(__name__)
 """ Base class with base configuration for linkedin login, search and selenium driver"""
@@ -16,7 +18,11 @@ class LoginException(Exception):
     pass
 
 class LinkedinSeleniumBase:
-    def __init__(self, linkedin_data, driver_config_file='jobApp/secrets/config.json', default_linkedin_config = 'jobApp/secrets/sample_linkedin_user.json'):
+    def __init__(self, linkedin_data, driver_config_file=f'{BaseConfig().get_secrets_path()}/config.json', default_linkedin_config = f'{BaseConfig().get_secrets_path()}/sample_linkedin_user.json'):
+
+        #relative_path = Path(driver_config_file)
+        #config_full_path = relative_path.resolve()
+        #print(config_full_path)  # Outputs the full absolute path
         self._load_driver_params_from_file(driver_config_file) # for config selenium driver 
         self._load_urls_params_from_file(driver_config_file)
         self.driver = self._create_selenium_driver(driver_config_file)

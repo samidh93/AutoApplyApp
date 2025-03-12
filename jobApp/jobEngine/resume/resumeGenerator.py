@@ -1,60 +1,56 @@
 # create a class which will generate a resume based on the job description
 import os   
 import re
+import logging
+logger = logging.getLogger(__name__)
+
 class ResumeGenerator:
     def __init__(self, job_description_url):
         match = re.match(r"(https://www\.linkedin\.com/jobs/view/\d+)", job_description_url)
         self.job_description = match.group(1) if match else None
         if not self.job_description:
             raise ValueError("Invalid job description URL. Please provide a valid LinkedIn job description URL.")
-        print(f"Job description URL: {self.job_description}")
+        logger.info(f"Job description URL: {self.job_description}")
         
-    def run(self):
+    def run(self, firstname, lastname):
         # run the docker container
         folder = "../../../AI_Resume_Creator"
         current_dir = os.path.dirname(os.path.abspath(__file__))
         folder = os.path.join(current_dir, folder)
-        print("locating the folder")
-        print(folder)
+        logger.info("locating the folder")
+        logger.info(folder)
         os.chdir(folder)
         # get the current directory
         command = f"""docker run \
         -v {folder}/output/:/app/output/ \
         -v {folder}/input/:/app/input/ \
         ai-resume-creator-python-image \
-        --resume /app/input/sami_dhiab_resume.yaml \
+        --resume /app/input/{firstname}_{lastname}_resume.yaml \
         --url "{self.job_description}"
         """
 
-        print("running command")
-        print(command)
+        logger.info("running command")
+        logger.info(command)
         os.system(command)
-        print("resume generated successfully")
+        logger.info("resume generated successfully")
     
-    def get_resume(self):
+    def get_resume(self, firstname, lastname, company):
         # locate the latest created *.pdf files in the output folder 
         output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/output")
-        pdf_files = [f for f in os.listdir(output_folder) if f.endswith('.pdf')]
-        if not pdf_files:
-            raise FileNotFoundError("No PDF files found in the output folder.")
-        
-        latest_pdf = max(pdf_files, key=lambda f: os.path.getctime(os.path.join(output_folder, f)))
-        generated_resume_path = os.path.join(output_folder, latest_pdf)
+        resume_pdf = f"{firstname}_{lastname}_resume_{company}.pdf"
+        generated_resume_path = os.path.join(output_folder, resume_pdf)
         resume_path = os.path.abspath(generated_resume_path)
-        print(f"Generated resume located at: {resume_path}")
+        logger.info(f"Generated resume located at: {resume_path}")
         return resume_path
     
-    def get_resume_content(self, firstname, lastname):
-        # locate the yaml file in the input folder
-        # read the content of the yaml file
-        # return the content
+    def get_resume_content(self, firstname, lastname, company):
         input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/input")
-        resume_yaml =  f"{firstname}_{lastname}_resume.yaml"
+        resume_yaml =  f"{firstname}_{lastname}_resume_{company}.yaml"
         resume_yaml_path = os.path.join(input_folder, resume_yaml)
         with open(resume_yaml_path, 'r') as file:
             resume_content = file.read()
-        print(f"Resume content read from {resume_yaml_path}")
-        print(resume_content)
+        logger.info(f"Resume content read from {resume_yaml_path}")
+        logger.info(resume_content)
         return resume_content
 
 # Example usage

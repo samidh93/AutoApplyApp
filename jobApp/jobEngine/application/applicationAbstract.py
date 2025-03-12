@@ -109,6 +109,7 @@ class Application(ABC):
                 continue
             if application_type == j.application_type:
                 logger.info(f"\n################ applying for job number {j.id} ##################\n")
+                logger.info(f"\n################ job link {j.link} ##################\n")
                 self.candidate_profile.set_current_job(job=j)
                 # Submit the job application task to the ThreadPoolExecutor
                 self.ApplyForJob(j, self.cookies)

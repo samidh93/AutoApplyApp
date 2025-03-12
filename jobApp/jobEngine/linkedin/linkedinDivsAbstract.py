@@ -136,6 +136,8 @@ class DivsDocumentUpload(Divs):
                     text, dest='en')).text.lower()
                 if any(word in translation for word in keywords):
                     LinkedinUtils.send_value(div, user.resume)
+                    # wait for 5 seconds until resume upload is complete
+                    time.sleep(5)
                 elif 'cover letter'.lower() in translation:
                     LinkedinUtils.send_value(div, user.cover_letter)
             except:

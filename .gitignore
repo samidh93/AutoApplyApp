@@ -176,7 +176,7 @@ chromedriver.exe
 jobs*.json
 cookie*.json
 resume*.pdf
-
+conversation*.json
 # ignore output/
 output/*
 input/*.pdf

@@ -12,7 +12,7 @@ class ResumeGenerator:
             raise ValueError("Invalid job description URL. Please provide a valid LinkedIn job description URL.")
         logger.info(f"Job description URL: {self.job_description}")
         
-    def run(self, firstname, lastname):
+    def run(self, firstname:str, lastname:str):
         # run the docker container
         folder = "../../../AI_Resume_Creator"
         current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -25,7 +25,7 @@ class ResumeGenerator:
         -v {folder}/output/:/app/output/ \
         -v {folder}/input/:/app/input/ \
         ai-resume-creator-python-image \
-        --resume /app/input/{firstname}_{lastname}_resume.yaml \
+        --resume /app/input/{firstname.lower()}_{lastname.lower()}_resume.yaml \
         --url "{self.job_description}"
         """
 
@@ -34,18 +34,18 @@ class ResumeGenerator:
         os.system(command)
         logger.info("resume generated successfully")
     
-    def get_resume(self, firstname, lastname, company):
+    def get_resume(self, firstname:str, lastname:str, company:str):
         # locate the latest created *.pdf files in the output folder 
         output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/output")
-        resume_pdf = f"{firstname}_{lastname}_resume_{company}.pdf"
+        resume_pdf = f"{firstname.lower()}_{lastname.lower()}_resume_{company}.pdf"
         generated_resume_path = os.path.join(output_folder, resume_pdf)
         resume_path = os.path.abspath(generated_resume_path)
         logger.info(f"Generated resume located at: {resume_path}")
         return resume_path
     
-    def get_resume_content(self, firstname, lastname, company):
+    def get_resume_content(self, firstname:str, lastname:str, company:str):
         input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/input")
-        resume_yaml =  f"{firstname}_{lastname}_resume_{company}.yaml"
+        resume_yaml =  f"{firstname.lower()}_{lastname.lower()}_resume_{company}.yaml"
         resume_yaml_path = os.path.join(input_folder, resume_yaml)
         with open(resume_yaml_path, 'r') as file:
             resume_content = file.read()

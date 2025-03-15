@@ -119,7 +119,7 @@ class Application(ABC):
 
         logger.info(":::::::::Applying Task completed!:::::::::")
         end_time = time.time() - start_time
-        logger.info(f"job apply service took: {end_time} seconds")
+        logger.info(f"job apply service took: {end_time} seconds and {end_time/60} minutes")
         #return succefull jobs
         self.success_jobs = [job.to_dict() for job in self.jobs if job.applied]
         #logger.info(f"succeded job dict: {self.success_jobs}")

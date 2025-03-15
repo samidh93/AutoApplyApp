@@ -8,6 +8,7 @@ from selenium.webdriver.support.ui import Select
 import os
 import csv
 import time
+from ..job.job import Job
 from ..user.candidateProfile import CandidateProfile
 from collections.abc import Iterable
 from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinkedin
@@ -28,7 +29,7 @@ class LinkedInEasyApplyFormHandler:
         self.button_apply_clicked = False
 
     ###### Apply Phase #####
-    def applyForJob(self, job_link: str, driver: webdriver, cookies, use_timeout=False, timeout=900) -> bool:
+    def applyForJob(self, job:Job, driver: webdriver, cookies, use_timeout=False, timeout=900) -> bool:
         # keep track of the time for application, do not exceed max 3 minutes:
         self.cookies = cookies
         start_time = None
@@ -39,7 +40,7 @@ class LinkedInEasyApplyFormHandler:
                logger.info(f"Time limit {timeout} seconds per application exceeded. Returning from applyForJob.")
                return False
         # open job url
-        self.get_the_url(job_link, driver)  # get the url form the job
+        self.get_the_url(job.link, driver)  # get the url form the job
         # return true if job was success or already applied
         if self.is_application_submitted(driver):
             return True
@@ -49,12 +50,12 @@ class LinkedInEasyApplyFormHandler:
             return False
         # return false if button is not clicked
         # generate the resume for this job
-        resume_gen = ResumeGenerator(job_link)
-        resume_gen.run()
+        resume_gen = ResumeGenerator(job.link)
+        resume_gen.run(self.candidate.firstname, self.candidate.lastname)
         # get the resume path
-        self.candidate.resume=resume_gen.get_resume()
-        #self.candidate.resume_content = resume_gen.get_resume_content()
-        self.candidate.formfiller.set_user_context(resume_gen.get_resume_content(self.candidate.firstname, self.candidate.lastname))
+        self.candidate.resume=resume_gen.get_resume(self.candidate.firstname, self.candidate.lastname, job.company_name)
+        self.candidate.formfiller.set_job(job)
+        self.candidate.formfiller.set_user_context(resume_gen.get_resume_content(self.candidate.firstname, self.candidate.lastname,job.company_name ))
         # find the form
         form = self.find_application_form(driver)
         # handle form page

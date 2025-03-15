@@ -144,6 +144,7 @@ class LinkedinQuestions:
             logger.info("processing text question: %s", source_qs)
             # Send question to AI
             answer = user.formfiller.answer_question(source_qs)
+            logger.info(f"AI answer: {answer}")
             # If answer is not empty, send the value to the input field
             if answer and len(answer) > 0:
                 LinkedinUtils.send_value(div, answer)
@@ -157,6 +158,8 @@ class LinkedinQuestions:
                     new_qs = source_qs + " The answer must respect this condition: " + feedback
                     logger.info(f"Feedback question: {new_qs}")
                     answer = user.formfiller.answer_question(new_qs)
+                    logger.info(f"AI answer: {answer}")
+
                     if answer and len(answer) > 0:
                         LinkedinUtils.send_value(div, answer)
                         logger.info(f"Feedback used to correct answer: {answer}")
@@ -182,8 +185,9 @@ class LinkedinQuestions:
             elements = div.find_elements(By.TAG_NAME, "label")
             options = ", ".join([element.text for element in elements])
             # send question to ai
-            question_with_options = source_qs + "choose from these options:" + options
-            answer = user.formfiller.answer_question(question_with_options)
+            #question_with_options = source_qs + "choose from these options:" + options
+            answer = user.formfiller.answer_question(source_qs, options)
+            logger.info(f"AI answer: {answer}")
             # if answer is not empty, click the option
             if answer:
                 for element in elements:
@@ -214,7 +218,7 @@ class LinkedinQuestions:
             options = [option.text for option in select.options if option.text.strip()]
             options_text = ", ".join(options)
             question_with_options = source_qs + "choose from these options:" + options_text
-            answer = user.formfiller.answer_question(question_with_options)
+            answer = user.formfiller.answer_question(source_qs, options)
             logger.info(f"AI answer: {answer}")
             if answer and len(answer) > 0:
                 for option in select.options:
@@ -254,8 +258,8 @@ class LinkedinQuestions:
             
             # For multiple checkboxes, ask AI which ones to select
             question_with_options = source_qs + "choose from these options:" + options_text
-            answer = user.formfiller.answer_question(question_with_options)
-            
+            answer = user.formfiller.answer_question(source_qs, options)
+            logger.info(f"AI answer: {answer}")
             if answer and len(answer) > 0:
                 selected_options = [opt.strip() for opt in answer.split(',')]
                 selected_count = 0

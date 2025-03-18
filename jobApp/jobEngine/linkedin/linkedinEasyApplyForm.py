@@ -49,6 +49,12 @@ class LinkedInEasyApplyFormHandler:
         if not self.clickApplyPage(driver):
             return False
         # return false if button is not clicked
+        if job.company_name == None or job.company_name == "":
+            logger.info("company name is not found")
+            element = driver.find_element(By.CLASS_NAME, "job-details-jobs-unified-top-card__company-name")
+            company_name = element.text
+            logger.info(f"company name: {company_name}")
+            job.company_name = company_name
         # generate the resume for this job
         resume_gen = ResumeGenerator(job.link)
         resume_gen.run(self.candidate.firstname, self.candidate.lastname)

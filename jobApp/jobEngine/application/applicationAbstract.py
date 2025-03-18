@@ -107,6 +107,9 @@ class Application(ABC):
                 # we already applied for this job
                 logger.info(f"skipping applied job: {j.job_id}")
                 continue
+            if j.job_id == None or j.job_id == "":
+                logger.info(f"skipping job with no job_id: {j.job_id}")
+                continue
             if application_type == j.application_type:
                 logger.info(f"\n################ applying for job number {j.id} ##################\n")
                 logger.info(f"\n################ job link {j.link} ##################\n")

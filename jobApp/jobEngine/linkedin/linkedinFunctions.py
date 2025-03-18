@@ -183,7 +183,7 @@ class LinkedinQuestions:
             source_qs = div.text.split('\n', 1)[0] or div.text
             logger.info("processing radio question: %s", source_qs)
             elements = div.find_elements(By.TAG_NAME, "label")
-            options = ", ".join([element.text for element in elements])
+            options = [element.text for element in elements] #", ".join([element.text for element in elements])
             # send question to ai
             #question_with_options = source_qs + "choose from these options:" + options
             answer = user.formfiller.answer_question(source_qs, options)

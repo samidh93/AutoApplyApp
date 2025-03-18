@@ -102,7 +102,7 @@ class JobDetailsExtractorLinkedin:
         what_data = "job description"
         try:
             # logger.info the extracted content
-            self.job_description =  element.find_element(By.CLASS_NAME,'jobs-description__container').text
+            self.job_description = None#  element.find_element(By.CLASS_NAME,'jobs-description__container').text
             #logger.info(f"Job Details: {self.job_description}")
             return self.job_description
         except:

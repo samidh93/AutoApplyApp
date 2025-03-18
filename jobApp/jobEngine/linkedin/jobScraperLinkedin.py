@@ -270,8 +270,9 @@ class JobScraperLinkedin:
     def createJobObj(self, index: int, job: WebElement) -> Job:
         try:
             jobDataExtractor = JobDetailsExtractorLinkedin(job)
-            jobDataExtractor.getJobLink(job)
             jobDataExtractor.getJobID(job)
+            #jobDataExtractor.getJobLink(job)
+            jobDataExtractor.job_link=f"https://www.linkedin.com/jobs/view/{jobDataExtractor.job_id}"
             # use it when to extract all details, otherwise details will be None
             self.extractJobData(job,jobDataExtractor )
             applied = False
@@ -304,12 +305,12 @@ class JobScraperLinkedin:
                 By.XPATH, '//ul[contains(@class, "jobs-search-pagination__pages")]')
             list_pages_availables = list_pages.find_elements(By.TAG_NAME, 'li')
             last_li = list_pages_availables[-1]
-            last_p = last_li.get_attribute("data-test-pagination-page-btn")
-            pages_availables = int(last_p)
+            #last_p = last_li.get_attribute("data-test-pagination-page-btn")
+            pages_availables = int(self.total_jobs%25)#int(last_li.text)
             logger.info(f"total pages availables: {pages_availables}")
             return pages_availables
         except:
-            pages = int(self.total_jobs/25)
+            pages = int(self.total_jobs%25)
             logger.error(f"exception available pages occured, calculating total_jobs/25: {pages}")
             return pages
 

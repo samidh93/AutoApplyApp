@@ -199,7 +199,7 @@ class DivsPrivacyPolicy(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
+            divs = form.find_elements(By.CSS_SELECTOR, 'fieldset[data-test-checkbox-form-component]')
             logger.info("found divs privacy policy")
             if divs != None:
                 return divs

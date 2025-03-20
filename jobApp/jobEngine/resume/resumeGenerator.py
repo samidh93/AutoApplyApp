@@ -26,7 +26,7 @@ class ResumeGenerator:
         -v {folder}/input/:/app/input/ \
         ai-resume-creator-python-image \
         --resume /app/input/{firstname.lower()}_{lastname.lower()}_resume.yaml \
-        --url "{self.job_description}"
+        --job_description_url "{self.job_description}"
         """
 
         logger.info("running command")

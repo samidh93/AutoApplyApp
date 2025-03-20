@@ -148,36 +148,42 @@ class Application(ABC):
     # use multihtreading context for incoming request
     def ApplyForAll(self, application_type="internal" or "external", application_limit=100):
         self.application_limit = int(application_limit)
+        
         jobs = self.executeJobs(application_type, application_limit)
 
     def load_jobs_from_csv(self)->list[Job]:
         flocker = FileLocker()
         jobs = [] #list of jobs
         logger.info(f"file:: {self.csv_file}")
-        if os.path.isfile(self.csv_file):
-            # Read
-            with open(self.csv_file, "r", newline='', encoding='utf-8') as file:
-                csv_reader = csv.DictReader(file)
-                for row in csv_reader:
-                    if row["applied"] == "False":
-                        job = Job(
-                            id=row["id"],
-                            job_id=row["job_id"],
-                            link=row["link"],
-                            job_title=row["job_title"],
-                            job_location=row["job_location"],
-                            company_name=row["company_name"],
-                            num_applicants=row["num_applicants"],
-                            posted_date=row["posted_date"],
-                            job_description=row["job_description"],
-                            company_emails=row["company_emails"],
-                            job_poster_name=row["job_poster_name"],
-                            application_type=row["application_type"],
-                            applied=row["applied"] == "True"
-                        )
-                        jobs.append(job)
-                flocker.unlock(file)
-        return jobs
+        try:
+            if os.path.isfile(self.csv_file):
+                # Read
+                with open(self.csv_file, "r", newline='', encoding='utf-8') as file:
+                    csv_reader = csv.DictReader(file)
+                    for row in csv_reader:
+                        if row["applied"] == "False":
+                            job = Job(
+                                id=row["id"],
+                                job_id=row["job_id"],
+                                link=row["link"],
+                                job_title=row["job_title"],
+                                job_location=row["job_location"],
+                                company_name=row["company_name"],
+                                num_applicants=row["num_applicants"],
+                                posted_date=row["posted_date"],
+                                job_description=row["job_description"],
+                                company_emails=row["company_emails"],
+                                job_poster_name=row["job_poster_name"],
+                                application_type=row["application_type"],
+                                applied=row["applied"] == "True"
+                            )
+                            jobs.append(job)
+                    flocker.unlock(file)
+            return jobs
+        except Exception as e:
+            logger.error(f"Error while reading the CSV file: {e}")
+            raise
+            return []
 
 
     def update_csv(self):

@@ -76,7 +76,7 @@ class ApplicationDirector:
         job: dict = json_data.get("search_params")
         job_title = job.get('job')
         location = job.get('location')
-        return UserConfig.get_jobs_files(job_title=job_title, job_location=location, field_id=self.field_id)
+        return UserConfig.get_jobs_file(job_title=job_title, job_location=location, field_id=self.field_id)
         # return self.getUserSearchJobsCsv(csv_path=csv_path, job_title=job_title, job_location=location, field_id=self.field_id)
 
     def replace_spaces_and_commas_with_underscores(self, input_string: str):

@@ -33,6 +33,10 @@ class UserConfig(BaseConfig):
     cookies_files:list = glob.glob(os.path.join(BaseConfig.secrets_path, "*cookies*.json"))
 
     @staticmethod
+    def get_jobs_files():
+        return glob.glob(os.path.join(BaseConfig.data_path, "*jobs*.csv"))
+    
+    @staticmethod
     def print_files():
         print("Resume files:", UserConfig.resume_files)
         print("Cover files:", UserConfig.cover_files)
@@ -69,8 +73,8 @@ class UserConfig(BaseConfig):
         return None
 
     @staticmethod
-    def get_jobs_files(job_title:str, job_location:str, field_id:str):
-        for job_file in UserConfig.jobs_files:
+    def get_jobs_file(job_title:str, job_location:str, field_id:str):
+        for job_file in UserConfig.get_jobs_files():
             if job_title.replace(" ", "_").replace(",","_") in job_file and job_location.replace(" ", "_").replace(",","_") in job_file and field_id.replace(" ", "_").replace(",","_") in job_file:
                 print("find jobs file: ", job_file)
                 return job_file

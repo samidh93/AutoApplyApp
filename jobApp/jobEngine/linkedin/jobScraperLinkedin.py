@@ -37,7 +37,7 @@ class JobScraperLinkedin:
         self.global_job_index = 0  # track the global job index, used for determing the limit
         self.job_index_list = []
         self.limit_reached_event = threading.Event()
-        self.page_threads = 4  # import to calculate overload of running more than one page thread
+        self.page_threads = 3  # import to calculate overload of running more than one page thread
         self.job_threads = 0  # import to calculate overload of running more than one job thread
 
     def getJobCountFound(self):

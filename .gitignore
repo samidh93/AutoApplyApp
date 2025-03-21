@@ -182,3 +182,5 @@ output/*
 input/*.pdf
 input/*.json
 input/*.yaml
+
+ai_conversation_history

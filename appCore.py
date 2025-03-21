@@ -106,11 +106,15 @@ def createRequest(file_path):
         data = json.load(f)
     return data
 
-if __name__ == "__main__":
+def run_multiple_requests(json_files_list):
+    for file in json_files_list:
+        data = createRequest(file)
+        testapp = appCreatorLinkedin(data)
+        #testapp.tryCredentialsLinkedin()
+        testapp.searchJobs()
+        testapp.applyJobs()
 
-    applyReq = createRequest("input/sami_dhiab.json")
-    testapp = appCreatorLinkedin(applyReq)
-    #testapp.tryCredentialsLinkedin()
-    testapp.searchJobs()
-    #testapp.applyJobs()
+if __name__ == "__main__":
+    files = ["input/sami_dhiab_software_engineer_berlin.json", "input/sami_dhiab_it_consultant_berlin.json", "input/sami_dhiab_robotics_berlin.json"]
+    run_multiple_requests(files)
 

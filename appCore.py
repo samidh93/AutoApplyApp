@@ -112,5 +112,5 @@ if __name__ == "__main__":
     testapp = appCreatorLinkedin(applyReq)
     #testapp.tryCredentialsLinkedin()
     testapp.searchJobs()
-    testapp.applyJobs()
+    #testapp.applyJobs()
 

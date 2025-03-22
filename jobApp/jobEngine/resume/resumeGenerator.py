@@ -22,6 +22,7 @@ class ResumeGenerator:
         os.chdir(folder)
         # get the current directory
         command = f"""docker run \
+        -p 11434:11434 \
         -v {folder}/output/:/app/output/ \
         -v {folder}/input/:/app/input/ \
         ai-resume-creator-python-image \
@@ -33,7 +34,9 @@ class ResumeGenerator:
         logger.info(command)
         os.system(command)
         logger.info("resume generated successfully")
-    
+        os.system("""docker rm -f $(docker ps -a -q)""")
+        logger.info("docker container removed successfully")
+
     def get_resume(self, firstname:str, lastname:str, company:str):
         # locate the latest created *.pdf files in the output folder 
         output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/output")

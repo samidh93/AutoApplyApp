@@ -51,7 +51,7 @@ class FormFiller:
 
     def set_job(self, job:Job):
         self.job = job
-        self.conversation_history_file = Path(BaseConfig.get_data_path(), f"conversation_history_{self.job.company_name}_{self.job.id}.json")
+        self.conversation_history_file = Path(BaseConfig.get_data_path(), f"conversation_history_{self.job.company_name}_{self.job.job_id}.json")
     def load_from_yaml(self, yaml_path):
         yaml_file = Path(yaml_path)
         if not yaml_file.exists():

@@ -214,7 +214,7 @@ class JobScraperLinkedin:
         logger.info(f"number of pages available to visit: {page_to_visit}")
         logger.info(f"number of applications limited by user: {self.application_limit}")
         # to be sure we are in the limit of pages
-        self.page_threads = page_to_visit
+        #self.page_threads = page_to_visit
         # need more investigation how driver handles threads, for now 2 seems to be ok
         self.job_threads = 0
         self.job_index_list = [i * jobs_per_page for i in range(page_to_visit)]

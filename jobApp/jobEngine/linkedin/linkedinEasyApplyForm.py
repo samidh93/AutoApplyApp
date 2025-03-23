@@ -15,7 +15,7 @@ from .jobsAttachSessionToLoginLinkedin import JobSearchRequestSessionAttachLinke
 from .linkedinSeleniumBase import LinkedinSeleniumBase
 from .linkedinFormButtonAbstract import ButtonFactory, Button
 from ..resume.resumeGenerator import ResumeGenerator
-
+from ..ai.formFiller import FormFiller
 ''' handle linkedin easy apply form template'''
 import logging
 logger = logging.getLogger(__name__)

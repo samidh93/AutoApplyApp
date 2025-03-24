@@ -64,6 +64,7 @@ country_phone_codes = [
 questions_with_options = {
     "Do you require visa sponsorship for the country of work, in this case germany?": ["Yes", "No"],
     "Code Pays": country_phone_codes,
+    "Numéro de téléphone portable": [], 
    "Welche Gehaltsvorstellung hast Du für das Jahresbrutto in dieser Position?": [],
     "What are your salary expectations? (EUR)": [],
     "What is your language proficiency (written/spoken) on an A1-C2 scale in German?": language_levels,

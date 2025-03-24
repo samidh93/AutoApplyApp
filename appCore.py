@@ -115,8 +115,8 @@ def run_multiple_requests(json_files_list):
         testapp.applyJobs()
 
 if __name__ == "__main__":
-    file = "input/zayneb_dhieb.json"
-    file2 = "input/sami_dhiab.json"
-    files = [file2]
+    zayneb_file = "input/zayneb_dhieb.json"
+    sami_file = "input/sami_dhiab.json"
+    files = [zayneb_file]
     run_multiple_requests(files)
 

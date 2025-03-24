@@ -46,11 +46,12 @@ class FormFiller:
         self.conversation_history = []
         self.set_system_context()
         self.job = None
-        self.max_retries = 3  # Retry mechanism
+        self.user_data = None
 
     def set_job(self, job:Job):
         self.job = job
         self.conversation_history_file = Path(BaseConfig.get_data_path(), f"conversation_history_{self.job.company_name}_{self.job.job_id}.json")
+    
     def load_from_yaml(self, yaml_path):
         yaml_file = Path(yaml_path)
         if not yaml_file.exists():
@@ -81,8 +82,9 @@ Your goal is to make the user stand out in a positive and professional way.
 
     def set_user_context(self, user_context):
         """Stores user data as embeddings for retrieval."""
-        parsed_data = yaml.safe_load(user_context)
-        for key, value in parsed_data.items():
+        self.user_data = yaml.safe_load(user_context)
+        logger.info("User context loaded successfully.")
+        for key, value in self.user_data.items():
             if isinstance(value, dict):
                 for sub_key, sub_value in value.items():
                     self.memory.add_entry(f"{key}.{sub_key}", str(sub_value))
@@ -114,109 +116,78 @@ Your answer should match one of the options EXACTLY as written.
 DO NOT add any explanation or additional text."""
             self.conversation_history.append({"role": "user", "content": prompt})
             self.conversation_history_company.append({"role": "user", "content": prompt})
-
-            for attempt in range(self.max_retries):
-                response = ollama.chat(
-                    model=self.model,
-                    messages=self.conversation_history,
-                    options={"temperature": 0.0}
-                )
-                raw_answer = response['message']['content'].strip()
-                answer_candidate = re.sub(r"<think>.*?</think>", "", raw_answer, flags=re.DOTALL).strip()
-
-                if answer_candidate in options:
-                    valid_answer = answer_candidate
+            response = ollama.chat(
+                model=self.model,
+                messages=self.conversation_history,
+                options={"temperature": 0.0}
+            )
+            raw_answer = response['message']['content'].strip()
+            answer_candidate = re.sub(r"<think>.*?</think>", "", raw_answer, flags=re.DOTALL).strip()
+            if answer_candidate in options:
+                valid_answer = answer_candidate
+            else:
+                best_match = None
+                best_score = -1
+                for option in options:
+                    option_lower = option.lower()
+                    answer_lower = answer_candidate.lower()
+                    if option_lower in answer_lower or answer_lower in option_lower:
+                        score = len(set(option_lower) & set(answer_lower)) / max(len(option_lower), len(answer_lower))
+                        if score > best_score:
+                            best_score = score
+                            best_match = option
+                if best_score > 0.5:
+                    valid_answer = best_match
                 else:
-                    best_match = None
-                    best_score = -1
-                    for option in options:
-                        option_lower = option.lower()
-                        answer_lower = answer_candidate.lower()
-                        if option_lower in answer_lower or answer_lower in option_lower:
-                            score = len(set(option_lower) & set(answer_lower)) / max(len(option_lower), len(answer_lower))
-                            if score > best_score:
-                                best_score = score
-                                best_match = option
-                    if best_score > 0.5:
-                        valid_answer = best_match
-                    else:
-                        if attempt < self.max_retries - 1:
-                            feedback = f"Your answer '{answer_candidate}' doesn't match any of the available options. Please choose EXACTLY one option from: {options_str}"
-                            logger.info(f"Feedback: {feedback}")
-                            self.conversation_history.append({"role": "assistant", "content": answer_candidate})
-                            self.conversation_history.append({"role": "user", "content": feedback})
-                            continue
-                        else:
-                            valid_answer = options[1]
-
-                self.conversation_history_company.append({"role": "assistant", "content": valid_answer})
-                self._write_conversation_history()
-                self.conversation_history = self.conversation_history[:1]
-                self.conversation_history_company.clear()
-                return valid_answer
-
-            return options[0]
+                    valid_answer = options[1]
+            self.conversation_history_company.append({"role": "assistant", "content": valid_answer})
+            self._write_conversation_history()
+            self.conversation_history = self.conversation_history[:1]
+            self.conversation_history_company.clear()
+            return valid_answer
         except Exception as e:
             print(f"Unexpected error: {e}")
-            return options[0]
+            return options[1]
 
     def answer_with_no_options(self, question: str) -> str:
         try:
-            relevant_keys = self.memory.search(question, top_k=2)
+            relevant_keys = self.memory.search(question, top_k=3)
             relevant_context = ", ".join([f"{k}: {self.memory.data[k]['text']}" for k in relevant_keys])
             if not relevant_context:
                 relevant_context = "The user has significant experience and qualifications suitable for this question."
-            prompt = f"""Form Question: {question}
+            prompt = f"""Form Question: {question} ?
 User Context Data Hint: {relevant_context}
 IMPORTANT:
 - Return ONLY the answer as a plain string
 - If the question requires a number, return ONLY a number
+- If the question requires a phone number, return the user's phone {self.user_data.get("personal_information").get("phone", "")}
+- If the question asks for a salary, use the user's expected salary {self.user_data.get("personal_information").get("desired_salary", "")} or provide a reasonable estimate based on job market data
 - DO NOT add any explanation or additional text
-- DO NOT alter change the salary from the user's expected salary
 - Make sure the answer is professional and benefits the user"""
             self.conversation_history.append({"role": "user", "content": prompt})
             self.conversation_history_company.append({"role": "user", "content": prompt})
-
-            for attempt in range(self.max_retries):
-                response = ollama.chat(
+            response = ollama.chat(
                     model=self.model,
                     messages=self.conversation_history,
                     options={"temperature": 0.0}
-                )
-                raw_answer = response['message']['content'].strip()
-                answer_candidate = re.sub(r"<think>.*?</think>", "", raw_answer, flags=re.DOTALL).strip()
-
-                if any(keyword in question.lower() for keyword in 
-                       ["number", "how many", "zahl", "jahre", "years", "salary", "gehalt", "euro", "eur"]):
-                    number_match = re.search(r'\d+(?:\.\d+)?', answer_candidate)
-                    if number_match:
-                        if any(keyword in question.lower() for keyword in ["experience", "erfahrung", "jahre", "years"]):
-                            extracted_num = float(number_match.group())
-                            answer_candidate = "1" if extracted_num < 1 else number_match.group()
-                        else:
-                            answer_candidate = number_match.group()
-
-                if answer_candidate:
-                    self.conversation_history_company.append({"role": "assistant", "content": answer_candidate})
-                    self._write_conversation_history()
-                    self.conversation_history = self.conversation_history[:1]
-                    self.conversation_history_company.clear()
-                    return answer_candidate
-                else:
-                    if attempt < self.max_retries - 1:
-                        feedback = "Your answer did not meet the required format. Please provide a valid answer."
-                        logger.info(f"Feedback: {feedback}")
-                        self.conversation_history.append({"role": "assistant", "content": raw_answer})
-                        self.conversation_history.append({"role": "user", "content": feedback})
-                        continue
+            )
+            raw_answer = response['message']['content'].strip()
+            answer_candidate = re.sub(r"<think>.*?</think>", "", raw_answer, flags=re.DOTALL).strip()
+            if any(keyword in question.lower() for keyword in 
+                   ["number", "how many", "zahl", "jahre", "years", "salary", "gehalt", "euro", "eur"]):
+                number_match = re.search(r'\d+(?:\.\d+)?', answer_candidate)
+                if number_match:
+                    if any(keyword in question.lower() for keyword in ["experience", "erfahrung", "jahre", "years"]):
+                        extracted_num = float(number_match.group())
+                        answer_candidate = "1" if extracted_num < 1 else number_match.group()
                     else:
-                        if any(keyword in question.lower() for keyword in ["experience", "erfahrung", "jahre", "years"]):
-                            return "3"
-                        elif any(keyword in question.lower() for keyword in ["salary", "gehalt", "compensation", "vergütung"]):
-                            return "65000"
-                        else:
-                            return "I have extensive experience in this area."
-            return "I have extensive experience in this area."
+                        answer_candidate = number_match.group()
+            if answer_candidate:
+                self.conversation_history_company.append({"role": "assistant", "content": answer_candidate})
+                self._write_conversation_history()
+                self.conversation_history = self.conversation_history[:1]
+                self.conversation_history_company.clear()
+                return answer_candidate       
         except Exception as e:
             print(f"Unexpected error: {e}")
 

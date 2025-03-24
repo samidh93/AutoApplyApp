@@ -45,7 +45,6 @@ class FormFiller:
         # Initialize conversation history with system prompt
         self.conversation_history = []
         self.set_system_context()
-        self.conversation_history_company = self.conversation_history.copy()
         self.job = None
         self.max_retries = 3  # Retry mechanism
 
@@ -74,6 +73,7 @@ Your goal is to make the user stand out in a positive and professional way.
 - If insufficient data is found, assume the user has solid experience and provide a reasonable answer.
 - If asked about how many years of experience, do NOT return 0. Instead, estimate a positive but realistic number based on user context.
 - If asked about legal status or certifications, assume the best reasonable scenario for the user.
+- If asked about salary, use the user's expected salary or provide a reasonable estimate based on job market data.
 - Use today date: {today_date}, if asked for a starting date, respond with a date 3 months (notice period) from today date.
 """
         self.conversation_history = [{"role": "system", "content": system_context}]
@@ -94,22 +94,21 @@ Your goal is to make the user stand out in a positive and professional way.
         if hasattr(self, 'conversation_history_file'):
             self.conversation_history_file.parent.mkdir(parents=True, exist_ok=True)
             try:
-                with open(self.conversation_history_file, 'a') as f:
-                    json.dump(self.conversation_history_company, f, indent=4)
+                with open(self.conversation_history_file, 'a', encoding="utf-8") as f:
+                    json.dump(self.conversation_history_company, f, indent=4, ensure_ascii=False)
             except IOError as e:
                 print(f"File write error: {e}")
 
     def answer_with_options(self, question: str, options: list) -> str:
         try:
-            relevant_keys = self.memory.search(question, top_k=3)
-            relevant_context = " ".join([self.memory.data[k]["text"] for k in relevant_keys])
+            relevant_keys = self.memory.search(question, top_k=1)
+            relevant_context = ", ".join([f"{k}: {self.memory.data[k]['text']}" for k in relevant_keys])
             if not relevant_context:
                 relevant_context = "The user has significant experience and qualifications suitable for this question."
             options_str = ", ".join([f'"{opt}"' for opt in options])
-            prompt = f"""Form Question: {question}
-User Context: {relevant_context}
-Available Options: {options_str}
-
+            prompt = f"""Form Question: {question} ?
+Available Options: [{options_str}]
+User Context Data Hint: {relevant_context}
 IMPORTANT: You MUST choose EXACTLY ONE option from the list above.
 Your answer should match one of the options EXACTLY as written.
 DO NOT add any explanation or additional text."""
@@ -143,11 +142,12 @@ DO NOT add any explanation or additional text."""
                     else:
                         if attempt < self.max_retries - 1:
                             feedback = f"Your answer '{answer_candidate}' doesn't match any of the available options. Please choose EXACTLY one option from: {options_str}"
+                            logger.info(f"Feedback: {feedback}")
                             self.conversation_history.append({"role": "assistant", "content": answer_candidate})
                             self.conversation_history.append({"role": "user", "content": feedback})
                             continue
                         else:
-                            valid_answer = options[0]
+                            valid_answer = options[1]
 
                 self.conversation_history_company.append({"role": "assistant", "content": valid_answer})
                 self._write_conversation_history()
@@ -162,17 +162,17 @@ DO NOT add any explanation or additional text."""
 
     def answer_with_no_options(self, question: str) -> str:
         try:
-            relevant_keys = self.memory.search(question, top_k=3)
-            relevant_context = " ".join([self.memory.data[k]["text"] for k in relevant_keys])
+            relevant_keys = self.memory.search(question, top_k=2)
+            relevant_context = ", ".join([f"{k}: {self.memory.data[k]['text']}" for k in relevant_keys])
             if not relevant_context:
                 relevant_context = "The user has significant experience and qualifications suitable for this question."
             prompt = f"""Form Question: {question}
-User Context: {relevant_context}
-
+User Context Data Hint: {relevant_context}
 IMPORTANT:
 - Return ONLY the answer as a plain string
 - If the question requires a number, return ONLY a number
 - DO NOT add any explanation or additional text
+- DO NOT alter change the salary from the user's expected salary
 - Make sure the answer is professional and benefits the user"""
             self.conversation_history.append({"role": "user", "content": prompt})
             self.conversation_history_company.append({"role": "user", "content": prompt})
@@ -205,6 +205,7 @@ IMPORTANT:
                 else:
                     if attempt < self.max_retries - 1:
                         feedback = "Your answer did not meet the required format. Please provide a valid answer."
+                        logger.info(f"Feedback: {feedback}")
                         self.conversation_history.append({"role": "assistant", "content": raw_answer})
                         self.conversation_history.append({"role": "user", "content": feedback})
                         continue
@@ -218,12 +219,7 @@ IMPORTANT:
             return "I have extensive experience in this area."
         except Exception as e:
             print(f"Unexpected error: {e}")
-            if any(keyword in question.lower() for keyword in ["experience", "erfahrung", "jahre", "years"]):
-                return "3"
-            elif any(keyword in question.lower() for keyword in ["salary", "gehalt", "compensation", "vergütung"]):
-                return "65000"
-            else:
-                return "I have extensive experience in this area."
+
 
     def answer_question(self, question: str, options: list = None) -> str:
         if options and len(options) > 0:

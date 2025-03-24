@@ -225,7 +225,7 @@ class LinkedinQuestions:
                     if answer.lower() in option.text.lower():
                         option_text = option.text.strip()
                         option.click()
-                        logger.info(f"Selected default option: {option_text}")
+                        logger.info(f"Selected option: {option_text}")
                         break
         except Exception as e:
             logger.warning(f"Unable to process {qs_type}: {e}")

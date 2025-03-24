@@ -40,7 +40,7 @@ class ResumeGenerator:
     def get_resume(self, firstname:str, lastname:str, company:str):
         # locate the latest created *.pdf files in the output folder 
         output_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/output")
-        resume_pdf = f"{firstname.lower()}_{lastname.lower()}_resume_{company}.pdf"
+        resume_pdf = f"{firstname.lower()}_{lastname.lower()}_resume_{company.rstrip()}.pdf"
         generated_resume_path = os.path.join(output_folder, resume_pdf)
         resume_path = os.path.abspath(generated_resume_path)
         logger.info(f"Generated resume located at: {resume_path}")
@@ -48,7 +48,7 @@ class ResumeGenerator:
     
     def get_resume_content(self, firstname:str, lastname:str, company:str):
         input_folder = os.path.join(os.path.dirname(os.path.abspath(__file__)), "../../../AI_Resume_Creator/input")
-        resume_yaml =  f"{firstname.lower()}_{lastname.lower()}_resume_{company}.yaml"
+        resume_yaml =  f"{firstname.lower()}_{lastname.lower()}_resume_{company.rstrip()}.yaml"
         resume_yaml_path = os.path.join(input_folder, resume_yaml)
         with open(resume_yaml_path, 'r') as file:
             resume_content = file.read()

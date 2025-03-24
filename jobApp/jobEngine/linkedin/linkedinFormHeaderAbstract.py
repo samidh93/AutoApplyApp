@@ -36,7 +36,7 @@ class Header(ABC):
 
 
 class ContactInfoHeader(Header):
-    header = "Contact info"
+    headers = ["contact info", "coordonnées", "contact", "contact information", "contact details"]
 
     def detect(self, form: WebElement):
         try:
@@ -47,9 +47,11 @@ class ContactInfoHeader(Header):
             translation_result = asyncio.run(googleTranslator.translate(header, dest='en'))
             # Now access the 'text' attribute and convert to lowercase.
             translated = translation_result.text.lower()
-            logger.info("page header translated: %s", translated)
-            if translated == self.header.lower():
-                return True
+            if translated in self.headers:
+                logger.info("page header translated: %s", translated)
+                return True 
+            else:
+                raise("header not found")
         except:
             logger.warning(f"no {self.header} header found")
             return False

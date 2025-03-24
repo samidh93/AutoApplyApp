@@ -30,7 +30,8 @@ class DivsContactInfo(Divs):
     def find(self, form: WebElement):
         try:
             # Find the div with class "jobs-easy-apply-form-section__grouping"
-            divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
+            #divs = form.find_elements(By.CSS_SELECTOR, 'div[data-test-text-entity-list-form-component]')
+            divs = form.find_elements(By.CSS_SELECTOR, ".fb-dash-form-element")
             logger.info("found divs with selection grouping")
             if divs != None:
                 return divs
@@ -45,22 +46,29 @@ class DivsContactInfo(Divs):
                 text = div.text.split('\n', 1)[0] or div.text
                 translation = asyncio.run(google_translator.translate(
                     text, src='de', dest='en')).text.lower()
-                if translation == 'first name':
+                if translation in ['first name', 'firstname', 'given name']:
                     LinkedinUtils.send_value(div, user.firstname)
                     logger.info(f"firstname to send: {user.firstname}")
-                elif translation == 'last name':
+                elif translation in ['last name', 'lastname', 'surname', 'family name'] :
                     LinkedinUtils.send_value(div, user.lastname)
                     logger.info(f"lastname to send: {user.lastname}")
-                elif translation == 'phone country code' or translation == 'country code':
+                elif translation in ['phone country code', 'country code', 'phone code']:
                     #logger.info("selecting user phone country code: ", user.phone_code)
                     LinkedinUtils.select_option(div, user.phone_code)
-                elif translation == 'mobile phone number' or translation == 'mobile number':
+                elif translation in ['phone number', 'phone', 'mobile number', 'mobile phone number']:
                     LinkedinUtils.send_value(div, user.phone_number)
                     logger.info(f"mobile to send: {user.phone_number}")
-                elif translation == 'email address' or translation == 'e-mail address':
+                elif translation in ['email address', 'e-mail address', 'email', 'e-mail']:
                     LinkedinUtils.select_option(div, user.email)
-                elif translation == 'city':
-                    LinkedinUtils.send_value(div, user.address)
+                elif any(word in translation for word in ['city', 'location']):
+                    LinkedinUtils.send_value(div, user.address.city)
+                    time.sleep(2)  # wait for the suggestion to appear
+                    suggestions = div.find_elements(By.CSS_SELECTOR, "div.basic-typeahead__selectable")
+                    # Select the first option that contains "Berlin"
+                    for option in suggestions:
+                        if "Berlin" in option.text:
+                            option.click()
+                            break  # Stop after selecting the first matching option 
                 elif translation == 'upload resume':
                     LinkedinUtils.send_value(div, user.resume)
                 elif translation == "summary":
@@ -97,7 +105,7 @@ class DivsHomeAddress(Divs):
                 google_translator = Translator()
                 text = div.text.split('\n', 1)[0] or div.text
                 translation = asyncio.run(google_translator.translate(text, dest='en')).text.lower()
-                if translation == 'city':
+                if any(word in translation for word in ['city', 'location']):
                     LinkedinUtils.send_value(div, user.address.city)
                     time.sleep(1)  # wait for the suggestion to appear
                     if not LinkedinUtils.choose_option_listbox(div, user.address.city):

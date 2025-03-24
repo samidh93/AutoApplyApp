@@ -20,6 +20,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import StaleElementReferenceException, TimeoutException
+from typing import Optional
 import time
 logger = logging.getLogger(__name__)
 
@@ -74,6 +75,7 @@ class LinkedinUtils:
                 logger.info(f"sending text: {value}")
                 inputElem.clear()
                 inputElem.send_keys(value)
+
         except:
             logger.info("not an input tag, try textarea")
             textarea =element.find_element(By.TAG_NAME, "textarea")

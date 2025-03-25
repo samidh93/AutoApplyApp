@@ -111,7 +111,7 @@ def run_multiple_requests(json_files_list):
         data = createRequest(file)
         testapp = appCreatorLinkedin(data)
         #testapp.tryCredentialsLinkedin()
-        #testapp.searchJobs()
+        testapp.searchJobs()
         testapp.applyJobs()
 
 if __name__ == "__main__":

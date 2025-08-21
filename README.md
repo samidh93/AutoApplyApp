@@ -1,6 +1,10 @@
 # Auto Apply App
 python app to automate search and apply for jobs. 
 
+![EasyApplyHub Website](img/website.jpeg)
+
+**🌐 Visit our website: [EasyApplyHub](https://samidhiabx.wixsite.com/easyapplyhub)**
+
 ## Features
 - [x] user authentication 
 - [x] job search 

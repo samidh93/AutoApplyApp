@@ -48,6 +48,17 @@ class FormFiller:
         self.job = None
         self.user_data = None
 
+    def set_user_context(self, user_context):
+            """Stores user data as embeddings for retrieval."""
+            self.user_data = yaml.safe_load(user_context)
+            logger.info("User context loaded successfully.")
+            for key, value in self.user_data.items():
+                if isinstance(value, dict):
+                    for sub_key, sub_value in value.items():
+                        self.memory.add_entry(f"{key}.{sub_key}", str(sub_value))
+                else:
+                    self.memory.add_entry(key, str(value))
+                    
     def set_job(self, job:Job):
         self.job = job
         self.conversation_history_file = Path(BaseConfig.get_data_path(), f"conversation_history_{self.job.company_name}_{self.job.job_id}.json")
@@ -79,17 +90,6 @@ Your goal is to make the user stand out in a positive and professional way.
 """
         self.conversation_history = [{"role": "system", "content": system_context}]
         self.conversation_history_company = self.conversation_history.copy()
-
-    def set_user_context(self, user_context):
-        """Stores user data as embeddings for retrieval."""
-        self.user_data = yaml.safe_load(user_context)
-        logger.info("User context loaded successfully.")
-        for key, value in self.user_data.items():
-            if isinstance(value, dict):
-                for sub_key, sub_value in value.items():
-                    self.memory.add_entry(f"{key}.{sub_key}", str(sub_value))
-            else:
-                self.memory.add_entry(key, str(value))
 
     def _write_conversation_history(self):
         # Ensure the directory exists before writing
